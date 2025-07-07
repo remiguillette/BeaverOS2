@@ -84,8 +84,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-beaver-dark">
       {/* Header Navigation */}
       <header className="bg-beaver-surface border-b border-beaver-surface-light">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="w-full px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange">
@@ -96,14 +96,14 @@ export default function Dashboard() {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
-              <span className="text-gray-300">{user?.name}</span>
+              <span className="text-gray-300 hidden sm:inline">{user?.name}</span>
               <Button
                 onClick={handleLogout}
                 variant="ghost"
                 className="bg-beaver-surface-light hover:bg-gray-700 text-white"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -111,14 +111,14 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Page Title */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-beaver-orange mb-2">Applications</h2>
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-beaver-orange mb-2">Applications</h2>
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {services.map((service) => (
             <ServiceCard
               key={service.id}
@@ -129,39 +129,39 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Section */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Total Services</p>
-                  <p className="text-2xl font-bold text-beaver-orange">{services.length}</p>
+                  <p className="text-gray-400 text-xs sm:text-sm">Total Services</p>
+                  <p className="text-xl sm:text-2xl font-bold text-beaver-orange">{services.length}</p>
                 </div>
-                <Boxes className="text-beaver-orange w-8 h-8" />
+                <Boxes className="text-beaver-orange w-6 h-6 sm:w-8 sm:h-8" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Active Connections</p>
-                  <p className="text-2xl font-bold text-green-400">7</p>
+                  <p className="text-gray-400 text-xs sm:text-sm">Active Connections</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-400">7</p>
                 </div>
-                <Zap className="text-green-400 w-8 h-8" />
+                <Zap className="text-green-400 w-6 h-6 sm:w-8 sm:h-8" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardContent className="p-6">
+          <Card className="bg-beaver-surface border-beaver-surface-light sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">System Status</p>
-                  <p className="text-2xl font-bold text-green-400">Online</p>
+                  <p className="text-gray-400 text-xs sm:text-sm">System Status</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-400">Online</p>
                 </div>
-                <Activity className="text-green-400 w-8 h-8" />
+                <Activity className="text-green-400 w-6 h-6 sm:w-8 sm:h-8" />
               </div>
             </CardContent>
           </Card>
