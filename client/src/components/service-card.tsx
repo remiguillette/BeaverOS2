@@ -34,9 +34,9 @@ export function ServiceCard({ service, onClick }: ServiceCardProps) {
       onClick={() => onClick?.(service)}
     >
       <div className="flex items-center gap-4">
-        {/* Icon on the left - 40x40 */}
-        <div className="w-10 h-10 bg-beaver-orange/20 rounded-lg flex items-center justify-center group-hover:bg-beaver-orange/30 transition-all flex-shrink-0">
-          <IconComponent className="text-beaver-orange w-5 h-5" />
+        {/* Icon on the left - 120x120 */}
+        <div className="w-30 h-30 bg-beaver-orange/20 rounded-lg flex items-center justify-center group-hover:bg-beaver-orange/30 transition-all flex-shrink-0">
+          <IconComponent className="text-beaver-orange w-16 h-16" />
         </div>
         
         {/* Text content on the right */}
