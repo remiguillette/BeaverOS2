@@ -61,6 +61,12 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        beaver: {
+          orange: "var(--beaver-orange)",
+          dark: "var(--beaver-dark)",
+          surface: "var(--beaver-surface)",
+          "surface-light": "var(--beaver-surface-light)",
+        },
       },
       keyframes: {
         "accordion-down": {
