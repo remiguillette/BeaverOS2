@@ -88,7 +88,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center h-16">
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-beaver-orange rounded-lg flex items-center justify-center border-2 border-black">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange">
                 <img src={beaverImage} alt="Beaver" className="w-6 h-6 object-contain" />
               </div>
               <h1 className="text-xl font-bold text-beaver-orange">BEAVERNET</h1>
