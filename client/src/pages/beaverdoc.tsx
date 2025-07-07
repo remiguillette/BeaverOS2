@@ -20,6 +20,7 @@ interface ProcessedDocument {
   timestamp: string;
   author: string;
   originalFileName: string;
+  originalPdfData?: ArrayBuffer;
 }
 
 export default function BeaverDoc() {
@@ -39,59 +40,68 @@ export default function BeaverDoc() {
     }
   };
 
-  const handleProcessDocument = () => {
+  const handleProcessDocument = async () => {
     if (!selectedFile) return;
     
     console.log("Processing document:", selectedFile.name);
     
-    // Generate unique identifiers
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
-    const uid = `UID-${timestamp}-RG${String(processedDocuments.length + 4).padStart(2, '0')}`;
-    const token = `TK-${Math.random().toString(36).substr(2, 12).toUpperCase()}`;
-    const hash = Math.random().toString(36).substr(2, 32);
-    const docId = `DOC-2025-${String(processedDocuments.length + 4).padStart(3, '0')}`;
-    
-    // Create processed document
-    const newDocument: ProcessedDocument = {
-      id: docId,
-      title: selectedFile.name.replace(/\.pdf$/i, ''),
-      uid: uid,
-      token: token,
-      hash: hash,
-      status: "Processed",
-      timestamp: new Date().toLocaleString('en-CA', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
-      }).replace(/,/, ''),
-      author: "Rémi Guillette",
-      originalFileName: selectedFile.name
-    };
-    
-    // Add to processed documents
-    setProcessedDocuments(prev => [newDocument, ...prev]);
-    
-    // Add audit log entry
-    const auditEntry = {
-      action: "Document Processed",
-      timestamp: new Date().toLocaleString('en-CA', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
-      }).replace(/,/, ''),
-      description: `${selectedFile.name} processed with ${uid}`
-    };
-    setAuditLog(prev => [auditEntry, ...prev]);
-    
-    // Show success message
-    alert(`Document "${selectedFile.name}" processed successfully! UID generated: ${uid}`);
-    setSelectedFile(null);
+    try {
+      // Read the file as ArrayBuffer to store the original PDF data
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      
+      // Generate unique identifiers
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
+      const uid = `UID-${timestamp}-RG${String(processedDocuments.length + 4).padStart(2, '0')}`;
+      const token = `TK-${Math.random().toString(36).substr(2, 12).toUpperCase()}`;
+      const hash = Math.random().toString(36).substr(2, 32);
+      const docId = `DOC-2025-${String(processedDocuments.length + 4).padStart(3, '0')}`;
+      
+      // Create processed document with original PDF data
+      const newDocument: ProcessedDocument = {
+        id: docId,
+        title: selectedFile.name.replace(/\.pdf$/i, ''),
+        uid: uid,
+        token: token,
+        hash: hash,
+        status: "Processed",
+        timestamp: new Date().toLocaleString('en-CA', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        }).replace(/,/, ''),
+        author: "Rémi Guillette",
+        originalFileName: selectedFile.name,
+        originalPdfData: arrayBuffer
+      };
+      
+      // Add to processed documents
+      setProcessedDocuments(prev => [newDocument, ...prev]);
+      
+      // Add audit log entry
+      const auditEntry = {
+        action: "Document Processed",
+        timestamp: new Date().toLocaleString('en-CA', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        }).replace(/,/, ''),
+        description: `${selectedFile.name} processed with ${uid}`
+      };
+      setAuditLog(prev => [auditEntry, ...prev]);
+      
+      // Show success message
+      alert(`Document "${selectedFile.name}" processed successfully! UID generated: ${uid}`);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error('Error processing document:', error);
+      alert('Error processing document. Please try again.');
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -103,73 +113,26 @@ export default function BeaverDoc() {
     setViewingDocument(doc);
   };
 
-  const handleOpenPDF = async (doc: ProcessedDocument) => {
-    console.log("Opening PDF for document:", doc.title);
-    
+  const addUidAndTokenToPdf = async (
+    pdfBuffer: ArrayBuffer,
+    uid: string,
+    token: string,
+    signatureInfo?: string
+  ): Promise<Uint8Array> => {
     try {
-      // Create a new PDF document
-      const pdfDoc = await PDFDocument.create();
+      // Load the existing PDF document
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
       
-      // Add a page to the document
-      const page = pdfDoc.addPage();
-      const { width, height } = page.getSize();
+      // Get a standard font
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       
-      // Get fonts
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      // Very small font size for footer text
+      const fontSize = 6;
       
-      // Document title
-      page.drawText(`Document: ${doc.title}`, {
-        x: 72,
-        y: height - 100,
-        size: 18,
-        font: helveticaBold,
-        color: rgb(0, 0, 0),
-      });
+      // Number of pages in the document
+      const pages = pdfDoc.getPages();
       
-      // Document content
-      const content = [
-        'This is a legally processed document through the BeaverDoc',
-        'Legal Document Traceability System.',
-        '',
-        'Document Details:',
-        `- Document ID: ${doc.id}`,
-        `- Status: ${doc.status}`,
-        `- Author: ${doc.author}`,
-        `- Processed: ${doc.timestamp}`,
-        '',
-        'Security Information:',
-        `- UID: ${doc.uid}`,
-        `- Token: ${doc.token}`,
-        `- Hash: ${doc.hash}`,
-        '',
-        'This document has been digitally processed and secured',
-        'with unique identifiers for legal compliance.',
-      ];
-      
-      let yPosition = height - 150;
-      content.forEach((line) => {
-        if (line.startsWith('Document Details:') || line.startsWith('Security Information:')) {
-          page.drawText(line, {
-            x: 72,
-            y: yPosition,
-            size: 12,
-            font: helveticaBold,
-            color: rgb(0, 0, 0),
-          });
-        } else {
-          page.drawText(line, {
-            x: 72,
-            y: yPosition,
-            size: 12,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          });
-        }
-        yPosition -= 20;
-      });
-      
-      // Add signature information at the bottom right
+      // Current date for timestamp
       const now = new Date();
       const timestamp = now.toLocaleString('en-CA', { 
         year: 'numeric', 
@@ -181,59 +144,171 @@ export default function BeaverDoc() {
         hour12: false 
       });
       
-      // Version simplifiée en format court pour être plus lisible
-      const uidShort = doc.uid.substring(doc.uid.length - 8);
-      const tokenShort = doc.token.substring(doc.token.length - 8);
+      // Add UID and token to each page
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        const { width, height } = page.getSize();
+        
+        // Simplified version in short format for better readability
+        const uidShort = uid.substring(uid.length - 8);
+        const tokenShort = token.substring(token.length - 8);
+        
+        // Text to add with UID and token in short format
+        const text = `BeaverDoc: P${i + 1}/${pages.length} | UID:${uidShort} | Token:${tokenShort}`;
+        
+        // Calculate text width
+        const textWidth = font.widthOfTextAtSize(text, fontSize);
+        const x = width - textWidth - 10; // Right aligned with margin
+        
+        // Position at bottom of page with sufficient margin to avoid cropping
+        const y = 20; // Increased to avoid being cut off
+        
+        // Create a white semi-transparent rectangle as background for text
+        page.drawRectangle({
+          x: x - 2,
+          y: y - 2,
+          width: textWidth + 4,
+          height: fontSize + 4,
+          color: rgb(1, 1, 1), // White
+          opacity: 0.7 // Semi-transparent
+        });
+        
+        // Add text to page with dark color
+        page.drawText(text, {
+          x,
+          y,
+          size: fontSize,
+          font,
+          color: rgb(0.3, 0.3, 0.3), // Dark gray
+          opacity: 0.9 // Well visible
+        });
+        
+        // If document is signed, add signature info on separate line
+        if (signatureInfo) {
+          const sigText = `Signé: ${signatureInfo.split(':')[1]?.trim() || 'DIGITAL_'} | ${timestamp}`;
+          const sigTextWidth = font.widthOfTextAtSize(sigText, fontSize);
+          const sigX = width - sigTextWidth - 10;
+          const sigY = y + fontSize + 3;
+          
+          // White rectangle for signature text
+          page.drawRectangle({
+            x: sigX - 2,
+            y: sigY - 2,
+            width: sigTextWidth + 4,
+            height: fontSize + 4,
+            color: rgb(1, 1, 1),
+            opacity: 0.7
+          });
+          
+          // Signature text
+          page.drawText(sigText, {
+            x: sigX,
+            y: sigY,
+            size: fontSize,
+            font,
+            color: rgb(0.3, 0.3, 0.3),
+            opacity: 0.9
+          });
+        }
+      }
       
-      // First line: Digital signature
-      const sigText = `Signé: DIGITAL_ | ${timestamp}`;
-      const sigTextWidth = helveticaFont.widthOfTextAtSize(sigText, 8);
-      const sigX = width - sigTextWidth - 20;
-      
-      // Background rectangle for signature
-      page.drawRectangle({
-        x: sigX - 5,
-        y: 35,
-        width: sigTextWidth + 10,
-        height: 25,
-        color: rgb(1, 1, 1),
-        opacity: 0.8
-      });
-      
-      page.drawText(sigText, {
-        x: sigX,
-        y: 45,
-        size: 8,
-        font: helveticaFont,
-        color: rgb(0.3, 0.3, 0.3),
-      });
-      
-      // Second line: BeaverDoc info
-      const beaverText = `BeaverDoc: P1/1 | UID:${uidShort} | Token:${tokenShort}`;
-      const beaverTextWidth = helveticaFont.widthOfTextAtSize(beaverText, 8);
-      const beaverX = width - beaverTextWidth - 20;
-      
-      page.drawText(beaverText, {
-        x: beaverX,
-        y: 32,
-        size: 8,
-        font: helveticaFont,
-        color: rgb(0.3, 0.3, 0.3),
-      });
-      
-      // Set PDF metadata
-      pdfDoc.setTitle(`Document sécurisé - ${doc.uid}`);
+      // Update document metadata for legal validity
+      pdfDoc.setTitle(`Document sécurisé - ${uid}`);
       pdfDoc.setAuthor('Rémi Guillette');
       pdfDoc.setCreator('Rémi Guillette Consulting');
       pdfDoc.setProducer('BeaverDoc Secure Document System');
-      pdfDoc.setSubject(`Document authentifié par BeaverDoc - UID:${doc.uid} | Token:${doc.token}`);
-      pdfDoc.setKeywords(['document sécurisé', 'authentifié', doc.uid, doc.token, 'Rémi Guillette Consulting']);
       
-      // Serialize the PDF
-      const pdfBytes = await pdfDoc.save();
+      // Complete security information
+      const securityInfo = `UID:${uid} | Token:${token} | Timestamp:${new Date().toISOString()}`;
+      const issuerInfo = `Certifié par: Rémi Guillette Consulting | Vérification: beaverdoc.verify.com`;
+      
+      // Set subject with detailed security information
+      pdfDoc.setSubject(`Document authentifié par BeaverDoc - ${securityInfo} | ${issuerInfo}`);
+      
+      // Add security information in keywords
+      const keywords = ['document sécurisé', 'authentifié', uid, token, 'Rémi Guillette Consulting'];
+      
+      if (signatureInfo) {
+        keywords.push('signé électroniquement');
+        keywords.push(`signature:${signatureInfo}`);
+        keywords.push(`date_signature:${new Date().toISOString()}`);
+      }
+      
+      pdfDoc.setKeywords(keywords);
+      
+      // Serialize the modified document to a new buffer
+      const modifiedPdfBytes = await pdfDoc.save();
+      
+      return modifiedPdfBytes;
+    } catch (error) {
+      console.error('Error modifying PDF:', error);
+      throw new Error('Unable to modify PDF to add UID and token');
+    }
+  };
+
+  const handleOpenPDF = async (doc: ProcessedDocument) => {
+    console.log("Opening PDF for document:", doc.title);
+    
+    try {
+      // Use the original PDF data if available, otherwise create a demo document
+      let originalPdfBytes: Uint8Array;
+      
+      if (doc.originalPdfData) {
+        // Use the actual uploaded PDF file
+        originalPdfBytes = new Uint8Array(doc.originalPdfData);
+      } else {
+        // For sample documents, create a representative document
+        const tempDoc = await PDFDocument.create();
+        const tempPage = tempDoc.addPage();
+        const { width, height } = tempPage.getSize();
+        const font = await tempDoc.embedFont(StandardFonts.Helvetica);
+        
+        tempPage.drawText(`Document: ${doc.title}`, {
+          x: 72,
+          y: height - 100,
+          size: 18,
+          font,
+          color: rgb(0, 0, 0),
+        });
+        
+        // Add some sample content
+        const content = [
+          'This is a sample legal document that demonstrates',
+          'the BeaverDoc security overlay system.',
+          '',
+          'Original document content would appear here',
+          'exactly as it was in the source file.',
+          '',
+          'The security information is added as an overlay',
+          'without modifying the original content.'
+        ];
+        
+        let yPos = height - 150;
+        content.forEach(line => {
+          tempPage.drawText(line, {
+            x: 72,
+            y: yPos,
+            size: 12,
+            font,
+            color: rgb(0, 0, 0),
+          });
+          yPos -= 20;
+        });
+        
+        originalPdfBytes = await tempDoc.save();
+      }
+      
+      // Add security overlay to the original document
+      const signatureInfo = `Status:${doc.status}`;
+      const modifiedPdfBytes = await addUidAndTokenToPdf(
+        originalPdfBytes.buffer,
+        doc.uid,
+        doc.token,
+        signatureInfo
+      );
       
       // Create blob and open in new tab
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
       
