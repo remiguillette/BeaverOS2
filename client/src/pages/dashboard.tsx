@@ -18,8 +18,15 @@ const services = [
     id: "beaverlaw",
     name: "BeaverLaw",
     description: "Animal Controls",
-    port: ":5002",
+    port: ":5001",
     icon: "cat",
+  },
+  {
+    id: "beavercrm",
+    name: "BeaverCRM",
+    description: "Customer Management",
+    port: ":5002",
+    icon: "person",
   },
   {
     id: "beaverscanner",
@@ -27,13 +34,6 @@ const services = [
     description: "Lecture automatisée de plaques d'immatriculation",
     port: ":5003",
     icon: "scan",
-  },
-  {
-    id: "beavernetcrm",
-    name: "BeavernetCRM",
-    description: "Gestion des clients",
-    port: ":5004",
-    icon: "person",
   },
   {
     id: "beaverdoc",
@@ -81,6 +81,8 @@ export default function Dashboard() {
       setLocation("/BeaverPatch");
     } else if (service.id === "beaverlaw") {
       setLocation("/BeaverLaw");
+    } else if (service.id === "beavercrm") {
+      setLocation("/BeaverCRM");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} not yet implemented`);

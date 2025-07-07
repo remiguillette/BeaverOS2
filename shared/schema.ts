@@ -94,6 +94,38 @@ export const enforcementReports = pgTable("enforcement_reports", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  customerId: text("customer_id").notNull().unique(),
+  // Identity
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  phoneticName: text("phonetic_name"), // phonetic spelling for pronunciation
+  nickname: text("nickname"),
+  dateOfBirth: timestamp("date_of_birth"),
+  // Contact Information
+  homePhone: text("home_phone"),
+  workPhone: text("work_phone"),
+  workExtension: text("work_extension"),
+  email: text("email"),
+  // Address
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  zipCode: text("zip_code"),
+  // Professional Information
+  group: text("group"), // customer group/category
+  professionalInfo: text("professional_info"),
+  professionalLicenseNumber: text("professional_license_number"),
+  // Identification
+  driverLicenseNumber: text("driver_license_number"),
+  // Notes and Other
+  notes: text("notes"),
+  status: text("status").notNull().default("active"), // active, inactive, suspended
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -130,6 +162,14 @@ export const insertEnforcementReportSchema = createInsertSchema(enforcementRepor
   fineAmount: z.union([z.number(), z.string().transform((str) => str === "" ? undefined : Number(str))]).optional(),
 });
 
+export const insertCustomerSchema = createInsertSchema(customers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  dateOfBirth: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Incident = typeof incidents.$inferSelect;
@@ -142,3 +182,5 @@ export type Animal = typeof animals.$inferSelect;
 export type InsertAnimal = z.infer<typeof insertAnimalSchema>;
 export type EnforcementReport = typeof enforcementReports.$inferSelect;
 export type InsertEnforcementReport = z.infer<typeof insertEnforcementReportSchema>;
+export type Customer = typeof customers.$inferSelect;
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;

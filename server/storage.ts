@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport } from "@shared/schema";
+import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -37,6 +37,13 @@ export interface IStorage {
   getEnforcementReport(id: number): Promise<EnforcementReport | undefined>;
   getAllEnforcementReports(): Promise<EnforcementReport[]>;
   updateEnforcementReport(id: number, updates: Partial<EnforcementReport>): Promise<EnforcementReport | undefined>;
+  
+  // Customer operations
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getCustomer(id: number): Promise<Customer | undefined>;
+  getAllCustomers(): Promise<Customer[]>;
+  updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined>;
+  searchCustomers(query: string): Promise<Customer[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,12 +53,14 @@ export class MemStorage implements IStorage {
   private incidentUnits: Map<number, IncidentUnit>;
   private animals: Map<number, Animal>;
   private enforcementReports: Map<number, EnforcementReport>;
+  private customers: Map<number, Customer>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
   private currentIncidentUnitId: number;
   private currentAnimalId: number;
   private currentEnforcementReportId: number;
+  private currentCustomerId: number;
 
   constructor() {
     this.users = new Map();
@@ -60,12 +69,14 @@ export class MemStorage implements IStorage {
     this.incidentUnits = new Map();
     this.animals = new Map();
     this.enforcementReports = new Map();
+    this.customers = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
     this.currentIncidentUnitId = 1;
     this.currentAnimalId = 1;
     this.currentEnforcementReportId = 1;
+    this.currentCustomerId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -144,6 +155,131 @@ export class MemStorage implements IStorage {
         updatedAt: new Date(),
       };
       this.incidents.set(id, fullIncident);
+    });
+
+    // Sample customers
+    const sampleCustomers = [
+      {
+        customerId: "CUS-2025-000001",
+        firstName: "John",
+        lastName: "Smith",
+        phoneticName: "Jon Smith",
+        nickname: "Johnny",
+        dateOfBirth: new Date("1985-03-15"),
+        homePhone: "5551234567",
+        workPhone: "5559876543",
+        workExtension: "101",
+        email: "john.smith@email.com",
+        address: "123 Oak Street",
+        city: "Portland",
+        state: "OR",
+        zipCode: "97205",
+        group: "Residential",
+        professionalInfo: "Software Engineer at Tech Corp",
+        professionalLicenseNumber: "ENG-12345",
+        driverLicenseNumber: "OR123456789",
+        notes: "Long-time customer, prefers email contact",
+        status: "active",
+      },
+      {
+        customerId: "CUS-2025-000002",
+        firstName: "Sarah",
+        lastName: "Johnson",
+        phoneticName: "Sarah Johnson",
+        nickname: "",
+        dateOfBirth: new Date("1990-07-22"),
+        homePhone: "5552345678",
+        workPhone: "5558765432",
+        workExtension: "",
+        email: "sarah.johnson@business.com",
+        address: "456 Pine Avenue",
+        city: "Portland",
+        state: "OR",
+        zipCode: "97210",
+        group: "Business",
+        professionalInfo: "Marketing Director at Johnson & Associates",
+        professionalLicenseNumber: "MKT-67890",
+        driverLicenseNumber: "OR987654321",
+        notes: "Business account holder, handles multiple properties",
+        status: "active",
+      },
+      {
+        customerId: "CUS-2025-000003",
+        firstName: "Michael",
+        lastName: "Brown",
+        phoneticName: "My-kel Brown",
+        nickname: "Mike",
+        dateOfBirth: new Date("1978-12-03"),
+        homePhone: "5553456789",
+        workPhone: "",
+        workExtension: "",
+        email: "m.brown@contractor.net",
+        address: "789 Cedar Drive",
+        city: "Beaverton",
+        state: "OR",
+        zipCode: "97008",
+        group: "Contractor",
+        professionalInfo: "Licensed General Contractor",
+        professionalLicenseNumber: "CCB-54321",
+        driverLicenseNumber: "OR456789123",
+        notes: "Reliable contractor, specializes in residential work",
+        status: "active",
+      },
+      {
+        customerId: "CUS-2025-000004",
+        firstName: "Emily",
+        lastName: "Davis",
+        phoneticName: "Em-ih-lee Davis",
+        nickname: "Em",
+        dateOfBirth: new Date("1992-05-18"),
+        homePhone: "5554567890",
+        workPhone: "5557654321",
+        workExtension: "205",
+        email: "emily.davis@lawfirm.com",
+        address: "321 Maple Court",
+        city: "Lake Oswego",
+        state: "OR",
+        zipCode: "97034",
+        group: "Professional",
+        professionalInfo: "Attorney at Davis & Partners Law Firm",
+        professionalLicenseNumber: "BAR-11223",
+        driverLicenseNumber: "OR789123456",
+        notes: "Legal professional, requires formal correspondence",
+        status: "active",
+      },
+      {
+        customerId: "CUS-2025-000005",
+        firstName: "Robert",
+        lastName: "Wilson",
+        phoneticName: "Rob-ert Wilson",
+        nickname: "Bob",
+        dateOfBirth: new Date("1965-09-30"),
+        homePhone: "5555678901",
+        workPhone: "",
+        workExtension: "",
+        email: "",
+        address: "654 Birch Lane",
+        city: "Tigard",
+        state: "OR",
+        zipCode: "97223",
+        group: "Senior",
+        professionalInfo: "Retired Teacher",
+        professionalLicenseNumber: "",
+        driverLicenseNumber: "OR321654987",
+        notes: "Prefers phone contact, no email",
+        status: "inactive",
+      },
+    ];
+
+    sampleCustomers.forEach(customer => {
+      const id = this.currentCustomerId++;
+      const fullCustomer: Customer = {
+        ...customer,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.customers.set(id, fullCustomer);
     });
   }
 
@@ -316,6 +452,57 @@ export class MemStorage implements IStorage {
     const updatedReport = { ...report, ...updates, updatedAt: new Date() };
     this.enforcementReports.set(id, updatedReport);
     return updatedReport;
+  }
+
+  // Customer methods
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const id = this.currentCustomerId++;
+    const customerId = insertCustomer.customerId || `CUS-${new Date().getFullYear()}-${String(id).padStart(6, '0')}`;
+    
+    const customer: Customer = {
+      ...insertCustomer,
+      id,
+      customerId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.customers.set(id, customer);
+    return customer;
+  }
+
+  async getCustomer(id: number): Promise<Customer | undefined> {
+    return this.customers.get(id);
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    return Array.from(this.customers.values());
+  }
+
+  async updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined> {
+    const customer = this.customers.get(id);
+    if (!customer) return undefined;
+    
+    const updatedCustomer = { ...customer, ...updates, updatedAt: new Date() };
+    this.customers.set(id, updatedCustomer);
+    return updatedCustomer;
+  }
+
+  async searchCustomers(query: string): Promise<Customer[]> {
+    if (!query.trim()) return this.getAllCustomers();
+    
+    const searchLower = query.toLowerCase();
+    return Array.from(this.customers.values()).filter(customer => 
+      customer.firstName.toLowerCase().includes(searchLower) ||
+      customer.lastName.toLowerCase().includes(searchLower) ||
+      customer.customerId.toLowerCase().includes(searchLower) ||
+      customer.email?.toLowerCase().includes(searchLower) ||
+      customer.homePhone?.includes(query) ||
+      customer.workPhone?.includes(query) ||
+      customer.address?.toLowerCase().includes(searchLower) ||
+      customer.driverLicenseNumber?.toLowerCase().includes(searchLower) ||
+      customer.notes?.toLowerCase().includes(searchLower)
+    );
   }
 }
 
