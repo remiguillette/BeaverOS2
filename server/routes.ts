@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication endpoint
@@ -194,6 +194,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(assignments);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch incident units" });
+    }
+  });
+
+  // Animal endpoints
+  app.get("/api/animals", async (req, res) => {
+    try {
+      const animals = await storage.getAllAnimals();
+      res.json(animals);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch animals" });
+    }
+  });
+
+  app.get("/api/animals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const animal = await storage.getAnimal(id);
+      if (!animal) {
+        return res.status(404).json({ error: "Animal not found" });
+      }
+      res.json(animal);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch animal" });
+    }
+  });
+
+  app.post("/api/animals", async (req, res) => {
+    try {
+      const validatedData = insertAnimalSchema.parse(req.body);
+      const animal = await storage.createAnimal(validatedData);
+      res.json(animal);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid animal data" });
+    }
+  });
+
+  app.put("/api/animals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const animal = await storage.updateAnimal(id, req.body);
+      if (!animal) {
+        return res.status(404).json({ error: "Animal not found" });
+      }
+      res.json(animal);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update animal" });
+    }
+  });
+
+  app.get("/api/animals/owner/:ownerName", async (req, res) => {
+    try {
+      const ownerName = req.params.ownerName;
+      const animals = await storage.getAnimalsByOwner(ownerName);
+      res.json(animals);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch animals by owner" });
+    }
+  });
+
+  // Enforcement Report endpoints
+  app.get("/api/enforcement-reports", async (req, res) => {
+    try {
+      const reports = await storage.getAllEnforcementReports();
+      res.json(reports);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch enforcement reports" });
+    }
+  });
+
+  app.get("/api/enforcement-reports/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const report = await storage.getEnforcementReport(id);
+      if (!report) {
+        return res.status(404).json({ error: "Enforcement report not found" });
+      }
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch enforcement report" });
+    }
+  });
+
+  app.post("/api/enforcement-reports", async (req, res) => {
+    try {
+      const validatedData = insertEnforcementReportSchema.parse(req.body);
+      const report = await storage.createEnforcementReport(validatedData);
+      res.json(report);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid enforcement report data" });
+    }
+  });
+
+  app.put("/api/enforcement-reports/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const report = await storage.updateEnforcementReport(id, req.body);
+      if (!report) {
+        return res.status(404).json({ error: "Enforcement report not found" });
+      }
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update enforcement report" });
     }
   });
 

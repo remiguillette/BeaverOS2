@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit } from "@shared/schema";
+import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -24,6 +24,19 @@ export interface IStorage {
   assignUnitToIncident(assignment: InsertIncidentUnit): Promise<IncidentUnit>;
   getIncidentUnits(incidentId: number): Promise<IncidentUnit[]>;
   getUnitAssignments(unitId: number): Promise<IncidentUnit[]>;
+  
+  // Animal operations
+  createAnimal(animal: InsertAnimal): Promise<Animal>;
+  getAnimal(id: number): Promise<Animal | undefined>;
+  getAllAnimals(): Promise<Animal[]>;
+  updateAnimal(id: number, updates: Partial<Animal>): Promise<Animal | undefined>;
+  getAnimalsByOwner(ownerName: string): Promise<Animal[]>;
+  
+  // Enforcement report operations
+  createEnforcementReport(report: InsertEnforcementReport): Promise<EnforcementReport>;
+  getEnforcementReport(id: number): Promise<EnforcementReport | undefined>;
+  getAllEnforcementReports(): Promise<EnforcementReport[]>;
+  updateEnforcementReport(id: number, updates: Partial<EnforcementReport>): Promise<EnforcementReport | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -31,20 +44,28 @@ export class MemStorage implements IStorage {
   private incidents: Map<number, Incident>;
   private units: Map<number, Unit>;
   private incidentUnits: Map<number, IncidentUnit>;
+  private animals: Map<number, Animal>;
+  private enforcementReports: Map<number, EnforcementReport>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
   private currentIncidentUnitId: number;
+  private currentAnimalId: number;
+  private currentEnforcementReportId: number;
 
   constructor() {
     this.users = new Map();
     this.incidents = new Map();
     this.units = new Map();
     this.incidentUnits = new Map();
+    this.animals = new Map();
+    this.enforcementReports = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
     this.currentIncidentUnitId = 1;
+    this.currentAnimalId = 1;
+    this.currentEnforcementReportId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -221,6 +242,80 @@ export class MemStorage implements IStorage {
     return Array.from(this.incidentUnits.values()).filter(
       iu => iu.unitId === unitId
     );
+  }
+
+  // Animal operations
+  async createAnimal(insertAnimal: InsertAnimal): Promise<Animal> {
+    const id = this.currentAnimalId++;
+    const now = new Date();
+    const registrationNumber = `AC-${new Date().getFullYear()}-${id.toString().padStart(4, '0')}`;
+    
+    const animal: Animal = {
+      ...insertAnimal,
+      id,
+      registrationNumber,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.animals.set(id, animal);
+    return animal;
+  }
+
+  async getAnimal(id: number): Promise<Animal | undefined> {
+    return this.animals.get(id);
+  }
+
+  async getAllAnimals(): Promise<Animal[]> {
+    return Array.from(this.animals.values());
+  }
+
+  async updateAnimal(id: number, updates: Partial<Animal>): Promise<Animal | undefined> {
+    const animal = this.animals.get(id);
+    if (!animal) return undefined;
+    
+    const updatedAnimal = { ...animal, ...updates, updatedAt: new Date() };
+    this.animals.set(id, updatedAnimal);
+    return updatedAnimal;
+  }
+
+  async getAnimalsByOwner(ownerName: string): Promise<Animal[]> {
+    return Array.from(this.animals.values()).filter(
+      animal => animal.ownerName?.toLowerCase().includes(ownerName.toLowerCase())
+    );
+  }
+
+  // Enforcement report operations
+  async createEnforcementReport(insertReport: InsertEnforcementReport): Promise<EnforcementReport> {
+    const id = this.currentEnforcementReportId++;
+    const now = new Date();
+    
+    const report: EnforcementReport = {
+      ...insertReport,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.enforcementReports.set(id, report);
+    return report;
+  }
+
+  async getEnforcementReport(id: number): Promise<EnforcementReport | undefined> {
+    return this.enforcementReports.get(id);
+  }
+
+  async getAllEnforcementReports(): Promise<EnforcementReport[]> {
+    return Array.from(this.enforcementReports.values());
+  }
+
+  async updateEnforcementReport(id: number, updates: Partial<EnforcementReport>): Promise<EnforcementReport | undefined> {
+    const report = this.enforcementReports.get(id);
+    if (!report) return undefined;
+    
+    const updatedReport = { ...report, ...updates, updatedAt: new Date() };
+    this.enforcementReports.set(id, updatedReport);
+    return updatedReport;
   }
 }
 

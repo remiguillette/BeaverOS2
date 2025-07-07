@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import BeaverPatch from "@/pages/beaverpatch";
+import BeaverLaw from "@/pages/beaverlaw";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -45,6 +46,11 @@ function Router() {
       <Route path="/BeaverPatch">
         <ProtectedRoute>
           <BeaverPatch />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/BeaverLaw">
+        <ProtectedRoute>
+          <BeaverLaw />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />

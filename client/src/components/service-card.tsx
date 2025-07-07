@@ -48,7 +48,7 @@ export function ServiceCard({ service, onClick }: ServiceCardProps) {
           </div>
           <div className="mt-auto">
             <span className="inline-block text-xs sm:text-sm bg-beaver-surface-light px-2 sm:px-3 py-1 sm:py-2 rounded text-gray-400">
-              {service.id === "beaverpatch" ? "Click to Open" : `Port: ${service.port}`}
+              {(service.id === "beaverpatch" || service.id === "beaverlaw") ? "Click to Open" : `Port: ${service.port}`}
             </span>
           </div>
         </div>

@@ -17,7 +17,7 @@ const services = [
   {
     id: "beaverlaw",
     name: "BeaverLaw",
-    description: "Contrôles Animalier",
+    description: "Animal Controls",
     port: ":5002",
     icon: "cat",
   },
@@ -79,6 +79,8 @@ export default function Dashboard() {
     // Navigate to specific service pages
     if (service.id === "beaverpatch") {
       setLocation("/BeaverPatch");
+    } else if (service.id === "beaverlaw") {
+      setLocation("/BeaverLaw");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} not yet implemented`);

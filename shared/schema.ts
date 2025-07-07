@@ -44,6 +44,56 @@ export const incidentUnits = pgTable("incident_units", {
   status: text("status").notNull().default("assigned"), // assigned, enroute, arrived, completed
 });
 
+export const animals = pgTable("animals", {
+  id: serial("id").primaryKey(),
+  name: text("name"),
+  species: text("species").notNull(), // dog, cat, other
+  breed: text("breed"),
+  color: text("color"),
+  age: text("age"), // approximate age like "2 years", "6 months", "unknown"
+  gender: text("gender"), // male, female, unknown
+  size: text("size"), // small, medium, large
+  healthStatus: text("health_status").notNull(), // healthy, injured, sick, deceased
+  healthNotes: text("health_notes"), // detailed health information
+  foundLocation: text("found_location"), // where the animal was found
+  foundDate: timestamp("found_date"),
+  surrenderLocation: text("surrender_location"), // spa, kennel, veterinary hospital, etc.
+  surrenderDate: timestamp("surrender_date"),
+  surrenderReason: text("surrender_reason"),
+  isWild: boolean("is_wild").default(false),
+  isStray: boolean("is_stray").default(false),
+  hasOwner: boolean("has_owner").default(false),
+  ownerName: text("owner_name"),
+  ownerPhone: text("owner_phone"),
+  ownerAddress: text("owner_address"),
+  ownerEmail: text("owner_email"),
+  microchipNumber: text("microchip_number"),
+  registrationNumber: text("registration_number").unique(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const enforcementReports = pgTable("enforcement_reports", {
+  id: serial("id").primaryKey(),
+  reportNumber: text("report_number").notNull().unique(),
+  type: text("type").notNull(), // municipal_report, ticket, warning
+  violationType: text("violation_type").notNull(), // unleashed_dog, noise_complaint, etc.
+  location: text("location").notNull(),
+  date: timestamp("date").notNull(),
+  officerName: text("officer_name").notNull(),
+  violatorName: text("violator_name"),
+  violatorAddress: text("violator_address"),
+  violatorPhone: text("violator_phone"),
+  animalId: integer("animal_id"), // reference to animals table if applicable
+  description: text("description").notNull(),
+  fineAmount: real("fine_amount"),
+  status: text("status").notNull().default("active"), // active, paid, contested, dismissed
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -65,6 +115,18 @@ export const insertIncidentUnitSchema = createInsertSchema(incidentUnits).omit({
   assignedAt: true,
 });
 
+export const insertAnimalSchema = createInsertSchema(animals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEnforcementReportSchema = createInsertSchema(enforcementReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Incident = typeof incidents.$inferSelect;
@@ -73,3 +135,7 @@ export type Unit = typeof units.$inferSelect;
 export type InsertUnit = z.infer<typeof insertUnitSchema>;
 export type IncidentUnit = typeof incidentUnits.$inferSelect;
 export type InsertIncidentUnit = z.infer<typeof insertIncidentUnitSchema>;
+export type Animal = typeof animals.$inferSelect;
+export type InsertAnimal = z.infer<typeof insertAnimalSchema>;
+export type EnforcementReport = typeof enforcementReports.$inferSelect;
+export type InsertEnforcementReport = z.infer<typeof insertEnforcementReportSchema>;
