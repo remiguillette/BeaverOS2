@@ -8,9 +8,23 @@ import { Input } from "@/components/ui/input";
 import { ServiceHeader } from "@/components/service-header";
 import { FileText, Upload, Shield, Clock, Hash, User, CheckCircle, FileCheck } from "lucide-react";
 
+interface ProcessedDocument {
+  id: string;
+  title: string;
+  uid: string;
+  token: string;
+  hash: string;
+  status: string;
+  timestamp: string;
+  author: string;
+  originalFileName: string;
+}
+
 export default function BeaverDoc() {
   const [, setLocation] = useLocation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [processedDocuments, setProcessedDocuments] = useState<ProcessedDocument[]>([]);
+  const [auditLog, setAuditLog] = useState<{action: string; timestamp: string; description: string}[]>([]);
 
   // Debug log to see if selectedFile is properly updated
   console.log("Current selectedFile:", selectedFile);
@@ -23,10 +37,57 @@ export default function BeaverDoc() {
   };
 
   const handleProcessDocument = () => {
-    console.log("Processing document:", selectedFile?.name);
-    // Here you would typically upload the file to the server
-    // For now, we'll just show a success message
-    alert(`Document "${selectedFile?.name}" processed successfully! UID generated: UID-${new Date().toISOString().replace(/[:.]/g, '').slice(0, 15)}-RG`);
+    if (!selectedFile) return;
+    
+    console.log("Processing document:", selectedFile.name);
+    
+    // Generate unique identifiers
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
+    const uid = `UID-${timestamp}-RG${String(processedDocuments.length + 4).padStart(2, '0')}`;
+    const token = `TK-${Math.random().toString(36).substr(2, 12).toUpperCase()}`;
+    const hash = Math.random().toString(36).substr(2, 32);
+    const docId = `DOC-2025-${String(processedDocuments.length + 4).padStart(3, '0')}`;
+    
+    // Create processed document
+    const newDocument: ProcessedDocument = {
+      id: docId,
+      title: selectedFile.name.replace(/\.pdf$/i, ''),
+      uid: uid,
+      token: token,
+      hash: hash,
+      status: "Processed",
+      timestamp: new Date().toLocaleString('en-CA', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      }).replace(/,/, ''),
+      author: "Rémi Guillette",
+      originalFileName: selectedFile.name
+    };
+    
+    // Add to processed documents
+    setProcessedDocuments(prev => [newDocument, ...prev]);
+    
+    // Add audit log entry
+    const auditEntry = {
+      action: "Document Processed",
+      timestamp: new Date().toLocaleString('en-CA', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      }).replace(/,/, ''),
+      description: `${selectedFile.name} processed with ${uid}`
+    };
+    setAuditLog(prev => [auditEntry, ...prev]);
+    
+    // Show success message
+    alert(`Document "${selectedFile.name}" processed successfully! UID generated: ${uid}`);
     setSelectedFile(null);
   };
 
@@ -108,6 +169,47 @@ export default function BeaverDoc() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* Show processed documents first */}
+                  {processedDocuments.map((doc) => (
+                    <div key={doc.id} className="border rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold">{doc.title}</h3>
+                          <p className="text-sm text-muted-foreground">Document ID: {doc.id}</p>
+                          <p className="text-xs text-green-600 dark:text-green-400">Recently Processed</p>
+                        </div>
+                        <Badge variant={doc.status === "Signed" ? "default" : doc.status === "Processed" ? "secondary" : "outline"}>
+                          {doc.status}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">UID:</span> {doc.uid}
+                        </div>
+                        <div>
+                          <span className="font-medium">Token:</span> {doc.token}
+                        </div>
+                        <div>
+                          <span className="font-medium">Hash:</span> {doc.hash.substring(0, 16)}...
+                        </div>
+                        <div>
+                          <span className="font-medium">Timestamp:</span> {doc.timestamp}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <FileCheck className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Shield className="h-4 w-4 mr-1" />
+                          Verify
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Show sample documents */}
                   {sampleDocuments.map((doc) => (
                     <div key={doc.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
@@ -145,6 +247,14 @@ export default function BeaverDoc() {
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Show message if no documents */}
+                  {processedDocuments.length === 0 && sampleDocuments.length === 0 && (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No documents processed yet. Upload a PDF to get started.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -298,6 +408,20 @@ export default function BeaverDoc() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
+                  {/* Show new audit entries first */}
+                  {auditLog.map((entry, index) => (
+                    <div key={index} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="font-medium">{entry.action}</span>
+                        <span className="text-sm text-muted-foreground">{entry.timestamp}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {entry.description}
+                      </p>
+                    </div>
+                  ))}
+                  
+                  {/* Show sample audit entries */}
                   <div className="border rounded-lg p-3">
                     <div className="flex justify-between items-start mb-1">
                       <span className="font-medium">Document Processed</span>
@@ -325,6 +449,14 @@ export default function BeaverDoc() {
                       Contract Agreement - Smith Industries uploaded and processed
                     </p>
                   </div>
+                  
+                  {/* Show message if no audit entries */}
+                  {auditLog.length === 0 && (
+                    <div className="text-center py-4">
+                      <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">No recent activity</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
