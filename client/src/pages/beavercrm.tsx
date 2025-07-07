@@ -247,19 +247,19 @@ export default function BeaverCRM() {
 
               <Tabs defaultValue="identity" className="w-full">
                 <TabsList className="grid w-full grid-cols-4 bg-beaver-surface-light">
-                  <TabsTrigger value="identity" className="data-[state=active]:bg-beaver-orange">
+                  <TabsTrigger value="identity" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
                     <User className="w-4 h-4 mr-2" />
                     Identity
                   </TabsTrigger>
-                  <TabsTrigger value="contact" className="data-[state=active]:bg-beaver-orange">
+                  <TabsTrigger value="contact" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
                     <Phone className="w-4 h-4 mr-2" />
                     Contact
                   </TabsTrigger>
-                  <TabsTrigger value="professional" className="data-[state=active]:bg-beaver-orange">
+                  <TabsTrigger value="professional" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
                     <Building className="w-4 h-4 mr-2" />
                     Professional
                   </TabsTrigger>
-                  <TabsTrigger value="notes" className="data-[state=active]:bg-beaver-orange">
+                  <TabsTrigger value="notes" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
                     <FileText className="w-4 h-4 mr-2" />
                     Notes
                   </TabsTrigger>
@@ -516,10 +516,10 @@ function CustomerForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Tabs defaultValue="identity" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-beaver-surface-light">
-            <TabsTrigger value="identity">Identity</TabsTrigger>
-            <TabsTrigger value="contact">Contact</TabsTrigger>
-            <TabsTrigger value="professional">Professional</TabsTrigger>
-            <TabsTrigger value="notes">Notes</TabsTrigger>
+            <TabsTrigger value="identity" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">Identity</TabsTrigger>
+            <TabsTrigger value="contact" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">Contact</TabsTrigger>
+            <TabsTrigger value="professional" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">Professional</TabsTrigger>
+            <TabsTrigger value="notes" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">Notes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="identity" className="space-y-4">
