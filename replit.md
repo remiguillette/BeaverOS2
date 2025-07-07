@@ -33,10 +33,12 @@ BEAVERNET is a full-stack web application built with a modern tech stack featuri
 ## Key Components
 
 ### Authentication System
+- HTTP Basic Authentication implemented on backend
 - Custom authentication hook (`useAuth`) with session storage
 - Protected and public route components
-- Login/logout functionality with hardcoded credentials (admin/admin123)
+- Login/logout functionality with credentials (remiguillette/MC44rg99qc@)
 - Session persistence across browser refreshes
+- All API requests include Basic Auth headers automatically
 
 ### Database Schema
 - **Users Table**: Basic user management with username/password
@@ -91,6 +93,7 @@ BEAVERNET is a full-stack web application built with a modern tech stack featuri
 
 ## Changelog
 - July 07, 2025. Initial setup
+- July 07, 2025. Changed authentication from client-side to HTTP Basic Authentication on backend
 
 ## User Preferences
 

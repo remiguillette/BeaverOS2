@@ -21,21 +21,26 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate a brief loading state
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const success = login(username, password);
-    
-    if (success) {
+    try {
+      const success = await login(username, password);
+      
+      if (success) {
+        toast({
+          title: "Login successful",
+          description: "Welcome to BEAVERNET",
+        });
+        setLocation("/dashboard");
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid credentials. Please check your username and password",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Login successful",
-        description: "Welcome to BEAVERNET",
-      });
-      setLocation("/dashboard");
-    } else {
-      toast({
-        title: "Login failed",
-        description: "Invalid credentials. Please use admin/admin123",
+        title: "Login error",
+        description: "Unable to connect to authentication server",
         variant: "destructive",
       });
     }
@@ -107,7 +112,7 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">Default credentials: admin / admin123</p>
+            <p className="text-sm text-gray-500">Default credentials: remiguillette / MC44rg99qc@</p>
           </div>
         </CardContent>
       </Card>

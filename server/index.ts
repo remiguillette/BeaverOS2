@@ -1,10 +1,36 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import "./types";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Basic authentication middleware
+const basicAuth = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="BEAVERNET System"');
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  
+  const credentials = Buffer.from(authHeader.split(' ')[1], 'base64').toString('utf-8');
+  const [username, password] = credentials.split(':');
+  
+  // Use the same credentials from the client
+  if (username === 'remiguillette' && password === 'MC44rg99qc@') {
+    req.user = { username, name: 'Admin User' };
+    next();
+  } else {
+    res.setHeader('WWW-Authenticate', 'Basic realm="BEAVERNET System"');
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+};
+
+// Apply basic auth to all API routes
+app.use('/api', basicAuth);
 
 app.use((req, res, next) => {
   const start = Date.now();
