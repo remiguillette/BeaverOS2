@@ -32,7 +32,7 @@ const services = [
   {
     id: "beaverdoc",
     name: "BeaverDoc",
-    description: "Surveillance des documents",
+    description: "Legal Document Traceability",
     port: ":5005",
     icon: "doc",
   },
@@ -77,6 +77,8 @@ export default function Dashboard() {
       setLocation("/BeaverLaw");
     } else if (service.id === "beavercrm") {
       setLocation("/BeaverCRM");
+    } else if (service.id === "beaverdoc") {
+      setLocation("/BeaverDoc");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} not yet implemented`);
