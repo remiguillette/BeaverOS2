@@ -100,11 +100,11 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3">
         <div 
           ref={mapContainerRef}
           className={`relative bg-gray-800 border border-gray-700 rounded-lg overflow-hidden ${
-            isFullscreen ? 'h-[calc(100vh-200px)]' : 'h-96'
+            isFullscreen ? 'h-[calc(100vh-200px)]' : 'h-full min-h-[400px]'
           }`}
           style={{
             backgroundImage: `
@@ -177,41 +177,37 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
           })}
 
           {/* Map legend */}
-          <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white text-xs p-3 rounded-lg">
-            <div className="space-y-2">
-              <div className="font-semibold mb-2">Legend</div>
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                  <span>High Priority</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
-                  <span>Medium Priority</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                  <span>Low Priority</span>
-                </div>
-              </div>
-              <div className="border-t border-gray-600 mt-2 pt-2 space-y-1">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
-                    <Shield className="w-2 h-2 text-white" />
+          <div className="absolute bottom-2 left-2 bg-black bg-opacity-80 text-white text-xs p-2 rounded">
+            <div className="space-y-1">
+              <div className="font-semibold text-xs mb-1">Legend</div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>High</span>
                   </div>
-                  <span>Available</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
-                    <Shield className="w-2 h-2 text-white" />
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span>Med</span>
                   </div>
-                  <span>Responding</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-red-500 rounded flex items-center justify-center">
-                    <Shield className="w-2 h-2 text-white" />
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Low</span>
                   </div>
-                  <span>Busy</span>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded"></div>
+                    <span>Avail</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded"></div>
+                    <span>Resp</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-red-500 rounded"></div>
+                    <span>Busy</span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -217,201 +217,234 @@ export default function BeaverPatch() {
           </Card>
         </div>
 
-        {/* Main Interface Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {/* Incidents Panel */}
-          <div className="space-y-6">
-            <Card className="bg-beaver-surface border-beaver-surface-light">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-beaver-orange">Incident Dashboard</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <div className="relative">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <Input
-                        placeholder="Search incidents..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 bg-beaver-surface-light border-gray-600 text-white w-64"
-                      />
+        {/* Main Interface */}
+        <div className="space-y-6">
+          {/* Top Row: Incident Dashboard and Map */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Incidents Panel - Takes 2/3 width */}
+            <div className="lg:col-span-2">
+              <Card className="bg-beaver-surface border-beaver-surface-light h-full">
+                <CardHeader className="pb-4">
+                  <div className="flex flex-col space-y-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-beaver-orange">Incident Dashboard</CardTitle>
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <Input
+                          placeholder="Search incidents..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 bg-beaver-surface-light border-gray-600 text-white w-64"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <Select value={filterType} onValueChange={setFilterType}>
+                        <SelectTrigger className="w-48 bg-beaver-surface-light border-gray-600 text-white">
+                          <SelectValue placeholder="Filter by type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="medical">Medical</SelectItem>
+                          <SelectItem value="fire">Fire</SelectItem>
+                          <SelectItem value="accident">Accident</SelectItem>
+                          <SelectItem value="assault">Assault</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="w-48 bg-beaver-surface-light border-gray-600 text-white">
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="dispatched">Dispatched</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="resolved">Resolved</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-4 pt-2">
-                  <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="w-48 bg-beaver-surface-light border-gray-600 text-white">
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="medical">Medical</SelectItem>
-                      <SelectItem value="fire">Fire</SelectItem>
-                      <SelectItem value="accident">Accident</SelectItem>
-                      <SelectItem value="assault">Assault</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-48 bg-beaver-surface-light border-gray-600 text-white">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="dispatched">Dispatched</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="resolved">Resolved</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {loadingIncidents ? (
-                    <div className="text-center text-gray-400 py-8">Loading incidents...</div>
-                  ) : filteredIncidents.length === 0 ? (
-                    <div className="text-center text-gray-400 py-8">No incidents found</div>
-                  ) : (
-                    filteredIncidents.map((incident) => (
-                      <div
-                        key={incident.id}
-                        className={`p-4 rounded-lg border-l-4 cursor-pointer transition-all ${
-                          selectedIncident?.id === incident.id
-                            ? "bg-beaver-surface-light border-beaver-orange"
-                            : "bg-gray-800 border-gray-600 hover:bg-gray-700"
-                        }`}
-                        onClick={() => setSelectedIncident(incident)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Badge className={getIncidentPriorityColor(incident.priority)}>
-                                {incident.priority.toUpperCase()}
-                              </Badge>
-                              <span className="text-white font-medium">{incident.incidentNumber}</span>
-                              <span className={`text-sm ${getStatusColor(incident.status)}`}>
-                                {incident.status}
-                              </span>
-                            </div>
-                            <div className="text-sm text-gray-300 mb-2">
-                              <div className="flex items-center space-x-2">
-                                <Zap className="w-4 h-4 text-yellow-400" />
-                                <span>{incident.type}</span>
-                              </div>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                <span>{incident.address}</span>
-                              </div>
-                            </div>
-                            <div className="text-sm text-gray-400 truncate">
-                              {incident.description}
-                            </div>
-                          </div>
-                          <div className="text-xs text-gray-500 ml-4">
-                            {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Unit Assignment Panel */}
-            {selectedIncident && (
-              <Card className="bg-beaver-surface border-beaver-surface-light">
-                <CardHeader>
-                  <CardTitle className="text-lg text-beaver-orange">Assign Units</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-beaver-surface-light rounded-lg">
-                      <div className="text-sm text-gray-300 mb-2">
-                        <strong>Selected:</strong> {selectedIncident.incidentNumber}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {selectedIncident.type} - {selectedIncident.address}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-300 font-medium">Available Units:</div>
-                      {availableUnits.length === 0 ? (
-                        <div className="text-sm text-gray-400">No units available</div>
-                      ) : (
-                        availableUnits.map((unit) => (
-                          <div key={unit.id} className="flex items-center justify-between p-2 bg-gray-800 rounded">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                                {getUnitTypeIcon(unit.type)}
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                    {loadingIncidents ? (
+                      <div className="text-center text-gray-400 py-8">Loading incidents...</div>
+                    ) : filteredIncidents.length === 0 ? (
+                      <div className="text-center text-gray-400 py-8">No incidents found</div>
+                    ) : (
+                      filteredIncidents.map((incident) => (
+                        <div
+                          key={incident.id}
+                          className={`p-4 rounded-lg border-l-4 cursor-pointer transition-all ${
+                            selectedIncident?.id === incident.id
+                              ? "bg-beaver-surface-light border-beaver-orange"
+                              : "bg-gray-800 border-gray-600 hover:bg-gray-700"
+                          }`}
+                          onClick={() => setSelectedIncident(incident)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Badge className={getIncidentPriorityColor(incident.priority)}>
+                                  {incident.priority.toUpperCase()}
+                                </Badge>
+                                <span className="text-white font-medium">{incident.incidentNumber}</span>
+                                <span className={`text-sm ${getStatusColor(incident.status)}`}>
+                                  {incident.status}
+                                </span>
                               </div>
-                              <div>
-                                <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
-                                <div className="text-xs text-gray-400">{unit.currentLocation}</div>
+                              <div className="text-sm text-gray-300 mb-2">
+                                <div className="flex items-center space-x-2">
+                                  <Zap className="w-4 h-4 text-yellow-400" />
+                                  <span>{incident.type}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 mt-1">
+                                  <MapPin className="w-4 h-4 text-gray-400" />
+                                  <span>{incident.address}</span>
+                                </div>
+                              </div>
+                              <div className="text-sm text-gray-400 truncate">
+                                {incident.description}
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              onClick={() => assignUnitMutation.mutate({ 
-                                incidentId: selectedIncident.id, 
-                                unitId: unit.id 
-                              })}
-                              disabled={assignUnitMutation.isPending}
-                              className="bg-beaver-orange hover:bg-orange-600 text-black"
-                            >
-                              Assign
-                            </Button>
+                            <div className="text-xs text-gray-500 ml-4">
+                              {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}
+                            </div>
                           </div>
-                        ))
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Map Panel - Takes 1/3 width */}
+            <div className="lg:col-span-1">
+              <DispatchMap
+                incidents={incidents}
+                units={units}
+                onIncidentSelect={setSelectedIncident}
+                className="h-full min-h-[500px]"
+              />
+            </div>
+          </div>
+
+          {/* Bottom Row: Unit Assignment and Unit Status */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Unit Assignment Panel */}
+            {selectedIncident ? (
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader>
+                  <CardTitle className="text-lg text-beaver-orange">Assign Units to Incident</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-beaver-surface-light rounded-lg border border-beaver-orange/30">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <Badge className={getIncidentPriorityColor(selectedIncident.priority)}>
+                          {selectedIncident.priority.toUpperCase()}
+                        </Badge>
+                        <span className="text-white font-medium">{selectedIncident.incidentNumber}</span>
+                      </div>
+                      <div className="text-sm text-gray-300">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Zap className="w-4 h-4 text-yellow-400" />
+                          <span>{selectedIncident.type}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span>{selectedIncident.address}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="text-sm text-gray-300 font-medium">Available Units:</div>
+                      {availableUnits.length === 0 ? (
+                        <div className="text-sm text-gray-400 p-4 bg-gray-800 rounded-lg text-center">
+                          No units currently available
+                        </div>
+                      ) : (
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                          {availableUnits.map((unit) => (
+                            <div key={unit.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                  {getUnitTypeIcon(unit.type)}
+                                </div>
+                                <div>
+                                  <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
+                                  <div className="text-xs text-gray-400">{unit.type} • {unit.currentLocation}</div>
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => assignUnitMutation.mutate({ 
+                                  incidentId: selectedIncident.id, 
+                                  unitId: unit.id 
+                                })}
+                                disabled={assignUnitMutation.isPending}
+                                className="bg-beaver-orange hover:bg-orange-600 text-black font-medium"
+                              >
+                                {assignUnitMutation.isPending ? "Assigning..." : "Assign"}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
                 </CardContent>
               </Card>
+            ) : (
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardContent className="flex items-center justify-center h-64">
+                  <div className="text-center text-gray-400">
+                    <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-500" />
+                    <p className="text-lg font-medium">Select an Incident</p>
+                    <p className="text-sm">Click on an incident from the dashboard to assign units</p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </div>
-
-          {/* Map and Units Panel */}
-          <div className="space-y-6">
-            <DispatchMap
-              incidents={incidents}
-              units={units}
-              onIncidentSelect={setSelectedIncident}
-              className="h-96"
-            />
 
             {/* Units Status Panel */}
             <Card className="bg-beaver-surface border-beaver-surface-light">
               <CardHeader>
-                <CardTitle className="text-lg text-beaver-orange">Unit Status</CardTitle>
+                <CardTitle className="text-lg text-beaver-orange">Unit Status Overview</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
+                <div className="space-y-3 max-h-80 overflow-y-auto">
                   {loadingUnits ? (
-                    <div className="text-center text-gray-400 py-4">Loading units...</div>
+                    <div className="text-center text-gray-400 py-8">Loading units...</div>
                   ) : (
                     units.map((unit) => (
-                      <div key={unit.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                      <div key={unit.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white ${
                             unit.status === "available" ? "bg-green-500" :
                             unit.status === "dispatched" ? "bg-yellow-500" :
                             unit.status === "responding" ? "bg-blue-500" :
                             unit.status === "busy" ? "bg-red-500" :
+                            unit.status === "enroute" ? "bg-orange-500" :
                             "bg-gray-500"
                           }`}>
                             {getUnitTypeIcon(unit.type)}
                           </div>
                           <div>
                             <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
-                            <div className="text-xs text-gray-400">{unit.currentLocation}</div>
+                            <div className="text-xs text-gray-400">{unit.type} • {unit.currentLocation}</div>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className={`text-sm font-medium ${getUnitStatusColor(unit.status)}`}>
                             {unit.status.replace("_", " ").toUpperCase()}
                           </div>
-                          <div className="text-xs text-gray-400">{unit.type}</div>
+                          <div className="text-xs text-gray-500">
+                            {unit.updatedAt ? new Date(unit.updatedAt).toLocaleTimeString() : ""}
+                          </div>
                         </div>
                       </div>
                     ))
