@@ -52,13 +52,13 @@ export default function Login() {
             <img src={beaverImage} alt="Beaver" className="w-12 h-12 object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-beaver-orange mb-2">BEAVERNET</h1>
-          <p className="text-gray-400">Business Management System</p>
+          <p className="text-gray-400"></p>
         </div>
 
         {/* Login Form */}
         <Card className="bg-beaver-surface border-beaver-surface-light">
           <CardHeader className="text-center pb-6">
-            <h2 className="text-2xl font-semibold text-white">Welcome Back</h2>
+            <h2 className="text-2xl font-semibold text-white"></h2>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
