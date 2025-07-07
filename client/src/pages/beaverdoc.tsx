@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ServiceHeader } from "@/components/service-header";
-import { FileText, Upload, Shield, Clock, Hash, User, CheckCircle, FileCheck } from "lucide-react";
+import { FileText, Upload, Shield, Clock, Hash, User, CheckCircle, FileCheck, ExternalLink, Download, Eye } from "lucide-react";
 
 interface ProcessedDocument {
   id: string;
@@ -25,6 +26,7 @@ export default function BeaverDoc() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [processedDocuments, setProcessedDocuments] = useState<ProcessedDocument[]>([]);
   const [auditLog, setAuditLog] = useState<{action: string; timestamp: string; description: string}[]>([]);
+  const [viewingDocument, setViewingDocument] = useState<ProcessedDocument | null>(null);
 
   // Debug log to see if selectedFile is properly updated
   console.log("Current selectedFile:", selectedFile);
@@ -97,21 +99,21 @@ export default function BeaverDoc() {
 
   const handleViewDocument = (doc: ProcessedDocument | any) => {
     console.log("Viewing document:", doc.title);
-    const docInfo = `Document Details:
-    
-Title: ${doc.title}
-Document ID: ${doc.id}
-UID: ${doc.uid}
-Token: ${doc.token}
-Hash: ${doc.hash}
-Status: ${doc.status}
-Timestamp: ${doc.timestamp}
-Author: ${doc.author}
-${doc.originalFileName ? `Original File: ${doc.originalFileName}` : ''}
+    setViewingDocument(doc);
+  };
 
-This document has been processed with secure identifiers and is ready for legal validation.`;
+  const handleOpenPDF = (doc: ProcessedDocument) => {
+    // In a real application, this would open the actual PDF file
+    // For now, we'll simulate opening a PDF viewer
+    console.log("Opening PDF for document:", doc.title);
     
-    alert(docInfo);
+    // Create a mock PDF URL or open in new tab
+    const mockPdfUrl = `data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsO`; // Mock PDF data
+    
+    // In real implementation, you would have the actual PDF file URL
+    // window.open(doc.pdfUrl, '_blank');
+    
+    alert(`PDF Viewer would open here for: ${doc.title}\n\nIn a real application, this would open the actual PDF file in a new tab or embedded viewer.`);
   };
 
   const handleVerifyDocument = (doc: ProcessedDocument | any) => {
@@ -528,6 +530,109 @@ This document has passed all security verification checks and maintains its lega
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Document View Dialog */}
+      <Dialog open={!!viewingDocument} onOpenChange={() => setViewingDocument(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Document Details
+            </DialogTitle>
+            <DialogDescription>
+              Complete information and security metadata for this document
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingDocument && (
+            <div className="space-y-6">
+              {/* Document Title and Status */}
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold">{viewingDocument.title}</h3>
+                  <p className="text-sm text-muted-foreground">Document ID: {viewingDocument.id}</p>
+                  {viewingDocument.originalFileName && (
+                    <p className="text-xs text-muted-foreground">Original File: {viewingDocument.originalFileName}</p>
+                  )}
+                </div>
+                <Badge variant={viewingDocument.status === "Signed" ? "default" : viewingDocument.status === "Processed" ? "secondary" : "outline"}>
+                  {viewingDocument.status}
+                </Badge>
+              </div>
+
+              {/* Security Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Hash className="h-4 w-4" />
+                      Security Identifiers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <div>
+                      <span className="font-medium">UID:</span>
+                      <p className="font-mono text-xs break-all">{viewingDocument.uid}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Token:</span>
+                      <p className="font-mono text-xs">{viewingDocument.token}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Hash:</span>
+                      <p className="font-mono text-xs break-all">{viewingDocument.hash}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Document Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <div>
+                      <span className="font-medium">Author:</span>
+                      <p>{viewingDocument.author}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Processed:</span>
+                      <p>{viewingDocument.timestamp}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Status:</span>
+                      <p>{viewingDocument.status}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-between items-center pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  This document has been processed with secure identifiers and is ready for legal validation.
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => handleOpenPDF(viewingDocument)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Open PDF
+                  </Button>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                  <Button variant="outline">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
