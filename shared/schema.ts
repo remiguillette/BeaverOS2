@@ -167,6 +167,7 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
   createdAt: true,
   updatedAt: true,
 }).extend({
+  customerId: z.string().optional(),
   dateOfBirth: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
 });
 

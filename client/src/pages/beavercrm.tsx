@@ -20,20 +20,23 @@ import { insertCustomerSchema, type Customer, type InsertCustomer } from "@share
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 
-type CustomerFormData = z.infer<typeof insertCustomerSchema>;
+type CustomerFormData = z.infer<typeof customerFormSchema>;
 
-const customerFormSchema = insertCustomerSchema.extend({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  homePhone: z.string().optional(),
-  workPhone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-});
+const customerFormSchema = insertCustomerSchema
+  .omit({ customerId: true, dateOfBirth: true })
+  .extend({
+    customerId: z.string().optional(),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address").optional().or(z.literal("")),
+    homePhone: z.string().optional(),
+    workPhone: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+  });
 
 export default function BeaverCRM() {
   const [, setLocation] = useLocation();
@@ -474,9 +477,16 @@ function CustomerForm({
 
   const createMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
+      // Transform the data to match backend expectations
+      const transformedData = {
+        ...data,
+        customerId: data.customerId || "", // Backend will auto-generate if empty
+        dateOfBirth: data.dateOfBirth ? data.dateOfBirth : undefined,
+      };
+      
       return apiRequest<Customer>("/api/customers", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(transformedData),
       });
     },
     onSuccess: () => {
