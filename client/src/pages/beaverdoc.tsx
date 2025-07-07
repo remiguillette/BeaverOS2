@@ -76,7 +76,12 @@ export default function BeaverDoc() {
       const hash = await calculateSHA256(arrayBuffer);
       
       // Convert ArrayBuffer to base64 for storage
-      const base64Data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const uint8Array = new Uint8Array(arrayBuffer);
+      let binaryString = '';
+      for (let i = 0; i < uint8Array.length; i++) {
+        binaryString += String.fromCharCode(uint8Array[i]);
+      }
+      const base64Data = btoa(binaryString);
       
       // Create document data for API
       const documentData: InsertDocument = {
