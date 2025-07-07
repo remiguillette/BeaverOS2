@@ -44,7 +44,8 @@ export default function Login() {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="min-h-screen bg-beaver-dark flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
       {/* Logo and Title Section */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-black rounded-xl mb-4 border-2 border-beaver-orange">
@@ -110,6 +111,7 @@ export default function Login() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
