@@ -28,13 +28,7 @@ const services = [
     port: ":5002",
     icon: "person",
   },
-  {
-    id: "beaverscanner",
-    name: "BeaverScanner",
-    description: "Lecture automatisée de plaques d'immatriculation",
-    port: ":5003",
-    icon: "scan",
-  },
+
   {
     id: "beaverdoc",
     name: "BeaverDoc",

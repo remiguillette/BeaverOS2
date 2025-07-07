@@ -2,7 +2,7 @@
 
 ## Overview
 
-BEAVERNET is a full-stack web application built with a modern tech stack featuring a React frontend with TypeScript, Express.js backend, and PostgreSQL database using Drizzle ORM. The application appears to be a service management dashboard with multiple integrated services like BeaverPatch (CAD system), BeaverLaw (Animal Controls), BeaverScanner (License plate recognition), and others.
+BEAVERNET is a full-stack web application built with a modern tech stack featuring a React frontend with TypeScript, Express.js backend, and PostgreSQL database using Drizzle ORM. The application appears to be a service management dashboard with multiple integrated services like BeaverPatch (CAD system), BeaverLaw (Animal Controls), BeaverCRM (Customer Management), and others.
 
 ## System Architecture
 
@@ -48,7 +48,7 @@ BEAVERNET is a full-stack web application built with a modern tech stack featuri
 ### Service Management Dashboard
 - Service card components for displaying different BEAVERNET services
 - Each service has its own port configuration and icon representation
-- Services include: BeaverPatch, BeaverLaw, BeaverScanner, BeavernetCRM, BeaverDoc, BeaverPay
+- Services include: BeaverPatch, BeaverLaw, BeaverCRM, BeaverDoc, BeaverPay, BeaverMonitor, BeaverDMV
 
 ### Storage Layer
 - Interface-based storage design (`IStorage`) for modularity
@@ -121,6 +121,10 @@ BEAVERNET is a full-stack web application built with a modern tech stack featuri
   - Complete customer CRUD operations with form validation
   - Sample customer data initialization with diverse customer profiles
   - Updated dashboard to replace BeavernetCRM with BeaverCRM on port 5002
+- January 07, 2025. Removed BeaverScanner from dashboard:
+  - Removed BeaverScanner service from dashboard services array
+  - Updated documentation to reflect removal of license plate recognition service
+  - Cleaned up service references in overview and service lists
 
 ## User Preferences
 
