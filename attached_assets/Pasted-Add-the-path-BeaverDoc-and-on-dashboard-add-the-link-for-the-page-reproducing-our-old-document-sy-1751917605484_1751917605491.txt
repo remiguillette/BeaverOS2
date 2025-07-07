@@ -1,0 +1,43 @@
+Add the path /BeaverDoc and on /dashboard, add the link for the page reproducing our old document system. From this information, you can find information on this page.
+
+BeaverDoc - Legal Document Traceability System
+BeaverDoc is a secure document traceability solution that allows you to import PDF documents and directly integrate unique identifiers and security tokens, thus guaranteeing their authenticity and legal value.
+
+About
+BeaverDoc was developed by Rémi Guillette Consulting to offer a reliable document traceability solution. The application adds cryptographic security elements directly to PDF documents in the form of semi-transparent text at the bottom of each page, as well as enhanced security metadata.
+
+Key Features
+Secure Import: Import PDF documents with automatic generation of unique identifiers (UIDs) and traceability tokens
+Internal Document Markup: Direct insertion of identifiers within the document (non-editable)
+Electronic Signature: Ability to electronically sign documents
+Metadata Enrichment: Addition of security metadata (author, creator, hash, timestamp)
+Audit Log: Complete traceability of all document actions
+Document Sharing: Sharing features with permission management
+Security Elements
+Each document processed by BeaverDoc contains:
+
+Unique Identifier (UID): Standardized format including date/time and user/company identifiers
+Traceability Token: Unique security token for each document
+Cryptographic Fingerprint: SHA-256 hash of the original content
+Security Metadata: Complete information on the issuer, date, etc. Visible Markup: Semi-transparent text in the footer on each page
+Technical Architecture
+BeaverDoc is built on a modern architecture using:
+
+Frontend: React, TailwindCSS, ShadcnUI
+Backend: Node.js, Express
+PDF Manipulation: pdf-lib
+Database: In-memory persistence with flexible storage interface
+Installation and Deployment
+
+A main dashboard for document management
+A document viewing interface
+Upload and signing features
+Audit log review
+Use for Legal Auditing
+The system is designed to provide legally admissible evidence through:
+
+Embedding identifiers directly into the document
+Precise timestamps of all actions
+Digital signature with certification of origin
+Cryptographic fingerprint to verify integrity
+License
