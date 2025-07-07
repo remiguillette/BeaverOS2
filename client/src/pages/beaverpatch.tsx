@@ -29,21 +29,15 @@ export default function BeaverPatch() {
 
   const { data: incidents = [], isLoading: loadingIncidents } = useQuery<Incident[]>({
     queryKey: ["/api/incidents"],
-    queryFn: () => apiRequest("/api/incidents"),
   });
 
   const { data: units = [], isLoading: loadingUnits } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
-    queryFn: () => apiRequest("/api/units"),
   });
 
   const assignUnitMutation = useMutation({
     mutationFn: async ({ incidentId, unitId }: { incidentId: number; unitId: number }) => {
-      return await apiRequest(`/api/incidents/${incidentId}/assign`, {
-        method: "POST",
-        body: JSON.stringify({ unitId }),
-        headers: { "Content-Type": "application/json" },
-      });
+      return await apiRequest("POST", `/api/incidents/${incidentId}/assign`, { unitId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
