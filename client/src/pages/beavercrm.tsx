@@ -45,13 +45,11 @@ export default function BeaverCRM() {
   // Fetch customers
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["/api/customers"],
-    queryFn: () => apiRequest<Customer[]>("/api/customers"),
   });
 
   // Search customers
   const { data: searchResults = [] } = useQuery({
-    queryKey: ["/api/customers/search", searchQuery],
-    queryFn: () => apiRequest<Customer[]>(`/api/customers/search?q=${encodeURIComponent(searchQuery)}`),
+    queryKey: [`/api/customers/search?q=${encodeURIComponent(searchQuery)}`],
     enabled: searchQuery.length > 0,
   });
 
