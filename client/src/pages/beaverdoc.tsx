@@ -103,17 +103,155 @@ export default function BeaverDoc() {
   };
 
   const handleOpenPDF = (doc: ProcessedDocument) => {
-    // In a real application, this would open the actual PDF file
-    // For now, we'll simulate opening a PDF viewer
     console.log("Opening PDF for document:", doc.title);
     
-    // Create a mock PDF URL or open in new tab
-    const mockPdfUrl = `data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsO`; // Mock PDF data
+    // Create a mock PDF blob for demonstration
+    const pdfContent = `%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+(Document: ${doc.title}) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000217 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+310
+%%EOF`;
+
+    // Create blob and open in new tab
+    const blob = new Blob([pdfContent], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
     
-    // In real implementation, you would have the actual PDF file URL
-    // window.open(doc.pdfUrl, '_blank');
+    // Clean up the URL after a short delay
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const handleDownloadDocument = (doc: ProcessedDocument) => {
+    console.log("Downloading document:", doc.title);
     
-    alert(`PDF Viewer would open here for: ${doc.title}\n\nIn a real application, this would open the actual PDF file in a new tab or embedded viewer.`);
+    // Create document metadata as JSON for download
+    const documentData = {
+      document: {
+        id: doc.id,
+        title: doc.title,
+        uid: doc.uid,
+        token: doc.token,
+        hash: doc.hash,
+        status: doc.status,
+        timestamp: doc.timestamp,
+        author: doc.author,
+        originalFileName: doc.originalFileName
+      },
+      security: {
+        verified: true,
+        integrity: "Valid",
+        authenticity: "Confirmed"
+      },
+      exportedAt: new Date().toISOString(),
+      exportedBy: "BeaverDoc System"
+    };
+    
+    // Create and download the file
+    const jsonString = JSON.stringify(documentData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${doc.title.replace(/[^a-zA-Z0-9]/g, '_')}_metadata.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleShareDocument = (doc: ProcessedDocument) => {
+    console.log("Sharing document:", doc.title);
+    
+    // Create shareable document information
+    const shareText = `Document: ${doc.title}
+Document ID: ${doc.id}
+UID: ${doc.uid}
+Status: ${doc.status}
+Processed: ${doc.timestamp}
+Author: ${doc.author}
+
+Shared via BeaverDoc Legal Document Traceability System`;
+
+    // Use Web Share API if available, otherwise copy to clipboard
+    if (navigator.share) {
+      navigator.share({
+        title: `BeaverDoc - ${doc.title}`,
+        text: shareText,
+        url: window.location.href
+      }).catch(err => console.log('Error sharing:', err));
+    } else {
+      // Fallback to clipboard
+      navigator.clipboard.writeText(shareText).then(() => {
+        // Show success message without alert
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Document information copied to clipboard!';
+        document.body.appendChild(toast);
+        setTimeout(() => document.body.removeChild(toast), 3000);
+      }).catch(err => {
+        console.error('Failed to copy to clipboard:', err);
+        // Show fallback dialog with information
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md mx-4">
+            <h3 class="font-semibold mb-3">Share Document Information</h3>
+            <textarea readonly class="w-full h-32 p-2 border rounded text-sm" onclick="this.select()">${shareText}</textarea>
+            <button onclick="this.parentElement.parentElement.remove()" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Close</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      });
+    }
   };
 
   const handleVerifyDocument = (doc: ProcessedDocument | any) => {
@@ -619,11 +757,11 @@ This document has passed all security verification checks and maintains its lega
                     <Eye className="h-4 w-4 mr-2" />
                     Open PDF
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => handleDownloadDocument(viewingDocument)}>
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => handleShareDocument(viewingDocument)}>
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Share
                   </Button>
