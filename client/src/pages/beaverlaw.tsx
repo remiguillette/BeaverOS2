@@ -945,6 +945,7 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
   });
 
   const onSubmit = (data: EnforcementReportFormData) => {
+    console.log("Form submitted with data:", data);
     // Generate report number
     const reportNumber = `ER-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
     
@@ -1114,6 +1115,7 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
             type="submit" 
             disabled={createEnforcementReportMutation.isPending}
             className="bg-beaver-orange hover:bg-beaver-orange/90 text-black"
+            onClick={() => console.log("Submit button clicked")}
           >
             {createEnforcementReportMutation.isPending ? "Submitting..." : "Submit"}
           </Button>
