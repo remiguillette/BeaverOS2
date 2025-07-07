@@ -919,7 +919,7 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
       violatorAddress: "",
       violatorPhone: "",
       description: "",
-      fineAmount: undefined,
+      fineAmount: "",
     },
   });
 
@@ -1115,7 +1115,7 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
             disabled={createEnforcementReportMutation.isPending}
             className="bg-beaver-orange hover:bg-beaver-orange/90 text-black"
           >
-            {createEnforcementReportMutation.isPending ? "Creating..." : "Create Report"}
+            {createEnforcementReportMutation.isPending ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </form>
