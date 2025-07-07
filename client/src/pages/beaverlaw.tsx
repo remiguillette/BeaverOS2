@@ -949,8 +949,16 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
     // Generate report number
     const reportNumber = `ER-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
     
-    // Data is already transformed by the schema
-    createEnforcementReportMutation.mutate({ ...data, reportNumber });
+    // Transform data to match backend expectations
+    const transformedData = {
+      ...data,
+      reportNumber,
+      date: new Date(data.date), // Ensure date is a Date object
+      fineAmount: data.fineAmount ? parseFloat(data.fineAmount as string) : undefined, // Convert string to number
+    };
+    
+    console.log("Transformed data:", transformedData);
+    createEnforcementReportMutation.mutate(transformedData);
   };
 
   return (
