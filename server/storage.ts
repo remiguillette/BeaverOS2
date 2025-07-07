@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction } from "@shared/schema";
+import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -73,6 +73,33 @@ export interface IStorage {
   getAllPosTransactions(): Promise<PosTransaction[]>;
   updatePosTransaction(id: number, updates: Partial<PosTransaction>): Promise<PosTransaction | undefined>;
   getPosTransactionByTransactionId(transactionId: string): Promise<PosTransaction | undefined>;
+  
+  // BeaverRisk operations
+  // Risk Location operations
+  createRiskLocation(location: InsertRiskLocation): Promise<RiskLocation>;
+  getRiskLocation(id: number): Promise<RiskLocation | undefined>;
+  getAllRiskLocations(): Promise<RiskLocation[]>;
+  updateRiskLocation(id: number, updates: Partial<RiskLocation>): Promise<RiskLocation | undefined>;
+  
+  // Risk Assessment operations
+  createRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
+  getRiskAssessment(id: number): Promise<RiskAssessment | undefined>;
+  getAllRiskAssessments(): Promise<RiskAssessment[]>;
+  updateRiskAssessment(id: number, updates: Partial<RiskAssessment>): Promise<RiskAssessment | undefined>;
+  
+  // Mitigation Plan operations
+  createMitigationPlan(plan: InsertMitigationPlan): Promise<MitigationPlan>;
+  getMitigationPlan(id: number): Promise<MitigationPlan | undefined>;
+  getAllMitigationPlans(): Promise<MitigationPlan[]>;
+  updateMitigationPlan(id: number, updates: Partial<MitigationPlan>): Promise<MitigationPlan | undefined>;
+  getMitigationPlansByRiskAssessment(riskAssessmentId: number): Promise<MitigationPlan[]>;
+  
+  // Risk Event operations
+  createRiskEvent(event: InsertRiskEvent): Promise<RiskEvent>;
+  getRiskEvent(id: number): Promise<RiskEvent | undefined>;
+  getAllRiskEvents(): Promise<RiskEvent[]>;
+  updateRiskEvent(id: number, updates: Partial<RiskEvent>): Promise<RiskEvent | undefined>;
+  getRiskEventsByAssessment(riskAssessmentId: number): Promise<RiskEvent[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -87,6 +114,10 @@ export class MemStorage implements IStorage {
   private invoices: Map<number, Invoice>;
   private payments: Map<number, Payment>;
   private posTransactions: Map<number, PosTransaction>;
+  private riskLocations: Map<number, RiskLocation>;
+  private riskAssessments: Map<number, RiskAssessment>;
+  private mitigationPlans: Map<number, MitigationPlan>;
+  private riskEvents: Map<number, RiskEvent>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -98,6 +129,10 @@ export class MemStorage implements IStorage {
   private currentInvoiceId: number;
   private currentPaymentId: number;
   private currentPosTransactionId: number;
+  private currentRiskLocationId: number;
+  private currentRiskAssessmentId: number;
+  private currentMitigationPlanId: number;
+  private currentRiskEventId: number;
 
   constructor() {
     this.users = new Map();
@@ -111,6 +146,10 @@ export class MemStorage implements IStorage {
     this.invoices = new Map();
     this.payments = new Map();
     this.posTransactions = new Map();
+    this.riskLocations = new Map();
+    this.riskAssessments = new Map();
+    this.mitigationPlans = new Map();
+    this.riskEvents = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -122,6 +161,10 @@ export class MemStorage implements IStorage {
     this.currentInvoiceId = 1;
     this.currentPaymentId = 1;
     this.currentPosTransactionId = 1;
+    this.currentRiskLocationId = 1;
+    this.currentRiskAssessmentId = 1;
+    this.currentMitigationPlanId = 1;
+    this.currentRiskEventId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -505,6 +548,260 @@ export class MemStorage implements IStorage {
       };
       this.posTransactions.set(id, fullTransaction);
     });
+
+    // Sample BeaverRisk data
+    // Sample risk locations
+    const sampleRiskLocations = [
+      {
+        name: "Beaverton General Hospital",
+        type: "hospital",
+        address: "4805 SW Griffith Dr, Beaverton, OR 97005",
+        latitude: 45.4812,
+        longitude: -122.8039,
+        description: "Major regional hospital with emergency services",
+        capacity: 450,
+        contactInfo: "Emergency: 911, Main: (503) 644-7000",
+        operatingHours: "24/7",
+      },
+      {
+        name: "Beaverton Elementary School",
+        type: "school",
+        address: "12250 SW 5th St, Beaverton, OR 97005",
+        latitude: 45.4890,
+        longitude: -122.8086,
+        description: "K-6 elementary school with 350 students",
+        capacity: 350,
+        contactInfo: "Phone: (503) 356-4200",
+        operatingHours: "Mon-Fri 7:30 AM - 4:00 PM",
+      },
+      {
+        name: "Westside Power Station",
+        type: "power_plant",
+        address: "15600 SW Walker Rd, Beaverton, OR 97006",
+        latitude: 45.4623,
+        longitude: -122.8450,
+        description: "Natural gas power generation facility",
+        capacity: 200,
+        contactInfo: "Emergency: (503) 228-7711",
+        operatingHours: "24/7",
+      },
+      {
+        name: "Fanno Creek Flood Zone",
+        type: "flood_zone",
+        address: "Along Fanno Creek, Beaverton, OR",
+        latitude: 45.4756,
+        longitude: -122.8017,
+        description: "100-year flood plain along Fanno Creek",
+        capacity: null,
+        contactInfo: "City Emergency: (503) 526-2222",
+        operatingHours: null,
+      },
+      {
+        name: "Chemical Processing Plant",
+        type: "industrial",
+        address: "18000 SW Tualatin Valley Hwy, Beaverton, OR 97003",
+        latitude: 45.4534,
+        longitude: -122.8756,
+        description: "Chemical processing facility with hazardous materials",
+        capacity: 50,
+        contactInfo: "Emergency: (503) 644-0500",
+        operatingHours: "24/7",
+      },
+    ];
+
+    sampleRiskLocations.forEach(location => {
+      const id = this.currentRiskLocationId++;
+      const fullLocation: RiskLocation = {
+        ...location,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.riskLocations.set(id, fullLocation);
+    });
+
+    // Sample risk assessments
+    const sampleRiskAssessments = [
+      {
+        title: "Wildfire Risk Assessment - Westside",
+        riskType: "fire",
+        locationId: null,
+        severityScore: 4,
+        probabilityScore: 3,
+        humanImpact: 4,
+        economicImpact: 5,
+        environmentalImpact: 5,
+        riskLevel: "high",
+        description: "High wildfire risk during dry season due to forest interface areas",
+        affectedPopulation: 25000,
+        estimatedDamages: 50000000,
+        lastReviewDate: new Date("2024-08-15"),
+        nextReviewDate: new Date("2025-08-15"),
+        status: "active",
+      },
+      {
+        title: "Fanno Creek Flood Risk",
+        riskType: "flood",
+        locationId: 4,
+        severityScore: 3,
+        probabilityScore: 2,
+        humanImpact: 3,
+        economicImpact: 4,
+        environmentalImpact: 3,
+        riskLevel: "medium",
+        description: "Periodic flooding risk along Fanno Creek during heavy rainfall",
+        affectedPopulation: 1200,
+        estimatedDamages: 2500000,
+        lastReviewDate: new Date("2024-12-01"),
+        nextReviewDate: new Date("2025-12-01"),
+        status: "active",
+      },
+      {
+        title: "Chemical Plant Hazmat Incident",
+        riskType: "hazmat",
+        locationId: 5,
+        severityScore: 5,
+        probabilityScore: 1,
+        humanImpact: 5,
+        economicImpact: 4,
+        environmentalImpact: 5,
+        riskLevel: "critical",
+        description: "Potential chemical release from industrial facility",
+        affectedPopulation: 5000,
+        estimatedDamages: 15000000,
+        lastReviewDate: new Date("2024-11-20"),
+        nextReviewDate: new Date("2025-05-20"),
+        status: "active",
+      },
+    ];
+
+    sampleRiskAssessments.forEach(assessment => {
+      const id = this.currentRiskAssessmentId++;
+      const fullAssessment: RiskAssessment = {
+        ...assessment,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.riskAssessments.set(id, fullAssessment);
+    });
+
+    // Sample mitigation plans
+    const sampleMitigationPlans = [
+      {
+        riskAssessmentId: 1,
+        title: "Defensible Space Creation Program",
+        description: "Establish 100-foot defensible space around homes in wildfire-prone areas",
+        responsibleDepartment: "Fire Prevention",
+        estimatedCost: 150000,
+        timeline: "long_term",
+        priority: "high",
+        status: "in_progress",
+        startDate: new Date("2024-03-01"),
+        targetCompletionDate: new Date("2025-10-31"),
+        actualCompletionDate: null,
+        resources: "2 Fire Prevention Officers, Community Education Materials",
+        successMetrics: "75% compliance rate in high-risk areas",
+        notes: "Working with homeowners associations for coordination",
+      },
+      {
+        riskAssessmentId: 2,
+        title: "Fanno Creek Flood Mitigation",
+        description: "Improve drainage systems and install flood barriers",
+        responsibleDepartment: "Public Works",
+        estimatedCost: 500000,
+        timeline: "short_term",
+        priority: "medium",
+        status: "planned",
+        startDate: new Date("2025-04-01"),
+        targetCompletionDate: new Date("2025-09-30"),
+        actualCompletionDate: null,
+        resources: "Engineering Team, Construction Contractors",
+        successMetrics: "Reduction in flood-affected properties by 60%",
+        notes: "Requires coordination with county drainage authority",
+      },
+      {
+        riskAssessmentId: 3,
+        title: "Chemical Plant Emergency Response Plan",
+        description: "Develop comprehensive emergency response plan for chemical incidents",
+        responsibleDepartment: "Emergency Management",
+        estimatedCost: 75000,
+        timeline: "immediate",
+        priority: "urgent",
+        status: "completed",
+        startDate: new Date("2024-01-15"),
+        targetCompletionDate: new Date("2024-06-30"),
+        actualCompletionDate: new Date("2024-06-15"),
+        resources: "Emergency Management Staff, Hazmat Team",
+        successMetrics: "Response time under 15 minutes",
+        notes: "Plan includes evacuation procedures and shelter-in-place protocols",
+      },
+    ];
+
+    sampleMitigationPlans.forEach(plan => {
+      const id = this.currentMitigationPlanId++;
+      const fullPlan: MitigationPlan = {
+        ...plan,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.mitigationPlans.set(id, fullPlan);
+    });
+
+    // Sample risk events
+    const sampleRiskEvents = [
+      {
+        riskAssessmentId: 1,
+        eventDate: new Date("2024-07-15"),
+        eventType: "incident",
+        title: "Brush Fire - Cooper Mountain",
+        description: "Small brush fire contained within 2 hours",
+        severity: "medium",
+        actualImpact: "5 acres burned, no structures damaged",
+        responseTime: 12,
+        resourcesUsed: "3 fire engines, 1 water tender, 15 personnel",
+        lessonsLearned: "Need better access road to mountain areas",
+        followUpActions: "Improve access roads, add water source",
+      },
+      {
+        riskAssessmentId: 2,
+        eventDate: new Date("2024-11-22"),
+        eventType: "incident",
+        title: "Fanno Creek Flooding",
+        description: "Minor flooding along Fanno Creek after heavy rains",
+        severity: "low",
+        actualImpact: "2 residential properties with minor water damage",
+        responseTime: 45,
+        resourcesUsed: "Public Works crew, 2 pumps, sandbags",
+        lessonsLearned: "Early warning system effective",
+        followUpActions: "Continue monitoring, improve drainage",
+      },
+      {
+        riskAssessmentId: 3,
+        eventDate: new Date("2024-09-10"),
+        eventType: "drill",
+        title: "Chemical Plant Emergency Drill",
+        description: "Quarterly emergency response drill",
+        severity: "low",
+        actualImpact: "Training exercise completed successfully",
+        responseTime: 8,
+        resourcesUsed: "Hazmat team, Emergency Management staff",
+        lessonsLearned: "Communications protocol needs refinement",
+        followUpActions: "Update communication procedures",
+      },
+    ];
+
+    sampleRiskEvents.forEach(event => {
+      const id = this.currentRiskEventId++;
+      const fullEvent: RiskEvent = {
+        ...event,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.riskEvents.set(id, fullEvent);
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -871,6 +1168,135 @@ export class MemStorage implements IStorage {
 
   async getPosTransactionByTransactionId(transactionId: string): Promise<PosTransaction | undefined> {
     return Array.from(this.posTransactions.values()).find(transaction => transaction.transactionId === transactionId);
+  }
+
+  // BeaverRisk CRUD methods
+  // Risk Location operations
+  async createRiskLocation(insertLocation: InsertRiskLocation): Promise<RiskLocation> {
+    const id = this.currentRiskLocationId++;
+    const location: RiskLocation = {
+      ...insertLocation,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.riskLocations.set(id, location);
+    return location;
+  }
+
+  async getRiskLocation(id: number): Promise<RiskLocation | undefined> {
+    return this.riskLocations.get(id);
+  }
+
+  async getAllRiskLocations(): Promise<RiskLocation[]> {
+    return Array.from(this.riskLocations.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async updateRiskLocation(id: number, updates: Partial<RiskLocation>): Promise<RiskLocation | undefined> {
+    const existing = this.riskLocations.get(id);
+    if (!existing) return undefined;
+    
+    const updated: RiskLocation = { ...existing, ...updates, updatedAt: new Date() };
+    this.riskLocations.set(id, updated);
+    return updated;
+  }
+
+  // Risk Assessment operations
+  async createRiskAssessment(insertAssessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    const id = this.currentRiskAssessmentId++;
+    const assessment: RiskAssessment = {
+      ...insertAssessment,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.riskAssessments.set(id, assessment);
+    return assessment;
+  }
+
+  async getRiskAssessment(id: number): Promise<RiskAssessment | undefined> {
+    return this.riskAssessments.get(id);
+  }
+
+  async getAllRiskAssessments(): Promise<RiskAssessment[]> {
+    return Array.from(this.riskAssessments.values()).sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async updateRiskAssessment(id: number, updates: Partial<RiskAssessment>): Promise<RiskAssessment | undefined> {
+    const existing = this.riskAssessments.get(id);
+    if (!existing) return undefined;
+    
+    const updated: RiskAssessment = { ...existing, ...updates, updatedAt: new Date() };
+    this.riskAssessments.set(id, updated);
+    return updated;
+  }
+
+  // Mitigation Plan operations
+  async createMitigationPlan(insertPlan: InsertMitigationPlan): Promise<MitigationPlan> {
+    const id = this.currentMitigationPlanId++;
+    const plan: MitigationPlan = {
+      ...insertPlan,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.mitigationPlans.set(id, plan);
+    return plan;
+  }
+
+  async getMitigationPlan(id: number): Promise<MitigationPlan | undefined> {
+    return this.mitigationPlans.get(id);
+  }
+
+  async getAllMitigationPlans(): Promise<MitigationPlan[]> {
+    return Array.from(this.mitigationPlans.values()).sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async updateMitigationPlan(id: number, updates: Partial<MitigationPlan>): Promise<MitigationPlan | undefined> {
+    const existing = this.mitigationPlans.get(id);
+    if (!existing) return undefined;
+    
+    const updated: MitigationPlan = { ...existing, ...updates, updatedAt: new Date() };
+    this.mitigationPlans.set(id, updated);
+    return updated;
+  }
+
+  async getMitigationPlansByRiskAssessment(riskAssessmentId: number): Promise<MitigationPlan[]> {
+    return Array.from(this.mitigationPlans.values()).filter(plan => plan.riskAssessmentId === riskAssessmentId);
+  }
+
+  // Risk Event operations
+  async createRiskEvent(insertEvent: InsertRiskEvent): Promise<RiskEvent> {
+    const id = this.currentRiskEventId++;
+    const event: RiskEvent = {
+      ...insertEvent,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.riskEvents.set(id, event);
+    return event;
+  }
+
+  async getRiskEvent(id: number): Promise<RiskEvent | undefined> {
+    return this.riskEvents.get(id);
+  }
+
+  async getAllRiskEvents(): Promise<RiskEvent[]> {
+    return Array.from(this.riskEvents.values()).sort((a, b) => b.eventDate.getTime() - a.eventDate.getTime());
+  }
+
+  async updateRiskEvent(id: number, updates: Partial<RiskEvent>): Promise<RiskEvent | undefined> {
+    const existing = this.riskEvents.get(id);
+    if (!existing) return undefined;
+    
+    const updated: RiskEvent = { ...existing, ...updates, updatedAt: new Date() };
+    this.riskEvents.set(id, updated);
+    return updated;
+  }
+
+  async getRiskEventsByAssessment(riskAssessmentId: number): Promise<RiskEvent[]> {
+    return Array.from(this.riskEvents.values()).filter(event => event.riskAssessmentId === riskAssessmentId);
   }
 }
 

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -542,6 +542,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // PayPal endpoints
+  // BeaverRisk endpoints
+  // Risk Location endpoints
+  app.get("/api/risk-locations", async (req, res) => {
+    try {
+      const locations = await storage.getAllRiskLocations();
+      res.json(locations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk locations" });
+    }
+  });
+
+  app.get("/api/risk-locations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const location = await storage.getRiskLocation(id);
+      if (!location) {
+        return res.status(404).json({ error: "Risk location not found" });
+      }
+      res.json(location);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk location" });
+    }
+  });
+
+  app.post("/api/risk-locations", async (req, res) => {
+    try {
+      const validatedData = insertRiskLocationSchema.parse(req.body);
+      const location = await storage.createRiskLocation(validatedData);
+      res.json(location);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid risk location data" });
+    }
+  });
+
+  app.put("/api/risk-locations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertRiskLocationSchema.parse(req.body);
+      const location = await storage.updateRiskLocation(id, validatedData);
+      if (!location) {
+        return res.status(404).json({ error: "Risk location not found" });
+      }
+      res.json(location);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid risk location data" });
+    }
+  });
+
+  // Risk Assessment endpoints
+  app.get("/api/risk-assessments", async (req, res) => {
+    try {
+      const assessments = await storage.getAllRiskAssessments();
+      res.json(assessments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk assessments" });
+    }
+  });
+
+  app.get("/api/risk-assessments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const assessment = await storage.getRiskAssessment(id);
+      if (!assessment) {
+        return res.status(404).json({ error: "Risk assessment not found" });
+      }
+      res.json(assessment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk assessment" });
+    }
+  });
+
+  app.post("/api/risk-assessments", async (req, res) => {
+    try {
+      const validatedData = insertRiskAssessmentSchema.parse(req.body);
+      const assessment = await storage.createRiskAssessment(validatedData);
+      res.json(assessment);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid risk assessment data" });
+    }
+  });
+
+  app.put("/api/risk-assessments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertRiskAssessmentSchema.parse(req.body);
+      const assessment = await storage.updateRiskAssessment(id, validatedData);
+      if (!assessment) {
+        return res.status(404).json({ error: "Risk assessment not found" });
+      }
+      res.json(assessment);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid risk assessment data" });
+    }
+  });
+
+  // Mitigation Plan endpoints
+  app.get("/api/mitigation-plans", async (req, res) => {
+    try {
+      const plans = await storage.getAllMitigationPlans();
+      res.json(plans);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch mitigation plans" });
+    }
+  });
+
+  app.get("/api/mitigation-plans/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const plan = await storage.getMitigationPlan(id);
+      if (!plan) {
+        return res.status(404).json({ error: "Mitigation plan not found" });
+      }
+      res.json(plan);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch mitigation plan" });
+    }
+  });
+
+  app.get("/api/mitigation-plans/risk/:riskId", async (req, res) => {
+    try {
+      const riskId = parseInt(req.params.riskId);
+      const plans = await storage.getMitigationPlansByRiskAssessment(riskId);
+      res.json(plans);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch mitigation plans" });
+    }
+  });
+
+  app.post("/api/mitigation-plans", async (req, res) => {
+    try {
+      const validatedData = insertMitigationPlanSchema.parse(req.body);
+      const plan = await storage.createMitigationPlan(validatedData);
+      res.json(plan);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid mitigation plan data" });
+    }
+  });
+
+  app.put("/api/mitigation-plans/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertMitigationPlanSchema.parse(req.body);
+      const plan = await storage.updateMitigationPlan(id, validatedData);
+      if (!plan) {
+        return res.status(404).json({ error: "Mitigation plan not found" });
+      }
+      res.json(plan);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid mitigation plan data" });
+    }
+  });
+
+  // Risk Event endpoints
+  app.get("/api/risk-events", async (req, res) => {
+    try {
+      const events = await storage.getAllRiskEvents();
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk events" });
+    }
+  });
+
+  app.get("/api/risk-events/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const event = await storage.getRiskEvent(id);
+      if (!event) {
+        return res.status(404).json({ error: "Risk event not found" });
+      }
+      res.json(event);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk event" });
+    }
+  });
+
+  app.get("/api/risk-events/assessment/:assessmentId", async (req, res) => {
+    try {
+      const assessmentId = parseInt(req.params.assessmentId);
+      const events = await storage.getRiskEventsByAssessment(assessmentId);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk events" });
+    }
+  });
+
+  app.post("/api/risk-events", async (req, res) => {
+    try {
+      const validatedData = insertRiskEventSchema.parse(req.body);
+      const event = await storage.createRiskEvent(validatedData);
+      res.json(event);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid risk event data" });
+    }
+  });
+
+  app.put("/api/risk-events/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertRiskEventSchema.parse(req.body);
+      const event = await storage.updateRiskEvent(id, validatedData);
+      if (!event) {
+        return res.status(404).json({ error: "Risk event not found" });
+      }
+      res.json(event);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid risk event data" });
+    }
+  });
+
   app.get("/paypal/setup", async (req, res) => {
     await loadPaypalDefault(req, res);
   });

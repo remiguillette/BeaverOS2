@@ -57,6 +57,13 @@ const services = [
     port: "TBD",
     icon: "id",
   },
+  {
+    id: "beaverisk",
+    name: "BeaverRisk",
+    description: "Risk Assessment & Strategic Planning",
+    port: ":5008",
+    icon: "shield",
+  },
 ];
 
 export default function Dashboard() {
@@ -81,6 +88,8 @@ export default function Dashboard() {
       setLocation("/BeaverDoc");
     } else if (service.id === "beaverpay") {
       setLocation("/BeaverPay");
+    } else if (service.id === "beaverisk") {
+      setLocation("/BeaverRisk");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} not yet implemented`);

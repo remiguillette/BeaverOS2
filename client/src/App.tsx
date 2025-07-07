@@ -11,6 +11,7 @@ import BeaverLaw from "@/pages/beaverlaw";
 import BeaverCRM from "@/pages/beavercrm";
 import BeaverDoc from "@/pages/beaverdoc";
 import BeaverPay from "@/pages/beaverpay";
+import BeaverRisk from "@/pages/beaverisk";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -87,6 +88,11 @@ function Router() {
       <Route path="/BeaverPay">
         <ProtectedRoute>
           <BeaverPay />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/BeaverRisk">
+        <ProtectedRoute>
+          <BeaverRisk />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
