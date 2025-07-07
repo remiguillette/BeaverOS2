@@ -912,6 +912,14 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
       type: "municipal_report",
       status: "active",
       date: new Date(),
+      violationType: "",
+      location: "",
+      officerName: "",
+      violatorName: "",
+      violatorAddress: "",
+      violatorPhone: "",
+      description: "",
+      fineAmount: undefined,
     },
   });
 
