@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Shield, User, Lock } from "lucide-react";
+import { User, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import beaverImage from "@assets/beaver_1751858605395.png";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -48,7 +49,7 @@ export default function Login() {
         {/* Logo and Title Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-beaver-orange rounded-xl mb-4">
-            <Shield className="w-8 h-8 text-black" />
+            <img src={beaverImage} alt="Beaver" className="w-12 h-12 object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-beaver-orange mb-2">BEAVERNET</h1>
           <p className="text-gray-400">Business Management System</p>

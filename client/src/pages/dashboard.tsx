@@ -1,9 +1,10 @@
-import { Shield, LogOut, Boxes, Zap, Activity } from "lucide-react";
+import { LogOut, Boxes, Zap, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ServiceCard } from "@/components/service-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+import beaverImage from "@assets/beaver_1751858605395.png";
 
 const services = [
   {
@@ -88,7 +89,7 @@ export default function Dashboard() {
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-beaver-orange rounded-lg flex items-center justify-center">
-                <Shield className="text-black w-4 h-4" />
+                <img src={beaverImage} alt="Beaver" className="w-6 h-6 object-contain" />
               </div>
               <h1 className="text-xl font-bold text-beaver-orange">BEAVERNET</h1>
             </div>
