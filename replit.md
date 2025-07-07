@@ -94,6 +94,7 @@ BEAVERNET is a full-stack web application built with a modern tech stack featuri
 ## Changelog
 - July 07, 2025. Initial setup
 - July 07, 2025. Changed authentication from client-side to HTTP Basic Authentication on backend
+- July 07, 2025. Added BeaverPatch dedicated page at /BeaverPatch route with CAD system interface
 
 ## User Preferences
 

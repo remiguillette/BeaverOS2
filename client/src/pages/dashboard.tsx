@@ -76,8 +76,13 @@ export default function Dashboard() {
 
   const handleServiceClick = (service: any) => {
     console.log("Navigate to service:", service.id);
-    // In a real application, this would navigate to the specific service
-    // or open it in a new window/tab
+    // Navigate to specific service pages
+    if (service.id === "beaverpatch") {
+      setLocation("/BeaverPatch");
+    } else {
+      // For other services, you can add their routes here
+      console.log(`Service ${service.name} not yet implemented`);
+    }
   };
 
   return (
