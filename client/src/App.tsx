@@ -13,7 +13,16 @@ import BeaverDoc from "@/pages/beaverdoc";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    // Show loading state while checking authentication
+    return (
+      <div className="min-h-screen bg-beaver-dark flex items-center justify-center">
+        <div className="text-beaver-orange text-xl">Loading...</div>
+      </div>
+    );
+  }
   
   if (!isAuthenticated) {
     return <Redirect to="/" />;
@@ -23,7 +32,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    // Show loading state while checking authentication
+    return (
+      <div className="min-h-screen bg-beaver-dark flex items-center justify-center">
+        <div className="text-beaver-orange text-xl">Loading...</div>
+      </div>
+    );
+  }
   
   if (isAuthenticated) {
     return <Redirect to="/dashboard" />;
