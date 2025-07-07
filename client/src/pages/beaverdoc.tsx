@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ServiceHeader } from "@/components/service-header";
 import { FileText, Upload, Shield, Clock, Hash, User, CheckCircle, FileCheck, ExternalLink, Download, Eye } from "lucide-react";
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 interface ProcessedDocument {
   id: string;
@@ -102,128 +103,147 @@ export default function BeaverDoc() {
     setViewingDocument(doc);
   };
 
-  const handleOpenPDF = (doc: ProcessedDocument) => {
+  const handleOpenPDF = async (doc: ProcessedDocument) => {
     console.log("Opening PDF for document:", doc.title);
     
-    // Create a properly formatted PDF with content and security token
-    const pdfContent = `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
-
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
-
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/MediaBox [0 0 612 792]
-/Contents 4 0 R
-/Resources <<
-/Font <<
-/F1 5 0 R
-/F2 6 0 R
->>
->>
->>
-endobj
-
-4 0 obj
-<<
-/Length 800
->>
-stream
-BT
-/F1 18 Tf
-72 720 Td
-(Document: ${doc.title}) Tj
-0 -40 Td
-/F1 12 Tf
-0 -30 Td
-(This is a legally processed document through the BeaverDoc) Tj
-0 -20 Td
-(Legal Document Traceability System.) Tj
-0 -40 Td
-(Document Details:) Tj
-0 -20 Td
-(- Document ID: ${doc.id}) Tj
-0 -20 Td
-(- Status: ${doc.status}) Tj
-0 -20 Td
-(- Author: ${doc.author}) Tj
-0 -20 Td
-(- Processed: ${doc.timestamp}) Tj
-0 -40 Td
-(Security Information:) Tj
-0 -20 Td
-(- UID: ${doc.uid}) Tj
-0 -20 Td
-(- Hash: ${doc.hash}) Tj
-0 -60 Td
-(This document has been digitally processed and secured) Tj
-0 -20 Td
-(with unique identifiers for legal compliance.) Tj
-
-% Security token at bottom right with margin
-/F2 8 Tf
-350 50 Td
-(Signe: DIGITAL_ | ${new Date().toLocaleDateString('en-CA')} ${new Date().toLocaleTimeString('en-CA', {hour12: false})}) Tj
-0 -12 Td
-(BeaverDoc: P1/12 | UID:${doc.uid.split('-')[2]} | Token:${doc.token.split('-')[1]}) Tj
-ET
-endstream
-endobj
-
-5 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica
->>
-endobj
-
-6 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica-Bold
->>
-endobj
-
-xref
-0 7
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000273 00000 n 
-0000001125 00000 n 
-0000001200 00000 n 
-trailer
-<<
-/Size 7
-/Root 1 0 R
->>
-startxref
-1280
-%%EOF`;
-
-    // Create blob and open in new tab
-    const blob = new Blob([pdfContent], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    
-    // Clean up the URL after a short delay
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    try {
+      // Create a new PDF document
+      const pdfDoc = await PDFDocument.create();
+      
+      // Add a page to the document
+      const page = pdfDoc.addPage();
+      const { width, height } = page.getSize();
+      
+      // Get fonts
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      
+      // Document title
+      page.drawText(`Document: ${doc.title}`, {
+        x: 72,
+        y: height - 100,
+        size: 18,
+        font: helveticaBold,
+        color: rgb(0, 0, 0),
+      });
+      
+      // Document content
+      const content = [
+        'This is a legally processed document through the BeaverDoc',
+        'Legal Document Traceability System.',
+        '',
+        'Document Details:',
+        `- Document ID: ${doc.id}`,
+        `- Status: ${doc.status}`,
+        `- Author: ${doc.author}`,
+        `- Processed: ${doc.timestamp}`,
+        '',
+        'Security Information:',
+        `- UID: ${doc.uid}`,
+        `- Token: ${doc.token}`,
+        `- Hash: ${doc.hash}`,
+        '',
+        'This document has been digitally processed and secured',
+        'with unique identifiers for legal compliance.',
+      ];
+      
+      let yPosition = height - 150;
+      content.forEach((line) => {
+        if (line.startsWith('Document Details:') || line.startsWith('Security Information:')) {
+          page.drawText(line, {
+            x: 72,
+            y: yPosition,
+            size: 12,
+            font: helveticaBold,
+            color: rgb(0, 0, 0),
+          });
+        } else {
+          page.drawText(line, {
+            x: 72,
+            y: yPosition,
+            size: 12,
+            font: helveticaFont,
+            color: rgb(0, 0, 0),
+          });
+        }
+        yPosition -= 20;
+      });
+      
+      // Add signature information at the bottom right
+      const now = new Date();
+      const timestamp = now.toLocaleString('en-CA', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false 
+      });
+      
+      // Version simplifiée en format court pour être plus lisible
+      const uidShort = doc.uid.substring(doc.uid.length - 8);
+      const tokenShort = doc.token.substring(doc.token.length - 8);
+      
+      // First line: Digital signature
+      const sigText = `Signé: DIGITAL_ | ${timestamp}`;
+      const sigTextWidth = helveticaFont.widthOfTextAtSize(sigText, 8);
+      const sigX = width - sigTextWidth - 20;
+      
+      // Background rectangle for signature
+      page.drawRectangle({
+        x: sigX - 5,
+        y: 35,
+        width: sigTextWidth + 10,
+        height: 25,
+        color: rgb(1, 1, 1),
+        opacity: 0.8
+      });
+      
+      page.drawText(sigText, {
+        x: sigX,
+        y: 45,
+        size: 8,
+        font: helveticaFont,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      
+      // Second line: BeaverDoc info
+      const beaverText = `BeaverDoc: P1/1 | UID:${uidShort} | Token:${tokenShort}`;
+      const beaverTextWidth = helveticaFont.widthOfTextAtSize(beaverText, 8);
+      const beaverX = width - beaverTextWidth - 20;
+      
+      page.drawText(beaverText, {
+        x: beaverX,
+        y: 32,
+        size: 8,
+        font: helveticaFont,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      
+      // Set PDF metadata
+      pdfDoc.setTitle(`Document sécurisé - ${doc.uid}`);
+      pdfDoc.setAuthor('Rémi Guillette');
+      pdfDoc.setCreator('Rémi Guillette Consulting');
+      pdfDoc.setProducer('BeaverDoc Secure Document System');
+      pdfDoc.setSubject(`Document authentifié par BeaverDoc - UID:${doc.uid} | Token:${doc.token}`);
+      pdfDoc.setKeywords(['document sécurisé', 'authentifié', doc.uid, doc.token, 'Rémi Guillette Consulting']);
+      
+      // Serialize the PDF
+      const pdfBytes = await pdfDoc.save();
+      
+      // Create blob and open in new tab
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      
+      // Clean up the URL after a short delay
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      
+    } catch (error) {
+      console.error('Error creating PDF:', error);
+      alert('Error creating PDF. Please try again.');
+    }
   };
 
   const handleDownloadDocument = (doc: ProcessedDocument) => {
