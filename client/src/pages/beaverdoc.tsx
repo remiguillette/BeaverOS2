@@ -12,10 +12,22 @@ export default function BeaverDoc() {
   const [, setLocation] = useLocation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Debug log to see if selectedFile is properly updated
+  console.log("Current selectedFile:", selectedFile);
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
+      console.log("File selected:", event.target.files[0]);
       setSelectedFile(event.target.files[0]);
     }
+  };
+
+  const handleProcessDocument = () => {
+    console.log("Processing document:", selectedFile?.name);
+    // Here you would typically upload the file to the server
+    // For now, we'll just show a success message
+    alert(`Document "${selectedFile?.name}" processed successfully! UID generated: UID-${new Date().toISOString().replace(/[:.]/g, '').slice(0, 15)}-RG`);
+    setSelectedFile(null);
   };
 
   const handleBackToDashboard = () => {
@@ -157,12 +169,14 @@ export default function BeaverDoc() {
                     <p className="text-muted-foreground mb-4">
                       Drag and drop your PDF file here, or click to browse
                     </p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileUpload}
-                      className="max-w-sm mx-auto"
-                    />
+                    <div className="flex justify-center">
+                      <Input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileUpload}
+                        className="max-w-sm cursor-pointer"
+                      />
+                    </div>
                   </div>
                   
                   {selectedFile && (
@@ -172,7 +186,7 @@ export default function BeaverDoc() {
                         {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
                       </p>
                       <div className="flex gap-2">
-                        <Button>
+                        <Button onClick={handleProcessDocument}>
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Process Document
                         </Button>
