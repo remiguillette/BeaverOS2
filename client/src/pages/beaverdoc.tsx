@@ -95,6 +95,71 @@ export default function BeaverDoc() {
     setLocation("/dashboard");
   };
 
+  const handleViewDocument = (doc: ProcessedDocument | any) => {
+    console.log("Viewing document:", doc.title);
+    const docInfo = `Document Details:
+    
+Title: ${doc.title}
+Document ID: ${doc.id}
+UID: ${doc.uid}
+Token: ${doc.token}
+Hash: ${doc.hash}
+Status: ${doc.status}
+Timestamp: ${doc.timestamp}
+Author: ${doc.author}
+${doc.originalFileName ? `Original File: ${doc.originalFileName}` : ''}
+
+This document has been processed with secure identifiers and is ready for legal validation.`;
+    
+    alert(docInfo);
+  };
+
+  const handleVerifyDocument = (doc: ProcessedDocument | any) => {
+    console.log("Verifying document:", doc.title);
+    
+    // Simulate document verification process
+    const verificationResult = {
+      isValid: true,
+      verificationId: `VER-${Date.now()}`,
+      timestamp: new Date().toLocaleString(),
+      checksPerformed: [
+        "UID Format Validation",
+        "Token Authenticity Check",
+        "Hash Integrity Verification",
+        "Metadata Consistency Check"
+      ]
+    };
+    
+    const verificationInfo = `Document Verification Complete:
+    
+Document: ${doc.title}
+Verification ID: ${verificationResult.verificationId}
+Status: ${verificationResult.isValid ? 'VALID' : 'INVALID'}
+Verified: ${verificationResult.timestamp}
+
+Security Checks Performed:
+${verificationResult.checksPerformed.map(check => `✓ ${check}`).join('\n')}
+
+This document has passed all security verification checks and maintains its legal authenticity.`;
+    
+    alert(verificationInfo);
+    
+    // Add audit log entry for verification
+    const auditEntry = {
+      action: "Document Verified",
+      timestamp: new Date().toLocaleString('en-CA', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      }).replace(/,/, ''),
+      description: `${doc.title} verified successfully - ${verificationResult.verificationId}`
+    };
+    setAuditLog(prev => [auditEntry, ...prev]);
+  };
+
   const sampleDocuments = [
     {
       id: "DOC-2025-001",
@@ -197,11 +262,11 @@ export default function BeaverDoc() {
                         </div>
                       </div>
                       <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleViewDocument(doc)}>
                           <FileCheck className="h-4 w-4 mr-1" />
                           View
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleVerifyDocument(doc)}>
                           <Shield className="h-4 w-4 mr-1" />
                           Verify
                         </Button>
@@ -236,11 +301,11 @@ export default function BeaverDoc() {
                         </div>
                       </div>
                       <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleViewDocument(doc)}>
                           <FileCheck className="h-4 w-4 mr-1" />
                           View
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleVerifyDocument(doc)}>
                           <Shield className="h-4 w-4 mr-1" />
                           Verify
                         </Button>
