@@ -140,6 +140,69 @@ export const documents = pgTable("documents", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  invoiceNumber: text("invoice_number").notNull().unique(),
+  customerId: integer("customer_id"), // reference to customers table
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerAddress: text("customer_address"),
+  amount: real("amount").notNull(),
+  currency: text("currency").notNull().default("USD"),
+  status: text("status").notNull().default("draft"), // draft, sent, paid, overdue, cancelled
+  dueDate: timestamp("due_date"),
+  description: text("description"),
+  items: text("items"), // JSON string of invoice items
+  taxAmount: real("tax_amount").default(0),
+  discountAmount: real("discount_amount").default(0),
+  totalAmount: real("total_amount").notNull(),
+  paymentMethod: text("payment_method"), // paypal, googlepay, cash, check
+  paypalOrderId: text("paypal_order_id"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  paymentId: text("payment_id").notNull().unique(),
+  invoiceId: integer("invoice_id"), // reference to invoices table
+  amount: real("amount").notNull(),
+  currency: text("currency").notNull().default("USD"),
+  paymentMethod: text("payment_method").notNull(), // paypal, googlepay, cash, check
+  paymentStatus: text("payment_status").notNull(), // pending, completed, failed, refunded
+  transactionId: text("transaction_id"), // external transaction ID from payment provider
+  paypalOrderId: text("paypal_order_id"),
+  googlePayToken: text("google_pay_token"),
+  customerName: text("customer_name"),
+  customerEmail: text("customer_email"),
+  description: text("description"),
+  receiptUrl: text("receipt_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const posTransactions = pgTable("pos_transactions", {
+  id: serial("id").primaryKey(),
+  transactionId: text("transaction_id").notNull().unique(),
+  type: text("type").notNull(), // sale, refund, void
+  amount: real("amount").notNull(),
+  currency: text("currency").notNull().default("USD"),
+  paymentMethod: text("payment_method").notNull(), // paypal, googlepay, cash, card
+  customerName: text("customer_name"),
+  customerEmail: text("customer_email"),
+  items: text("items"), // JSON string of POS items
+  taxAmount: real("tax_amount").default(0),
+  discountAmount: real("discount_amount").default(0),
+  totalAmount: real("total_amount").notNull(),
+  paymentStatus: text("payment_status").notNull().default("pending"), // pending, completed, failed, refunded
+  transactionReference: text("transaction_reference"), // external reference
+  receiptNumber: text("receipt_number"),
+  employeeId: text("employee_id"), // which employee processed the transaction
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -191,6 +254,37 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   updatedAt: true,
 });
 
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  dueDate: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+  amount: z.union([z.number(), z.string().transform((str) => Number(str))]),
+  taxAmount: z.union([z.number(), z.string().transform((str) => str === "" ? 0 : Number(str))]).optional(),
+  discountAmount: z.union([z.number(), z.string().transform((str) => str === "" ? 0 : Number(str))]).optional(),
+  totalAmount: z.union([z.number(), z.string().transform((str) => Number(str))]),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  amount: z.union([z.number(), z.string().transform((str) => Number(str))]),
+});
+
+export const insertPosTransactionSchema = createInsertSchema(posTransactions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  amount: z.union([z.number(), z.string().transform((str) => Number(str))]),
+  taxAmount: z.union([z.number(), z.string().transform((str) => str === "" ? 0 : Number(str))]).optional(),
+  discountAmount: z.union([z.number(), z.string().transform((str) => str === "" ? 0 : Number(str))]).optional(),
+  totalAmount: z.union([z.number(), z.string().transform((str) => Number(str))]),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Incident = typeof incidents.$inferSelect;
@@ -207,3 +301,9 @@ export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type PosTransaction = typeof posTransactions.$inferSelect;
+export type InsertPosTransaction = z.infer<typeof insertPosTransactionSchema>;

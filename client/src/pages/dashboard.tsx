@@ -79,6 +79,8 @@ export default function Dashboard() {
       setLocation("/BeaverCRM");
     } else if (service.id === "beaverdoc") {
       setLocation("/BeaverDoc");
+    } else if (service.id === "beaverpay") {
+      setLocation("/BeaverPay");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} not yet implemented`);

@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument } from "@shared/schema";
+import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -51,6 +51,28 @@ export interface IStorage {
   getAllDocuments(): Promise<Document[]>;
   updateDocument(id: number, updates: Partial<Document>): Promise<Document | undefined>;
   getDocumentByUid(uid: string): Promise<Document | undefined>;
+  
+  // Invoice operations
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  getInvoice(id: number): Promise<Invoice | undefined>;
+  getAllInvoices(): Promise<Invoice[]>;
+  updateInvoice(id: number, updates: Partial<Invoice>): Promise<Invoice | undefined>;
+  getInvoiceByNumber(invoiceNumber: string): Promise<Invoice | undefined>;
+  
+  // Payment operations
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  getPayment(id: number): Promise<Payment | undefined>;
+  getAllPayments(): Promise<Payment[]>;
+  updatePayment(id: number, updates: Partial<Payment>): Promise<Payment | undefined>;
+  getPaymentByPaymentId(paymentId: string): Promise<Payment | undefined>;
+  getPaymentsByInvoiceId(invoiceId: number): Promise<Payment[]>;
+  
+  // POS Transaction operations
+  createPosTransaction(transaction: InsertPosTransaction): Promise<PosTransaction>;
+  getPosTransaction(id: number): Promise<PosTransaction | undefined>;
+  getAllPosTransactions(): Promise<PosTransaction[]>;
+  updatePosTransaction(id: number, updates: Partial<PosTransaction>): Promise<PosTransaction | undefined>;
+  getPosTransactionByTransactionId(transactionId: string): Promise<PosTransaction | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -62,6 +84,9 @@ export class MemStorage implements IStorage {
   private enforcementReports: Map<number, EnforcementReport>;
   private customers: Map<number, Customer>;
   private documents: Map<number, Document>;
+  private invoices: Map<number, Invoice>;
+  private payments: Map<number, Payment>;
+  private posTransactions: Map<number, PosTransaction>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -70,6 +95,9 @@ export class MemStorage implements IStorage {
   private currentEnforcementReportId: number;
   private currentCustomerId: number;
   private currentDocumentId: number;
+  private currentInvoiceId: number;
+  private currentPaymentId: number;
+  private currentPosTransactionId: number;
 
   constructor() {
     this.users = new Map();
@@ -80,6 +108,9 @@ export class MemStorage implements IStorage {
     this.enforcementReports = new Map();
     this.customers = new Map();
     this.documents = new Map();
+    this.invoices = new Map();
+    this.payments = new Map();
+    this.posTransactions = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -88,6 +119,9 @@ export class MemStorage implements IStorage {
     this.currentEnforcementReportId = 1;
     this.currentCustomerId = 1;
     this.currentDocumentId = 1;
+    this.currentInvoiceId = 1;
+    this.currentPaymentId = 1;
+    this.currentPosTransactionId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -291,6 +325,185 @@ export class MemStorage implements IStorage {
         updatedAt: new Date(),
       };
       this.customers.set(id, fullCustomer);
+    });
+
+    // Sample invoices
+    const sampleInvoices = [
+      {
+        invoiceNumber: "INV-2025-001",
+        customerId: 1,
+        customerName: "John Smith",
+        customerEmail: "john.smith@email.com",
+        customerAddress: "123 Oak Street, Portland, OR 97205",
+        amount: 1500.00,
+        currency: "USD",
+        status: "sent",
+        dueDate: new Date("2025-02-15"),
+        description: "Professional services consultation",
+        items: JSON.stringify([
+          { name: "Consultation", quantity: 10, price: 150.00, total: 1500.00 }
+        ]),
+        taxAmount: 150.00,
+        discountAmount: 0,
+        totalAmount: 1650.00,
+        paymentMethod: null,
+        paypalOrderId: null,
+        paidAt: null,
+      },
+      {
+        invoiceNumber: "INV-2025-002",
+        customerId: 2,
+        customerName: "Sarah Johnson",
+        customerEmail: "sarah.johnson@techcorp.com",
+        customerAddress: "456 Pine Avenue, Portland, OR 97201",
+        amount: 2500.00,
+        currency: "USD",
+        status: "paid",
+        dueDate: new Date("2025-01-31"),
+        description: "Development services",
+        items: JSON.stringify([
+          { name: "Development", quantity: 25, price: 100.00, total: 2500.00 }
+        ]),
+        taxAmount: 250.00,
+        discountAmount: 50.00,
+        totalAmount: 2700.00,
+        paymentMethod: "paypal",
+        paypalOrderId: "PAYPAL-ORDER-001",
+        paidAt: new Date("2025-01-15"),
+      },
+      {
+        invoiceNumber: "INV-2025-003",
+        customerId: 3,
+        customerName: "Michael Brown",
+        customerEmail: "m.brown@contractor.net",
+        customerAddress: "789 Cedar Drive, Beaverton, OR 97008",
+        amount: 3200.00,
+        currency: "USD",
+        status: "overdue",
+        dueDate: new Date("2025-01-05"),
+        description: "Construction materials",
+        items: JSON.stringify([
+          { name: "Materials", quantity: 1, price: 3200.00, total: 3200.00 }
+        ]),
+        taxAmount: 320.00,
+        discountAmount: 0,
+        totalAmount: 3520.00,
+        paymentMethod: null,
+        paypalOrderId: null,
+        paidAt: null,
+      },
+    ];
+
+    sampleInvoices.forEach(invoice => {
+      const id = this.currentInvoiceId++;
+      const fullInvoice: Invoice = {
+        ...invoice,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.invoices.set(id, fullInvoice);
+    });
+
+    // Sample payments
+    const samplePayments = [
+      {
+        paymentId: "PAY-2025-001",
+        invoiceId: 2,
+        amount: 2700.00,
+        currency: "USD",
+        paymentMethod: "paypal",
+        paymentStatus: "completed",
+        transactionId: "TXN-PAYPAL-001",
+        paypalOrderId: "PAYPAL-ORDER-001",
+        googlePayToken: null,
+        customerName: "Sarah Johnson",
+        customerEmail: "sarah.johnson@techcorp.com",
+        description: "Invoice payment for development services",
+        receiptUrl: null,
+      },
+      {
+        paymentId: "PAY-2025-002",
+        invoiceId: null,
+        amount: 150.00,
+        currency: "USD",
+        paymentMethod: "googlepay",
+        paymentStatus: "completed",
+        transactionId: "TXN-GOOGLEPAY-001",
+        paypalOrderId: null,
+        googlePayToken: "GOOGLEPAY-TOKEN-001",
+        customerName: "Walk-in Customer",
+        customerEmail: "customer@example.com",
+        description: "Direct payment for service",
+        receiptUrl: null,
+      },
+    ];
+
+    samplePayments.forEach(payment => {
+      const id = this.currentPaymentId++;
+      const fullPayment: Payment = {
+        ...payment,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.payments.set(id, fullPayment);
+    });
+
+    // Sample POS transactions
+    const samplePosTransactions = [
+      {
+        transactionId: "POS-2025-001",
+        type: "sale",
+        amount: 45.99,
+        currency: "USD",
+        paymentMethod: "paypal",
+        customerName: "Jane Doe",
+        customerEmail: "jane.doe@email.com",
+        items: JSON.stringify([
+          { name: "Coffee", quantity: 2, price: 4.50, total: 9.00 },
+          { name: "Sandwich", quantity: 1, price: 12.99, total: 12.99 },
+          { name: "Service Fee", quantity: 1, price: 24.00, total: 24.00 }
+        ]),
+        taxAmount: 4.14,
+        discountAmount: 0,
+        totalAmount: 45.99,
+        paymentStatus: "completed",
+        transactionReference: "PAYPAL-POS-001",
+        receiptNumber: "R-000001",
+        employeeId: "EMP-001",
+      },
+      {
+        transactionId: "POS-2025-002",
+        type: "sale",
+        amount: 89.50,
+        currency: "USD",
+        paymentMethod: "googlepay",
+        customerName: "Bob Wilson",
+        customerEmail: "bob.wilson@email.com",
+        items: JSON.stringify([
+          { name: "Consultation", quantity: 1, price: 75.00, total: 75.00 },
+          { name: "Materials", quantity: 1, price: 14.50, total: 14.50 }
+        ]),
+        taxAmount: 8.05,
+        discountAmount: 5.00,
+        totalAmount: 89.50,
+        paymentStatus: "completed",
+        transactionReference: "GOOGLEPAY-POS-001",
+        receiptNumber: "R-000002",
+        employeeId: "EMP-001",
+      },
+    ];
+
+    samplePosTransactions.forEach(transaction => {
+      const id = this.currentPosTransactionId++;
+      const fullTransaction: PosTransaction = {
+        ...transaction,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.posTransactions.set(id, fullTransaction);
     });
   }
 
@@ -548,6 +761,116 @@ export class MemStorage implements IStorage {
 
   async getDocumentByUid(uid: string): Promise<Document | undefined> {
     return Array.from(this.documents.values()).find(doc => doc.uid === uid);
+  }
+
+  // Invoice operations
+  async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
+    const id = this.currentInvoiceId++;
+    const invoice: Invoice = {
+      ...insertInvoice,
+      id,
+      invoiceNumber: insertInvoice.invoiceNumber || `INV-${id.toString().padStart(4, '0')}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.invoices.set(id, invoice);
+    return invoice;
+  }
+
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    return this.invoices.get(id);
+  }
+
+  async getAllInvoices(): Promise<Invoice[]> {
+    return Array.from(this.invoices.values()).sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async updateInvoice(id: number, updates: Partial<Invoice>): Promise<Invoice | undefined> {
+    const existing = this.invoices.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Invoice = { ...existing, ...updates, updatedAt: new Date() };
+    this.invoices.set(id, updated);
+    return updated;
+  }
+
+  async getInvoiceByNumber(invoiceNumber: string): Promise<Invoice | undefined> {
+    return Array.from(this.invoices.values()).find(invoice => invoice.invoiceNumber === invoiceNumber);
+  }
+
+  // Payment operations
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const id = this.currentPaymentId++;
+    const payment: Payment = {
+      ...insertPayment,
+      id,
+      paymentId: insertPayment.paymentId || `PAY-${id.toString().padStart(4, '0')}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.payments.set(id, payment);
+    return payment;
+  }
+
+  async getPayment(id: number): Promise<Payment | undefined> {
+    return this.payments.get(id);
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    return Array.from(this.payments.values()).sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async updatePayment(id: number, updates: Partial<Payment>): Promise<Payment | undefined> {
+    const existing = this.payments.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Payment = { ...existing, ...updates, updatedAt: new Date() };
+    this.payments.set(id, updated);
+    return updated;
+  }
+
+  async getPaymentByPaymentId(paymentId: string): Promise<Payment | undefined> {
+    return Array.from(this.payments.values()).find(payment => payment.paymentId === paymentId);
+  }
+
+  async getPaymentsByInvoiceId(invoiceId: number): Promise<Payment[]> {
+    return Array.from(this.payments.values()).filter(payment => payment.invoiceId === invoiceId);
+  }
+
+  // POS Transaction operations
+  async createPosTransaction(insertTransaction: InsertPosTransaction): Promise<PosTransaction> {
+    const id = this.currentPosTransactionId++;
+    const transaction: PosTransaction = {
+      ...insertTransaction,
+      id,
+      transactionId: insertTransaction.transactionId || `POS-${id.toString().padStart(4, '0')}`,
+      receiptNumber: insertTransaction.receiptNumber || `R-${id.toString().padStart(6, '0')}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.posTransactions.set(id, transaction);
+    return transaction;
+  }
+
+  async getPosTransaction(id: number): Promise<PosTransaction | undefined> {
+    return this.posTransactions.get(id);
+  }
+
+  async getAllPosTransactions(): Promise<PosTransaction[]> {
+    return Array.from(this.posTransactions.values()).sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async updatePosTransaction(id: number, updates: Partial<PosTransaction>): Promise<PosTransaction | undefined> {
+    const existing = this.posTransactions.get(id);
+    if (!existing) return undefined;
+    
+    const updated: PosTransaction = { ...existing, ...updates, updatedAt: new Date() };
+    this.posTransactions.set(id, updated);
+    return updated;
+  }
+
+  async getPosTransactionByTransactionId(transactionId: string): Promise<PosTransaction | undefined> {
+    return Array.from(this.posTransactions.values()).find(transaction => transaction.transactionId === transactionId);
   }
 }
 
