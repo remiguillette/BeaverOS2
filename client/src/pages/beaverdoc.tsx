@@ -105,7 +105,7 @@ export default function BeaverDoc() {
   const handleOpenPDF = (doc: ProcessedDocument) => {
     console.log("Opening PDF for document:", doc.title);
     
-    // Create a mock PDF blob for demonstration
+    // Create a properly formatted PDF with content and security token
     const pdfContent = `%PDF-1.4
 1 0 obj
 <<
@@ -128,36 +128,93 @@ endobj
 /Parent 2 0 R
 /MediaBox [0 0 612 792]
 /Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+/F2 6 0 R
+>>
+>>
 >>
 endobj
 
 4 0 obj
 <<
-/Length 44
+/Length 800
 >>
 stream
 BT
-/F1 12 Tf
-50 750 Td
+/F1 18 Tf
+72 720 Td
 (Document: ${doc.title}) Tj
+0 -40 Td
+/F1 12 Tf
+0 -30 Td
+(This is a legally processed document through the BeaverDoc) Tj
+0 -20 Td
+(Legal Document Traceability System.) Tj
+0 -40 Td
+(Document Details:) Tj
+0 -20 Td
+(- Document ID: ${doc.id}) Tj
+0 -20 Td
+(- Status: ${doc.status}) Tj
+0 -20 Td
+(- Author: ${doc.author}) Tj
+0 -20 Td
+(- Processed: ${doc.timestamp}) Tj
+0 -40 Td
+(Security Information:) Tj
+0 -20 Td
+(- UID: ${doc.uid}) Tj
+0 -20 Td
+(- Hash: ${doc.hash}) Tj
+0 -60 Td
+(This document has been digitally processed and secured) Tj
+0 -20 Td
+(with unique identifiers for legal compliance.) Tj
+
+% Security token at bottom right with margin
+/F2 8 Tf
+350 50 Td
+(Signe: DIGITAL_ | ${new Date().toLocaleDateString('en-CA')} ${new Date().toLocaleTimeString('en-CA', {hour12: false})}) Tj
+0 -12 Td
+(BeaverDoc: P1/12 | UID:${doc.uid.split('-')[2]} | Token:${doc.token.split('-')[1]}) Tj
 ET
 endstream
 endobj
 
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+6 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica-Bold
+>>
+endobj
+
 xref
-0 5
+0 7
 0000000000 65535 f 
 0000000009 00000 n 
 0000000058 00000 n 
 0000000115 00000 n 
-0000000217 00000 n 
+0000000273 00000 n 
+0000001125 00000 n 
+0000001200 00000 n 
 trailer
 <<
-/Size 5
+/Size 7
 /Root 1 0 R
 >>
 startxref
-310
+1280
 %%EOF`;
 
     // Create blob and open in new tab
