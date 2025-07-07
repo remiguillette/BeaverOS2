@@ -19,7 +19,7 @@ const services = [
     name: "BeaverLaw",
     description: "Contrôles Animalier",
     port: ":5002",
-    icon: "chat",
+    icon: "cat",
   },
   {
     id: "beaverscanner",
