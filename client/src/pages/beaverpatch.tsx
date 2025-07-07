@@ -49,6 +49,50 @@ export default function BeaverPatch() {
     },
   });
 
+  // Unit status update mutation
+  const updateUnitStatusMutation = useMutation({
+    mutationFn: async ({ unitId, status }: { unitId: number; status: string }) => {
+      return await apiRequest("POST", `/api/units/${unitId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/units"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
+      toast({
+        title: "Unit Status Updated",
+        description: "Unit status has been successfully updated",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Status Update Failed",
+        description: "Failed to update unit status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Incident status update mutation
+  const updateIncidentStatusMutation = useMutation({
+    mutationFn: async ({ incidentId, status }: { incidentId: number; status: string }) => {
+      return await apiRequest("POST", `/api/incidents/${incidentId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/units"] });
+      toast({
+        title: "Incident Status Updated",
+        description: "Incident status has been successfully updated",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Status Update Failed",
+        description: "Failed to update incident status",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleBackToServices = () => {
     setLocation("/dashboard");
   };
@@ -309,8 +353,24 @@ export default function BeaverPatch() {
                                 {incident.description}
                               </div>
                             </div>
-                            <div className="text-xs text-gray-500 ml-4">
-                              {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}
+                            <div className="flex flex-col items-end space-y-2 ml-4">
+                              <div className="text-xs text-gray-500">
+                                {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}
+                              </div>
+                              {incident.status !== "resolved" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateIncidentStatusMutation.mutate({ incidentId: incident.id, status: "resolved" });
+                                  }}
+                                  disabled={updateIncidentStatusMutation.isPending}
+                                  className="bg-red-600 hover:bg-red-700 text-white border-red-600 text-xs"
+                                >
+                                  Close Incident
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -438,13 +498,26 @@ export default function BeaverPatch() {
                             <div className="text-xs text-gray-400">{unit.type} • {unit.currentLocation}</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className={`text-sm font-medium ${getUnitStatusColor(unit.status)}`}>
-                            {unit.status.replace("_", " ").toUpperCase()}
+                        <div className="flex items-center space-x-2">
+                          <div className="text-right">
+                            <div className={`text-sm font-medium ${getUnitStatusColor(unit.status)}`}>
+                              {unit.status.replace("_", " ").toUpperCase()}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {unit.updatedAt ? new Date(unit.updatedAt).toLocaleTimeString() : ""}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {unit.updatedAt ? new Date(unit.updatedAt).toLocaleTimeString() : ""}
-                          </div>
+                          {unit.status !== "available" && unit.status !== "off_duty" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateUnitStatusMutation.mutate({ unitId: unit.id, status: "available" })}
+                              disabled={updateUnitStatusMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-xs"
+                            >
+                              Return to Service
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))

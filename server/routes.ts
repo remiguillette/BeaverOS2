@@ -107,6 +107,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unit status management endpoints
+  app.post("/api/units/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !["available", "dispatched", "responding", "enroute", "busy", "off_duty"].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      const updates: any = { status };
+      
+      // If setting to available, clear assigned incident
+      if (status === "available") {
+        updates.assignedIncidentId = null;
+      }
+      
+      const unit = await storage.updateUnit(id, updates);
+      if (!unit) {
+        return res.status(404).json({ error: "Unit not found" });
+      }
+      res.json(unit);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update unit status" });
+    }
+  });
+
+  // Incident status management endpoints
+  app.post("/api/incidents/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !["new", "dispatched", "active", "resolved"].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      const incident = await storage.updateIncident(id, { status });
+      if (!incident) {
+        return res.status(404).json({ error: "Incident not found" });
+      }
+      
+      // If incident is resolved, set assigned units back to available
+      if (status === "resolved") {
+        const assignedUnits = await storage.getIncidentUnits(id);
+        for (const assignment of assignedUnits) {
+          await storage.updateUnit(assignment.unitId, { 
+            status: "available", 
+            assignedIncidentId: null 
+          });
+        }
+      }
+      
+      res.json(incident);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update incident status" });
+    }
+  });
+
   // Assignment endpoints
   app.post("/api/incidents/:incidentId/assign", async (req, res) => {
     try {
