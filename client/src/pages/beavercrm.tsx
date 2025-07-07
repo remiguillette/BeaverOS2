@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { ArrowLeft, Plus, Search, Users, Phone, Mail, MapPin, Edit, Save, X, User, FileText, Building, IdCard } from "lucide-react";
+import { Plus, Search, Users, Phone, Mail, MapPin, Edit, Save, X, User, FileText, Building, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ServiceHeader } from "@/components/service-header";
 import { insertCustomerSchema, type Customer, type InsertCustomer } from "@shared/schema";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -82,9 +83,7 @@ export default function BeaverCRM() {
     },
   });
 
-  const handleBackToServices = () => {
-    setLocation("/dashboard");
-  };
+
 
   const displayedCustomers = searchQuery.length > 0 ? searchResults : customers;
 
@@ -114,45 +113,30 @@ export default function BeaverCRM() {
     return phone;
   };
 
+  const actionButton = (
+    <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-beaver-orange hover:bg-orange-600 text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          New Customer
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-beaver-surface border-beaver-surface-light">
+        <DialogHeader>
+          <DialogTitle className="text-beaver-orange">Add New Customer</DialogTitle>
+        </DialogHeader>
+        <CustomerForm onClose={() => setIsFormOpen(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen bg-beaver-dark">
-      {/* Header */}
-      <header className="bg-beaver-surface border-b border-beaver-surface-light">
-        <div className="w-full px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={handleBackToServices}
-                variant="ghost"
-                className="bg-beaver-surface-light hover:bg-gray-700 text-white"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Services
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-beaver-orange">BeaverCRM</h1>
-                <p className="text-sm text-gray-400">Customer Management System</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-beaver-orange hover:bg-orange-600 text-white">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Customer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-beaver-surface border-beaver-surface-light">
-                  <DialogHeader>
-                    <DialogTitle className="text-beaver-orange">Add New Customer</DialogTitle>
-                  </DialogHeader>
-                  <CustomerForm onClose={() => setIsFormOpen(false)} />
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </div>
-      </header>
+      <ServiceHeader 
+        serviceName="BeaverCRM" 
+        serviceIcon={Users} 
+        actionButton={actionButton}
+      />
 
       {/* Main Content */}
       <div className="flex h-[calc(100vh-64px)]">

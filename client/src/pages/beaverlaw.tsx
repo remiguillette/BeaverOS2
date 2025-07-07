@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Cat, Shield, BookOpen, Heart, Plus, Search, Edit, Eye } from "lucide-react";
+import { Cat, Shield, BookOpen, Heart, Plus, Search, Edit, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +19,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { ServiceHeader } from "@/components/service-header";
 import { insertAnimalSchema, insertEnforcementReportSchema } from "@shared/schema";
 import type { Animal, EnforcementReport } from "@shared/schema";
-import beaverImage from "@assets/beaver_1751858605395.png";
 
 type AnimalFormData = z.infer<typeof insertAnimalSchema>;
 type EnforcementReportFormData = z.infer<typeof insertEnforcementReportSchema>;
@@ -124,39 +124,11 @@ export default function BeaverLaw() {
 
   return (
     <div className="min-h-screen bg-beaver-dark">
-      {/* Header Navigation */}
-      <header className="bg-beaver-surface border-b border-beaver-surface-light">
-        <div className="w-full px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            {/* Logo and Title */}
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange">
-                <img src={beaverImage} alt="Beaver" className="w-6 h-6 object-contain" />
-              </div>
-              <h1 className="text-xl font-bold text-beaver-orange">BEAVERNET</h1>
-              <div className="hidden sm:block text-gray-400">|</div>
-              <div className="flex items-center space-x-2">
-                <Cat className="w-5 h-5 text-beaver-orange" />
-                <span className="text-lg font-semibold text-white">BeaverLaw</span>
-              </div>
-            </div>
-
-            {/* User Actions */}
-            <div className="flex items-center space-x-4">
-              <span className="text-white text-sm hidden sm:block">Welcome, {user?.name}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLocation("/dashboard")}
-                className="border-beaver-orange text-beaver-orange hover:bg-beaver-orange hover:text-black"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <ServiceHeader 
+        serviceName="BeaverLaw" 
+        serviceIcon={Cat}
+        userName={`Welcome, ${user?.name}`}
+      />
 
       {/* Main Content */}
       <main className="w-full px-3 sm:px-6 lg:px-8 py-6">

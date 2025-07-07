@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Shield, Users, AlertTriangle, Activity, Plus, Filter, Search, Phone, Clock, MapPin, Car, Truck, Ambulance, Zap } from "lucide-react";
+import { Shield, Users, AlertTriangle, Activity, Plus, Filter, Search, Phone, Clock, MapPin, Car, Truck, Ambulance, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +13,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { IncidentForm } from "@/components/incident-form";
 import { DispatchMap } from "@/components/dispatch-map";
+import { ServiceHeader } from "@/components/service-header";
 import type { Incident, Unit } from "@shared/schema";
-import beaverImage from "@assets/beaver_1751858605395.png";
 
 export default function BeaverPatch() {
   const { user } = useAuth();
@@ -93,9 +93,7 @@ export default function BeaverPatch() {
     },
   });
 
-  const handleBackToServices = () => {
-    setLocation("/dashboard");
-  };
+
 
   const filteredIncidents = incidents.filter(incident => {
     const matchesType = filterType === "all" || incident.type === filterType;
@@ -152,51 +150,27 @@ export default function BeaverPatch() {
   const activeIncidents = incidents.filter(incident => incident.status !== "resolved");
   const highPriorityIncidents = incidents.filter(incident => incident.priority === "high");
 
+  const actionButton = (
+    <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
+      <DialogTrigger asChild>
+        <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
+          <Plus className="w-4 h-4 mr-2" />
+          New Incident
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl bg-beaver-surface border-beaver-surface-light">
+        <IncidentForm onClose={() => setShowIncidentForm(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen bg-beaver-dark">
-      {/* Header Navigation */}
-      <header className="bg-beaver-surface border-b border-beaver-surface-light">
-        <div className="w-full px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            {/* Logo and Title */}
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange">
-                <img src={beaverImage} alt="Beaver" className="w-6 h-6 object-contain" />
-              </div>
-              <h1 className="text-xl font-bold text-beaver-orange">BEAVERNET</h1>
-              <div className="hidden sm:block text-gray-400">|</div>
-              <div className="flex items-center space-x-2">
-                <Shield className="w-5 h-5 text-beaver-orange" />
-                <span className="text-lg font-semibold text-white">BeaverPatch</span>
-              </div>
-            </div>
-
-            {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-300 hidden sm:inline">{user?.name}</span>
-              <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
-                <DialogTrigger asChild>
-                  <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Incident
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl bg-beaver-surface border-beaver-surface-light">
-                  <IncidentForm onClose={() => setShowIncidentForm(false)} />
-                </DialogContent>
-              </Dialog>
-              <Button
-                onClick={handleBackToServices}
-                variant="ghost"
-                className="bg-beaver-surface-light hover:bg-gray-700 text-white"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Back to Services</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <ServiceHeader 
+        serviceName="BeaverPatch" 
+        serviceIcon={Shield} 
+        actionButton={actionButton}
+      />
 
       {/* Main Content */}
       <main className="w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
