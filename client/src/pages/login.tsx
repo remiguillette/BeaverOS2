@@ -48,8 +48,8 @@ export default function Login() {
       <div className="w-full max-w-md">
       {/* Logo and Title Section */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-black rounded-xl mb-4 border-2 border-beaver-orange">
-          <img src={beaverImage} alt="Beaver" className="w-12 h-12 object-contain" />
+        <div className="inline-flex items-center justify-center w- h- bg-black rounded-xl mb-4">
+          <img src={beaverImage} alt="Beaver" className="w-50 h-50 object-contain" />
         </div>
         <h1 className="text-3xl font-bold text-beaver-orange mb-2">BEAVERNET</h1>
         <p className="text-gray-400"></p>
