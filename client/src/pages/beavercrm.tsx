@@ -60,10 +60,8 @@ export default function BeaverCRM() {
   // Create customer mutation
   const createCustomerMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
-      return apiRequest<Customer>("/api/customers", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      const res = await apiRequest("POST", "/api/customers", data);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
@@ -74,10 +72,8 @@ export default function BeaverCRM() {
   // Update customer mutation
   const updateCustomerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Customer> }) => {
-      return apiRequest<Customer>(`/api/customers/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+      const res = await apiRequest("PUT", `/api/customers/${id}`, data);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
@@ -484,10 +480,8 @@ function CustomerForm({
         dateOfBirth: data.dateOfBirth ? data.dateOfBirth : undefined,
       };
       
-      return apiRequest<Customer>("/api/customers", {
-        method: "POST",
-        body: JSON.stringify(transformedData),
-      });
+      const res = await apiRequest("POST", "/api/customers", transformedData);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
@@ -498,10 +492,8 @@ function CustomerForm({
   const updateMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
       if (!customer?.id) throw new Error("Customer ID is required");
-      return apiRequest<Customer>(`/api/customers/${customer.id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+      const res = await apiRequest("PUT", `/api/customers/${customer.id}`, data);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
