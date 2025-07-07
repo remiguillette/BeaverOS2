@@ -51,9 +51,9 @@ export default function BeaverDoc() {
       
       // Generate unique identifiers
       const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
-      const uid = `UID-${timestamp}-RG${String(processedDocuments.length + 4).padStart(2, '0')}`;
-      const token = `TK-${Math.random().toString(36).substr(2, 12).toUpperCase()}`;
-      const hash = Math.random().toString(36).substr(2, 32);
+      const uid = `UID-${timestamp}-USR0042-CPY7890-${Math.random().toString(36).substr(2, 12)}`;
+      const token = `DOC-${timestamp}-${Math.random().toString(36).substr(2, 12)}`;
+      const hash = await calculateSHA256(arrayBuffer);
       const docId = `DOC-2025-${String(processedDocuments.length + 4).padStart(3, '0')}`;
       
       // Create processed document with original PDF data
@@ -113,10 +113,18 @@ export default function BeaverDoc() {
     setViewingDocument(doc);
   };
 
+  // Function to calculate SHA-256 hash
+  const calculateSHA256 = async (buffer: ArrayBuffer): Promise<string> => {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
   const addUidAndTokenToPdf = async (
     pdfBuffer: ArrayBuffer,
     uid: string,
     token: string,
+    hash: string,
     signatureInfo?: string
   ): Promise<Uint8Array> => {
     try {
@@ -212,28 +220,51 @@ export default function BeaverDoc() {
         }
       }
       
-      // Update document metadata for legal validity
+      // Update document metadata for legal validity following the comprehensive model
+      const metadataTimestamp = new Date().toISOString();
+      const createDate = new Date();
+      
+      // Core metadata fields
       pdfDoc.setTitle(`Document sécurisé - ${uid}`);
       pdfDoc.setAuthor('Rémi Guillette');
       pdfDoc.setCreator('Rémi Guillette Consulting');
       pdfDoc.setProducer('BeaverDoc Secure Document System');
+      pdfDoc.setCreationDate(createDate);
+      pdfDoc.setModificationDate(createDate);
       
-      // Complete security information
-      const securityInfo = `UID:${uid} | Token:${token} | Timestamp:${new Date().toISOString()}`;
+      // Complete security information for Subject field
+      const securityInfo = `UID:${uid} | Token:${token} | Hash:${hash} | Timestamp:${metadataTimestamp}`;
       const issuerInfo = `Certifié par: Rémi Guillette Consulting | Vérification: beaverdoc.verify.com`;
       
-      // Set subject with detailed security information
+      // Set comprehensive subject with all security information
       pdfDoc.setSubject(`Document authentifié par BeaverDoc - ${securityInfo} | ${issuerInfo}`);
       
-      // Add security information in keywords
-      const keywords = ['document sécurisé', 'authentifié', uid, token, 'Rémi Guillette Consulting'];
+      // Comprehensive keywords array following the metadata model exactly
+      const keywords = [
+        'document',
+        'sécurisé', 
+        'authentifié',
+        uid,
+        token,
+        hash,
+        'Rémi',
+        'Guillette', 
+        'Consulting'
+      ];
       
+      // Add signature-related keywords if document is signed
       if (signatureInfo) {
-        keywords.push('signé électroniquement');
-        keywords.push(`signature:${signatureInfo}`);
-        keywords.push(`date_signature:${new Date().toISOString()}`);
+        keywords.push(
+          'signé',
+          'électroniquement',
+          `signature:${signatureInfo.split(':')[1]?.trim() || 'Signé'}`,
+          'électroniquement:',
+          'DIGITAL_',
+          `date_signature:${metadataTimestamp}`
+        );
       }
       
+      // Set all keywords as a single string (PDF standard format)
       pdfDoc.setKeywords(keywords);
       
       // Serialize the modified document to a new buffer
@@ -298,12 +329,19 @@ export default function BeaverDoc() {
         originalPdfBytes = await tempDoc.save();
       }
       
+      // Calculate hash of original document if not already available
+      let documentHash = doc.hash;
+      if (!documentHash && doc.originalPdfData) {
+        documentHash = await calculateSHA256(doc.originalPdfData);
+      }
+      
       // Add security overlay to the original document
       const signatureInfo = `Status:${doc.status}`;
       const modifiedPdfBytes = await addUidAndTokenToPdf(
         originalPdfBytes.buffer,
         doc.uid,
         doc.token,
+        documentHash || doc.hash,
         signatureInfo
       );
       

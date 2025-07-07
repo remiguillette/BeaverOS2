@@ -1,0 +1,33 @@
+ // Mise à jour des métadonnées du document pour validité juridique
+    pdfDoc.setTitle(`Document sécurisé - ${uid}`);
+    pdfDoc.setAuthor('Rémi Guillette');
+    pdfDoc.setCreator('Rémi Guillette Consulting');
+    pdfDoc.setProducer('BeaverDoc Secure Document System');
+
+    // Informations de sécurité complètes
+    const securityInfo = `UID:${uid} | Token:${token} | Hash:${contentHash} | Timestamp:${new Date().toISOString()}`;
+    const issuerInfo = `Certifié par: Rémi Guillette Consulting | Vérification: beaverdoc.verify.com`;
+
+    // Définir le sujet avec informations de sécurité détaillées
+    pdfDoc.setSubject(`Document authentifié par BeaverDoc - ${securityInfo} | ${issuerInfo}`);
+
+    // Ajouter des informations de sécurité dans les mots-clés
+    const keywords = ['document sécurisé', 'authentifié', uid, token, contentHash, 'Rémi Guillette Consulting'];
+
+    if (signatureInfo) {
+      keywords.push('signé électroniquement');
+      keywords.push(`signature:${signatureInfo}`);
+      keywords.push(`date_signature:${new Date().toISOString()}`);
+    }
+
+    pdfDoc.setKeywords(keywords);
+
+    // Sérialise le document modifié en un nouveau buffer
+    const modifiedPdfBytes = await pdfDoc.save();
+
+    return Buffer.from(modifiedPdfBytes);
+  } catch (error) {
+    console.error('Erreur lors de la modification du PDF:', error);
+    throw new Error('Impossible de modifier le PDF pour ajouter l\'UID et le token');
+  }
+}
