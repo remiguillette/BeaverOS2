@@ -1112,13 +1112,14 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
             Cancel
           </Button>
           <Button 
-            type="submit" 
+            type="button" 
             disabled={createEnforcementReportMutation.isPending}
             className="bg-beaver-orange hover:bg-beaver-orange/90 text-black"
             onClick={() => {
               console.log("Submit button clicked");
-              console.log("Form errors:", form.formState.errors);
-              console.log("Form values:", form.getValues());
+              const formData = form.getValues();
+              console.log("Form data:", formData);
+              onSubmit(formData);
             }}
           >
             {createEnforcementReportMutation.isPending ? "Submitting..." : "Submit"}
