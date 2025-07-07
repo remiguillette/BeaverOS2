@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication endpoint
@@ -356,6 +356,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(customer);
     } catch (error) {
       res.status(500).json({ error: "Failed to update customer" });
+    }
+  });
+
+  // Document endpoints
+  app.get("/api/documents", async (req, res) => {
+    try {
+      const documents = await storage.getAllDocuments();
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch documents" });
+    }
+  });
+
+  app.get("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch document" });
+    }
+  });
+
+  app.post("/api/documents", async (req, res) => {
+    try {
+      const validatedData = insertDocumentSchema.parse(req.body);
+      const document = await storage.createDocument(validatedData);
+      res.json(document);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid document data" });
+    }
+  });
+
+  app.put("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.updateDocument(id, req.body);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update document" });
     }
   });
 

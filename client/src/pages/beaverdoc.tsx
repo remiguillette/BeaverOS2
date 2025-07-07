@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,26 +10,45 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ServiceHeader } from "@/components/service-header";
 import { FileText, Upload, Shield, Clock, Hash, User, CheckCircle, FileCheck, ExternalLink, Download, Eye } from "lucide-react";
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-
-interface ProcessedDocument {
-  id: string;
-  title: string;
-  uid: string;
-  token: string;
-  hash: string;
-  status: string;
-  timestamp: string;
-  author: string;
-  originalFileName: string;
-  originalPdfData?: ArrayBuffer;
-}
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Document, InsertDocument } from "@shared/schema";
 
 export default function BeaverDoc() {
   const [, setLocation] = useLocation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [processedDocuments, setProcessedDocuments] = useState<ProcessedDocument[]>([]);
   const [auditLog, setAuditLog] = useState<{action: string; timestamp: string; description: string}[]>([]);
-  const [viewingDocument, setViewingDocument] = useState<ProcessedDocument | null>(null);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
+  const { toast } = useToast();
+
+  // Fetch all documents from API
+  const { data: documents = [], isLoading: documentsLoading } = useQuery<Document[]>({
+    queryKey: ["/api/documents"],
+  });
+
+  // Mutation to create new documents
+  const createDocumentMutation = useMutation({
+    mutationFn: async (data: InsertDocument) => {
+      return apiRequest("/api/documents", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      toast({
+        title: "Document Processed",
+        description: "Document has been successfully processed and saved.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to process document. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Debug log to see if selectedFile is properly updated
   console.log("Current selectedFile:", selectedFile);
@@ -54,31 +74,24 @@ export default function BeaverDoc() {
       const uid = `UID-${timestamp}-USR0042-CPY7890-${Math.random().toString(36).substr(2, 12)}`;
       const token = `DOC-${timestamp}-${Math.random().toString(36).substr(2, 12)}`;
       const hash = await calculateSHA256(arrayBuffer);
-      const docId = `DOC-2025-${String(processedDocuments.length + 4).padStart(3, '0')}`;
       
-      // Create processed document with original PDF data
-      const newDocument: ProcessedDocument = {
-        id: docId,
+      // Convert ArrayBuffer to base64 for storage
+      const base64Data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      
+      // Create document data for API
+      const documentData: InsertDocument = {
         title: selectedFile.name.replace(/\.pdf$/i, ''),
         uid: uid,
         token: token,
         hash: hash,
         status: "Processed",
-        timestamp: new Date().toLocaleString('en-CA', { 
-          year: 'numeric', 
-          month: '2-digit', 
-          day: '2-digit', 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          second: '2-digit' 
-        }).replace(/,/, ''),
         author: "Rémi Guillette",
         originalFileName: selectedFile.name,
-        originalPdfData: arrayBuffer
+        originalPdfData: base64Data
       };
       
-      // Add to processed documents
-      setProcessedDocuments(prev => [newDocument, ...prev]);
+      // Save to database via API
+      createDocumentMutation.mutate(documentData);
       
       // Add audit log entry
       const auditEntry = {
@@ -95,8 +108,6 @@ export default function BeaverDoc() {
       };
       setAuditLog(prev => [auditEntry, ...prev]);
       
-      // Show success message
-      alert(`Document "${selectedFile.name}" processed successfully! UID generated: ${uid}`);
       setSelectedFile(null);
     } catch (error) {
       console.error('Error processing document:', error);
@@ -108,7 +119,7 @@ export default function BeaverDoc() {
     setLocation("/dashboard");
   };
 
-  const handleViewDocument = (doc: ProcessedDocument | any) => {
+  const handleViewDocument = (doc: Document | any) => {
     console.log("Viewing document:", doc.title);
     setViewingDocument(doc);
   };
@@ -233,7 +244,7 @@ export default function BeaverDoc() {
       pdfDoc.setModificationDate(createDate);
       
       // Complete security information for Subject field
-      const securityInfo = `UID:${uid} | Token:${token} | Hash:${hash} | Timestamp:${metadataTimestamp}`;
+      const securityInfo = `UID:${uid} | Token:${token} | Hash:${hash} | Created:${metadataTimestamp}`;
       const issuerInfo = `Certifié par: Rémi Guillette Consulting | Vérification: beaverdoc.verify.com`;
       
       // Set comprehensive subject with all security information
@@ -277,7 +288,7 @@ export default function BeaverDoc() {
     }
   };
 
-  const handleOpenPDF = async (doc: ProcessedDocument) => {
+  const handleOpenPDF = async (doc: Document) => {
     console.log("Opening PDF for document:", doc.title);
     
     try {
@@ -285,8 +296,14 @@ export default function BeaverDoc() {
       let originalPdfBytes: Uint8Array;
       
       if (doc.originalPdfData) {
-        // Use the actual uploaded PDF file
-        originalPdfBytes = new Uint8Array(doc.originalPdfData);
+        // Convert base64 back to ArrayBuffer, then to Uint8Array
+        const binaryString = atob(doc.originalPdfData);
+        const arrayBuffer = new ArrayBuffer(binaryString.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < binaryString.length; i++) {
+          uint8Array[i] = binaryString.charCodeAt(i);
+        }
+        originalPdfBytes = uint8Array;
       } else {
         // For sample documents, create a representative document
         const tempDoc = await PDFDocument.create();
@@ -359,7 +376,7 @@ export default function BeaverDoc() {
     }
   };
 
-  const handleDownloadDocument = (doc: ProcessedDocument) => {
+  const handleDownloadDocument = (doc: Document) => {
     console.log("Downloading document:", doc.title);
     
     // Create document metadata as JSON for download
@@ -371,7 +388,7 @@ export default function BeaverDoc() {
         token: doc.token,
         hash: doc.hash,
         status: doc.status,
-        timestamp: doc.timestamp,
+        timestamp: new Date(doc.createdAt!).toLocaleString(),
         author: doc.author,
         originalFileName: doc.originalFileName
       },
@@ -398,7 +415,7 @@ export default function BeaverDoc() {
     URL.revokeObjectURL(url);
   };
 
-  const handleShareDocument = (doc: ProcessedDocument) => {
+  const handleShareDocument = (doc: Document) => {
     console.log("Sharing document:", doc.title);
     
     // Create shareable document information
@@ -406,7 +423,7 @@ export default function BeaverDoc() {
 Document ID: ${doc.id}
 UID: ${doc.uid}
 Status: ${doc.status}
-Processed: ${doc.timestamp}
+Processed: ${new Date(doc.createdAt!).toLocaleString()}
 Author: ${doc.author}
 
 Shared via BeaverDoc Legal Document Traceability System`;
@@ -444,7 +461,7 @@ Shared via BeaverDoc Legal Document Traceability System`;
     }
   };
 
-  const handleVerifyDocument = (doc: ProcessedDocument | any) => {
+  const handleVerifyDocument = (doc: Document | any) => {
     console.log("Verifying document:", doc.title);
     
     // Simulate document verification process
@@ -490,38 +507,7 @@ This document has passed all security verification checks and maintains its lega
     setAuditLog(prev => [auditEntry, ...prev]);
   };
 
-  const sampleDocuments = [
-    {
-      id: "DOC-2025-001",
-      title: "Contract Agreement - Smith Industries",
-      uid: "UID-20250107-143022-RG01",
-      token: "TK-F4A8E9B2C1D5",
-      hash: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
-      status: "Signed",
-      timestamp: "2025-01-07 14:30:22",
-      author: "Rémi Guillette",
-    },
-    {
-      id: "DOC-2025-002",
-      title: "Legal Notice - Municipal Ordinance",
-      uid: "UID-20250107-151045-RG02",
-      token: "TK-B7C9D2E4F1A8",
-      hash: "z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4",
-      status: "Processed",
-      timestamp: "2025-01-07 15:10:45",
-      author: "Rémi Guillette",
-    },
-    {
-      id: "DOC-2025-003",
-      title: "Certificate of Compliance",
-      uid: "UID-20250107-162133-RG03",
-      token: "TK-E8F1A9B3C6D2",
-      hash: "m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0",
-      status: "Pending",
-      timestamp: "2025-01-07 16:21:33",
-      author: "Rémi Guillette",
-    },
-  ];
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -564,8 +550,13 @@ This document has passed all security verification checks and maintains its lega
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {/* Show processed documents first */}
-                  {processedDocuments.map((doc) => (
+                  {/* Show loading state */}
+                  {documentsLoading && (
+                    <div className="text-center p-4">Loading documents...</div>
+                  )}
+                  
+                  {/* Show documents from database */}
+                  {documents.map((doc) => (
                     <div key={doc.id} className="border rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -588,46 +579,7 @@ This document has passed all security verification checks and maintains its lega
                           <span className="font-medium">Hash:</span> {doc.hash.substring(0, 16)}...
                         </div>
                         <div>
-                          <span className="font-medium">Timestamp:</span> {doc.timestamp}
-                        </div>
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => handleViewDocument(doc)}>
-                          <FileCheck className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleVerifyDocument(doc)}>
-                          <Shield className="h-4 w-4 mr-1" />
-                          Verify
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Show sample documents */}
-                  {sampleDocuments.map((doc) => (
-                    <div key={doc.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold">{doc.title}</h3>
-                          <p className="text-sm text-muted-foreground">Document ID: {doc.id}</p>
-                        </div>
-                        <Badge variant={doc.status === "Signed" ? "default" : doc.status === "Processed" ? "secondary" : "outline"}>
-                          {doc.status}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">UID:</span> {doc.uid}
-                        </div>
-                        <div>
-                          <span className="font-medium">Token:</span> {doc.token}
-                        </div>
-                        <div>
-                          <span className="font-medium">Hash:</span> {doc.hash.substring(0, 16)}...
-                        </div>
-                        <div>
-                          <span className="font-medium">Timestamp:</span> {doc.timestamp}
+                          <span className="font-medium">Created:</span> {new Date(doc.createdAt!).toLocaleString()}
                         </div>
                       </div>
                       <div className="mt-3 flex gap-2">
@@ -644,7 +596,7 @@ This document has passed all security verification checks and maintains its lega
                   ))}
                   
                   {/* Show message if no documents */}
-                  {processedDocuments.length === 0 && sampleDocuments.length === 0 && (
+                  {documents.length === 0 && !documentsLoading && (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground">No documents processed yet. Upload a PDF to get started.</p>

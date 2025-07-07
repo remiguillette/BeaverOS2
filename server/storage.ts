@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer } from "@shared/schema";
+import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -44,6 +44,13 @@ export interface IStorage {
   getAllCustomers(): Promise<Customer[]>;
   updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined>;
   searchCustomers(query: string): Promise<Customer[]>;
+  
+  // Document operations
+  createDocument(document: InsertDocument): Promise<Document>;
+  getDocument(id: number): Promise<Document | undefined>;
+  getAllDocuments(): Promise<Document[]>;
+  updateDocument(id: number, updates: Partial<Document>): Promise<Document | undefined>;
+  getDocumentByUid(uid: string): Promise<Document | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -54,6 +61,7 @@ export class MemStorage implements IStorage {
   private animals: Map<number, Animal>;
   private enforcementReports: Map<number, EnforcementReport>;
   private customers: Map<number, Customer>;
+  private documents: Map<number, Document>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -61,6 +69,7 @@ export class MemStorage implements IStorage {
   private currentAnimalId: number;
   private currentEnforcementReportId: number;
   private currentCustomerId: number;
+  private currentDocumentId: number;
 
   constructor() {
     this.users = new Map();
@@ -70,6 +79,7 @@ export class MemStorage implements IStorage {
     this.animals = new Map();
     this.enforcementReports = new Map();
     this.customers = new Map();
+    this.documents = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -77,6 +87,7 @@ export class MemStorage implements IStorage {
     this.currentAnimalId = 1;
     this.currentEnforcementReportId = 1;
     this.currentCustomerId = 1;
+    this.currentDocumentId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -503,6 +514,40 @@ export class MemStorage implements IStorage {
       customer.driverLicenseNumber?.toLowerCase().includes(searchLower) ||
       customer.notes?.toLowerCase().includes(searchLower)
     );
+  }
+
+  // Document operations
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    const id = this.currentDocumentId++;
+    const document: Document = {
+      ...insertDocument,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.documents.set(id, document);
+    return document;
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    return this.documents.get(id);
+  }
+
+  async getAllDocuments(): Promise<Document[]> {
+    return Array.from(this.documents.values());
+  }
+
+  async updateDocument(id: number, updates: Partial<Document>): Promise<Document | undefined> {
+    const existing = this.documents.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Document = { ...existing, ...updates, updatedAt: new Date() };
+    this.documents.set(id, updated);
+    return updated;
+  }
+
+  async getDocumentByUid(uid: string): Promise<Document | undefined> {
+    return Array.from(this.documents.values()).find(doc => doc.uid === uid);
   }
 }
 

@@ -126,6 +126,20 @@ export const customers = pgTable("customers", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const documents = pgTable("documents", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  uid: text("uid").notNull().unique(),
+  token: text("token").notNull(),
+  hash: text("hash").notNull(),
+  status: text("status").notNull().default("Processed"), // Processed, Signed, Draft
+  author: text("author").notNull(),
+  originalFileName: text("original_file_name").notNull(),
+  originalPdfData: text("original_pdf_data"), // base64 encoded PDF data
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -171,6 +185,12 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
   dateOfBirth: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
 });
 
+export const insertDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Incident = typeof incidents.$inferSelect;
@@ -185,3 +205,5 @@ export type EnforcementReport = typeof enforcementReports.$inferSelect;
 export type InsertEnforcementReport = z.infer<typeof insertEnforcementReportSchema>;
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type Document = typeof documents.$inferSelect;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
