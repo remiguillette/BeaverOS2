@@ -125,6 +125,9 @@ export const insertEnforcementReportSchema = createInsertSchema(enforcementRepor
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  date: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+  fineAmount: z.union([z.number(), z.string().transform((str) => str === "" ? undefined : Number(str))]).optional(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
