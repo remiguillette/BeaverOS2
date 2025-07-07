@@ -60,7 +60,10 @@ export default function BeaverCRM() {
   // Create customer mutation
   const createCustomerMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
-      const res = await apiRequest("POST", "/api/customers", data);
+      const res = await apiRequest("/api/customers", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -72,7 +75,10 @@ export default function BeaverCRM() {
   // Update customer mutation
   const updateCustomerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Customer> }) => {
-      const res = await apiRequest("PUT", `/api/customers/${id}`, data);
+      const res = await apiRequest(`/api/customers/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -480,7 +486,10 @@ function CustomerForm({
         dateOfBirth: data.dateOfBirth ? data.dateOfBirth : undefined,
       };
       
-      const res = await apiRequest("POST", "/api/customers", transformedData);
+      const res = await apiRequest("/api/customers", {
+        method: "POST",
+        body: JSON.stringify(transformedData),
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -492,7 +501,10 @@ function CustomerForm({
   const updateMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
       if (!customer?.id) throw new Error("Customer ID is required");
-      const res = await apiRequest("PUT", `/api/customers/${customer.id}`, data);
+      const res = await apiRequest(`/api/customers/${customer.id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
       return res.json();
     },
     onSuccess: () => {

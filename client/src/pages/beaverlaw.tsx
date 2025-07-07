@@ -48,7 +48,10 @@ export default function BeaverLaw() {
 
   const createAnimalMutation = useMutation({
     mutationFn: async (data: AnimalFormData) => {
-      return await apiRequest("POST", "/api/animals", data);
+      return await apiRequest("/api/animals", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
@@ -69,7 +72,10 @@ export default function BeaverLaw() {
 
   const createEnforcementReportMutation = useMutation({
     mutationFn: async (data: EnforcementReportFormData) => {
-      return await apiRequest("POST", "/api/enforcement-reports", data);
+      return await apiRequest("/api/enforcement-reports", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/enforcement-reports"] });
@@ -448,7 +454,10 @@ function AnimalForm({ onClose }: { onClose: () => void }) {
 
   const createAnimalMutation = useMutation({
     mutationFn: async (data: AnimalFormData) => {
-      return await apiRequest("POST", "/api/animals", data);
+      return await apiRequest("/api/animals", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
@@ -897,7 +906,10 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
 
   const createEnforcementReportMutation = useMutation({
     mutationFn: async (data: EnforcementReportFormData) => {
-      return await apiRequest("POST", "/api/enforcement-reports", data);
+      return await apiRequest("/api/enforcement-reports", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/enforcement-reports"] });

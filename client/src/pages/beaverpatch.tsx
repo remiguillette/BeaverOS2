@@ -52,7 +52,10 @@ export default function BeaverPatch() {
   // Unit status update mutation
   const updateUnitStatusMutation = useMutation({
     mutationFn: async ({ unitId, status }: { unitId: number; status: string }) => {
-      return await apiRequest("POST", `/api/units/${unitId}/status`, { status });
+      return await apiRequest(`/api/units/${unitId}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
@@ -74,7 +77,10 @@ export default function BeaverPatch() {
   // Incident status update mutation
   const updateIncidentStatusMutation = useMutation({
     mutationFn: async ({ incidentId, status }: { incidentId: number; status: string }) => {
-      return await apiRequest("POST", `/api/incidents/${incidentId}/status`, { status });
+      return await apiRequest(`/api/incidents/${incidentId}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
