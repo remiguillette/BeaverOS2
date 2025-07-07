@@ -930,7 +930,15 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
   const onSubmit = (data: EnforcementReportFormData) => {
     // Generate report number
     const reportNumber = `ER-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
-    createEnforcementReportMutation.mutate({ ...data, reportNumber });
+    
+    // Convert fineAmount from string to number if it exists
+    const transformedData = {
+      ...data,
+      reportNumber,
+      fineAmount: data.fineAmount ? Number(data.fineAmount) : undefined,
+    };
+    
+    createEnforcementReportMutation.mutate(transformedData);
   };
 
   return (
