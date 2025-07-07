@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ServiceHeader } from "@/components/service-header";
 import { insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema } from "@shared/schema";
 import type { Invoice, Payment, PosTransaction } from "@shared/schema";
+import PayPalButton from "@/components/PayPalButton";
 
 type InvoiceFormData = z.infer<typeof insertInvoiceSchema>;
 type PaymentFormData = z.infer<typeof insertPaymentSchema>;
@@ -33,6 +34,8 @@ export default function BeaverPay() {
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   const [isPosDialogOpen, setIsPosDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [paypalAmount, setPaypalAmount] = useState("");
+  const [paypalDescription, setPaypalDescription] = useState("");
   const { toast } = useToast();
 
   // Fetch data using React Query
@@ -390,6 +393,8 @@ export default function BeaverPay() {
                         <Input
                           type="number"
                           placeholder="0.00"
+                          value={paypalAmount}
+                          onChange={(e) => setPaypalAmount(e.target.value)}
                           className="bg-beaver-surface border-beaver-surface-light text-white"
                         />
                       </div>
@@ -397,12 +402,29 @@ export default function BeaverPay() {
                         <label className="text-white text-sm">Description</label>
                         <Input
                           placeholder="Payment description"
+                          value={paypalDescription}
+                          onChange={(e) => setPaypalDescription(e.target.value)}
                           className="bg-beaver-surface border-beaver-surface-light text-white"
                         />
                       </div>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                        Process PayPal Payment
-                      </Button>
+                      <div className="w-full">
+                        {paypalAmount && parseFloat(paypalAmount) > 0 ? (
+                          <div className="bg-white p-3 rounded-lg">
+                            <PayPalButton
+                              amount={paypalAmount}
+                              currency="USD"
+                              intent="CAPTURE"
+                            />
+                          </div>
+                        ) : (
+                          <Button 
+                            disabled
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white opacity-50"
+                          >
+                            Enter Amount to Enable PayPal
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
