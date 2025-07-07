@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(32, 95%, 56%);
+  --muted: hsl(0, 0%, 6.7%);
+  --muted-foreground: hsl(0, 0%, 63.9%);
+  --popover: hsl(0, 0%, 6.7%);
+  --popover-foreground: hsl(32, 95%, 56%);
+  --card: hsl(0, 0%, 6.7%);
+  --card-foreground: hsl(32, 95%, 56%);
+  --border: hsl(0, 0%, 10.2%);
+  --input: hsl(0, 0%, 10.2%);
+  --primary: hsl(32, 95%, 56%);
+  --primary-foreground: hsl(0, 0%, 0%);
+  --secondary: hsl(0, 0%, 6.7%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(0, 0%, 10.2%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(32, 95%, 56%);
+  --radius: 0.5rem;
+  --beaver-orange: hsl(32, 95%, 56%);
+  --beaver-dark: hsl(0, 0%, 0%);
+  --beaver-surface: hsl(0, 0%, 6.7%);
+  --beaver-surface-light: hsl(0, 0%, 10.2%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(32, 95%, 56%);
+  --muted: hsl(0, 0%, 6.7%);
+  --muted-foreground: hsl(0, 0%, 63.9%);
+  --popover: hsl(0, 0%, 6.7%);
+  --popover-foreground: hsl(32, 95%, 56%);
+  --card: hsl(0, 0%, 6.7%);
+  --card-foreground: hsl(32, 95%, 56%);
+  --border: hsl(0, 0%, 10.2%);
+  --input: hsl(0, 0%, 10.2%);
+  --primary: hsl(32, 95%, 56%);
+  --primary-foreground: hsl(0, 0%, 0%);
+  --secondary: hsl(0, 0%, 6.7%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(0, 0%, 10.2%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(32, 95%, 56%);
+  --radius: 0.5rem;
+  --beaver-orange: hsl(32, 95%, 56%);
+  --beaver-dark: hsl(0, 0%, 0%);
+  --beaver-surface: hsl(0, 0%, 6.7%);
+  --beaver-surface-light: hsl(0, 0%, 10.2%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--beaver-dark);
+    color: var(--beaver-orange);
+  }
+}
+
+.beaver-orange {
+  color: var(--beaver-orange);
+}
+
+.bg-beaver-dark {
+  background-color: var(--beaver-dark);
+}
+
+.bg-beaver-surface {
+  background-color: var(--beaver-surface);
+}
+
+.bg-beaver-surface-light {
+  background-color: var(--beaver-surface-light);
+}
+
+.border-beaver-surface-light {
+  border-color: var(--beaver-surface-light);
+}
+
+.hover\:bg-beaver-surface-light:hover {
+  background-color: var(--beaver-surface-light);
+}
+
+.hover\:border-beaver-orange:hover {
+  border-color: var(--beaver-orange);
+}
+
+.text-beaver-orange {
+  color: var(--beaver-orange);
+}
+
+.bg-beaver-orange {
+  background-color: var(--beaver-orange);
+}
+
+.hover\:bg-orange-500:hover {
+  background-color: hsl(25, 95%, 53%);
+}
+
+.focus\:ring-beaver-orange:focus {
+  --tw-ring-color: var(--beaver-orange);
+}
+
+.focus\:border-beaver-orange:focus {
+  border-color: var(--beaver-orange);
+}
