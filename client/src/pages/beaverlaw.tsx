@@ -897,8 +897,17 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Create a custom schema that transforms string numbers to actual numbers
+  const enforcementReportFormSchema = insertEnforcementReportSchema.extend({
+    fineAmount: z.union([
+      z.string().transform((val) => val === "" ? undefined : Number(val)),
+      z.number(),
+      z.undefined()
+    ]).optional(),
+  });
+
   const form = useForm<EnforcementReportFormData>({
-    resolver: zodResolver(insertEnforcementReportSchema),
+    resolver: zodResolver(enforcementReportFormSchema),
     defaultValues: {
       type: "municipal_report",
       status: "active",
@@ -931,14 +940,8 @@ function EnforcementReportForm({ onClose }: { onClose: () => void }) {
     // Generate report number
     const reportNumber = `ER-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
     
-    // Convert fineAmount from string to number if it exists
-    const transformedData = {
-      ...data,
-      reportNumber,
-      fineAmount: data.fineAmount ? Number(data.fineAmount) : undefined,
-    };
-    
-    createEnforcementReportMutation.mutate(transformedData);
+    // Data is already transformed by the schema
+    createEnforcementReportMutation.mutate({ ...data, reportNumber });
   };
 
   return (
