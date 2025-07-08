@@ -404,11 +404,26 @@ export default function BeaverAudit() {
 
         <Tabs defaultValue="schedules" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="schedules">📅 Scheduling</TabsTrigger>
-            <TabsTrigger value="audits">📝 Audit Grids</TabsTrigger>
-            <TabsTrigger value="evidence">📸 Evidence</TabsTrigger>
-            <TabsTrigger value="non-compliance">🚨 Non-Compliance</TabsTrigger>
-            <TabsTrigger value="reports">📊 Reports</TabsTrigger>
+            <TabsTrigger value="schedules" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Scheduling
+            </TabsTrigger>
+            <TabsTrigger value="audits" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Audit Grids
+            </TabsTrigger>
+            <TabsTrigger value="evidence" className="flex items-center gap-2">
+              <Camera className="w-4 h-4" />
+              Evidence
+            </TabsTrigger>
+            <TabsTrigger value="non-compliance" className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Non-Compliance
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <FileCheck className="w-4 h-4" />
+              Reports
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="schedules" className="space-y-4">
