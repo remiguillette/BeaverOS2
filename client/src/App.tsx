@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import BeaverPatch from "@/pages/beaverpatch";
-import BeaverLaw from "@/pages/beaverlaw";
+import BeaverPaws from "@/pages/beaverpaws";
 import BeaverCRM from "@/pages/beavercrm";
 import BeaverDoc from "@/pages/beaverdoc";
 import BeaverPay from "@/pages/beaverpay";
@@ -71,9 +71,9 @@ function Router() {
           <BeaverPatch />
         </ProtectedRoute>
       </Route>
-      <Route path="/BeaverLaw">
+      <Route path="/BeaverPaws">
         <ProtectedRoute>
-          <BeaverLaw />
+          <BeaverPaws />
         </ProtectedRoute>
       </Route>
       <Route path="/BeaverCRM">

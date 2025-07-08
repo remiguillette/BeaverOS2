@@ -15,8 +15,8 @@ const services = [
     icon: "shield",
   },
   {
-    id: "beaverlaw",
-    name: "BeaverLaw",
+    id: "beaverpaws",
+    name: "BeaverPaws",
     description: "Animal Controls",
     port: ":5001",
     icon: "cat",
@@ -87,8 +87,8 @@ export default function Dashboard() {
     // Navigate to specific service pages
     if (service.id === "beaverpatch") {
       setLocation("/BeaverPatch");
-    } else if (service.id === "beaverlaw") {
-      setLocation("/BeaverLaw");
+    } else if (service.id === "beaverpaws") {
+      setLocation("/BeaverPaws");
     } else if (service.id === "beavercrm") {
       setLocation("/BeaverCRM");
     } else if (service.id === "beaverdoc") {

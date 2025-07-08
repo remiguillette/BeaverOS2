@@ -26,7 +26,7 @@ import type { Animal, EnforcementReport } from "@shared/schema";
 type AnimalFormData = z.infer<typeof insertAnimalSchema>;
 type EnforcementReportFormData = z.infer<typeof insertEnforcementReportSchema>;
 
-export default function BeaverLaw() {
+export default function BeaverPaws() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("registry");
@@ -131,7 +131,7 @@ export default function BeaverLaw() {
   return (
     <div className="min-h-screen bg-beaver-dark">
       <ServiceHeader 
-        serviceName="BeaverLaw" 
+        serviceName="BeaverPaws" 
         serviceIcon={Cat}
         userName={`Welcome, ${user?.name}`}
       />
