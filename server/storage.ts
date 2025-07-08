@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent } from "@shared/schema";
+import { users, type User, type InsertUser, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -100,6 +100,45 @@ export interface IStorage {
   getAllRiskEvents(): Promise<RiskEvent[]>;
   updateRiskEvent(id: number, updates: Partial<RiskEvent>): Promise<RiskEvent | undefined>;
   getRiskEventsByAssessment(riskAssessmentId: number): Promise<RiskEvent[]>;
+  
+  // BeaverAudit operations
+  // Audit Schedule operations
+  createAuditSchedule(schedule: InsertAuditSchedule): Promise<AuditSchedule>;
+  getAuditSchedule(id: number): Promise<AuditSchedule | undefined>;
+  getAllAuditSchedules(): Promise<AuditSchedule[]>;
+  updateAuditSchedule(id: number, updates: Partial<AuditSchedule>): Promise<AuditSchedule | undefined>;
+  getAuditSchedulesByInspector(inspectorId: string): Promise<AuditSchedule[]>;
+  
+  // Audit Template operations
+  createAuditTemplate(template: InsertAuditTemplate): Promise<AuditTemplate>;
+  getAuditTemplate(id: number): Promise<AuditTemplate | undefined>;
+  getAllAuditTemplates(): Promise<AuditTemplate[]>;
+  updateAuditTemplate(id: number, updates: Partial<AuditTemplate>): Promise<AuditTemplate | undefined>;
+  getAuditTemplatesByType(facilityType: string, missionType: string): Promise<AuditTemplate[]>;
+  
+  // Audit Report operations
+  createAuditReport(report: InsertAuditReport): Promise<AuditReport>;
+  getAuditReport(id: number): Promise<AuditReport | undefined>;
+  getAllAuditReports(): Promise<AuditReport[]>;
+  updateAuditReport(id: number, updates: Partial<AuditReport>): Promise<AuditReport | undefined>;
+  getAuditReportsBySchedule(scheduleId: number): Promise<AuditReport[]>;
+  getAuditReportsByInspector(inspectorId: string): Promise<AuditReport[]>;
+  
+  // Audit Non-Compliance operations
+  createAuditNonCompliance(nonCompliance: InsertAuditNonCompliance): Promise<AuditNonCompliance>;
+  getAuditNonCompliance(id: number): Promise<AuditNonCompliance | undefined>;
+  getAllAuditNonCompliances(): Promise<AuditNonCompliance[]>;
+  updateAuditNonCompliance(id: number, updates: Partial<AuditNonCompliance>): Promise<AuditNonCompliance | undefined>;
+  getAuditNonCompliancesByReport(auditReportId: number): Promise<AuditNonCompliance[]>;
+  getAuditNonCompliancesByStatus(status: string): Promise<AuditNonCompliance[]>;
+  
+  // Audit Evidence operations
+  createAuditEvidence(evidence: InsertAuditEvidence): Promise<AuditEvidence>;
+  getAuditEvidence(id: number): Promise<AuditEvidence | undefined>;
+  getAllAuditEvidence(): Promise<AuditEvidence[]>;
+  updateAuditEvidence(id: number, updates: Partial<AuditEvidence>): Promise<AuditEvidence | undefined>;
+  getAuditEvidenceByReport(auditReportId: number): Promise<AuditEvidence[]>;
+  getAuditEvidenceByNonCompliance(nonComplianceId: number): Promise<AuditEvidence[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -118,6 +157,11 @@ export class MemStorage implements IStorage {
   private riskAssessments: Map<number, RiskAssessment>;
   private mitigationPlans: Map<number, MitigationPlan>;
   private riskEvents: Map<number, RiskEvent>;
+  private auditSchedules: Map<number, AuditSchedule>;
+  private auditTemplates: Map<number, AuditTemplate>;
+  private auditReports: Map<number, AuditReport>;
+  private auditNonCompliances: Map<number, AuditNonCompliance>;
+  private auditEvidence: Map<number, AuditEvidence>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -133,6 +177,11 @@ export class MemStorage implements IStorage {
   private currentRiskAssessmentId: number;
   private currentMitigationPlanId: number;
   private currentRiskEventId: number;
+  private currentAuditScheduleId: number;
+  private currentAuditTemplateId: number;
+  private currentAuditReportId: number;
+  private currentAuditNonComplianceId: number;
+  private currentAuditEvidenceId: number;
 
   constructor() {
     this.users = new Map();
@@ -150,6 +199,11 @@ export class MemStorage implements IStorage {
     this.riskAssessments = new Map();
     this.mitigationPlans = new Map();
     this.riskEvents = new Map();
+    this.auditSchedules = new Map();
+    this.auditTemplates = new Map();
+    this.auditReports = new Map();
+    this.auditNonCompliances = new Map();
+    this.auditEvidence = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -165,6 +219,11 @@ export class MemStorage implements IStorage {
     this.currentRiskAssessmentId = 1;
     this.currentMitigationPlanId = 1;
     this.currentRiskEventId = 1;
+    this.currentAuditScheduleId = 1;
+    this.currentAuditTemplateId = 1;
+    this.currentAuditReportId = 1;
+    this.currentAuditNonComplianceId = 1;
+    this.currentAuditEvidenceId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -802,6 +861,222 @@ export class MemStorage implements IStorage {
       };
       this.riskEvents.set(id, fullEvent);
     });
+
+    // Sample Audit Templates
+    const sampleAuditTemplates = [
+      {
+        name: "Fire Safety Inspection - Command Post",
+        facilityType: "command_post",
+        missionType: "fire_safety",
+        standardsFramework: "OHS",
+        questions: JSON.stringify([
+          { id: 1, text: "Are all emergency exits clearly marked and unobstructed?", type: "boolean", required: true },
+          { id: 2, text: "Are fire extinguishers present and properly maintained?", type: "boolean", required: true },
+          { id: 3, text: "Rate the condition of fire detection systems (1-5)", type: "rating", required: true },
+          { id: 4, text: "Emergency lighting system operational?", type: "boolean", required: true },
+          { id: 5, text: "Additional observations", type: "text", required: false }
+        ])
+      },
+      {
+        name: "Animal Welfare Inspection - Pound",
+        facilityType: "pound",
+        missionType: "animal_intervention",
+        standardsFramework: "PAWS",
+        questions: JSON.stringify([
+          { id: 1, text: "Are animal enclosures clean and properly maintained?", type: "boolean", required: true },
+          { id: 2, text: "Adequate food and water supply for all animals?", type: "boolean", required: true },
+          { id: 3, text: "Rate the ventilation system (1-5)", type: "rating", required: true },
+          { id: 4, text: "Medical isolation areas properly equipped?", type: "boolean", required: true },
+          { id: 5, text: "Staff safety equipment available and used?", type: "boolean", required: true }
+        ])
+      },
+      {
+        name: "First Aid Equipment Inspection - Vehicle",
+        facilityType: "vehicle",
+        missionType: "first_aid",
+        standardsFramework: "PSC",
+        questions: JSON.stringify([
+          { id: 1, text: "First aid kit present and properly stocked?", type: "boolean", required: true },
+          { id: 2, text: "AED device operational and accessible?", type: "boolean", required: true },
+          { id: 3, text: "Rate the condition of medical supplies (1-5)", type: "rating", required: true },
+          { id: 4, text: "Emergency communication equipment functional?", type: "boolean", required: true },
+          { id: 5, text: "Vehicle safety equipment inspection complete?", type: "boolean", required: true }
+        ])
+      }
+    ];
+
+    sampleAuditTemplates.forEach(template => {
+      const id = this.currentAuditTemplateId++;
+      const fullTemplate: AuditTemplate = {
+        ...template,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.auditTemplates.set(id, fullTemplate);
+    });
+
+    // Sample Audit Schedules
+    const sampleAuditSchedules = [
+      {
+        title: "Monthly Fire Safety Inspection - Main Command Post",
+        auditType: "recurring",
+        facilityType: "command_post",
+        missionType: "fire_safety",
+        standardsFramework: "OHS",
+        inspectorId: "INSP001",
+        inspectorName: "Sarah Mitchell",
+        location: "Main Command Post - 123 Safety Blvd",
+        scheduledDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        frequency: "monthly",
+        status: "scheduled"
+      },
+      {
+        title: "Animal Welfare Quarterly Review - Municipal Pound",
+        auditType: "recurring",
+        facilityType: "pound",
+        missionType: "animal_intervention",
+        standardsFramework: "PAWS",
+        inspectorId: "INSP002",
+        inspectorName: "David Rodriguez",
+        location: "Municipal Animal Pound - 456 Care Street",
+        scheduledDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        frequency: "quarterly",
+        status: "scheduled"
+      },
+      {
+        title: "Vehicle First Aid Equipment Check - Unit P-101",
+        auditType: "one_time",
+        facilityType: "vehicle",
+        missionType: "first_aid",
+        standardsFramework: "PSC",
+        inspectorId: "INSP003",
+        inspectorName: "Lisa Chen",
+        location: "Police Vehicle P-101",
+        scheduledDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // tomorrow
+        frequency: null,
+        status: "scheduled"
+      }
+    ];
+
+    sampleAuditSchedules.forEach(schedule => {
+      const id = this.currentAuditScheduleId++;
+      const fullSchedule: AuditSchedule = {
+        ...schedule,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.auditSchedules.set(id, fullSchedule);
+    });
+
+    // Sample Audit Reports
+    const sampleAuditReports = [
+      {
+        scheduleId: 1,
+        reportNumber: "AUD-2025-001",
+        auditDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        inspectorId: "INSP001",
+        inspectorName: "Sarah Mitchell",
+        location: "Community Center - Downtown",
+        facilityType: "community_center",
+        missionType: "fire_safety",
+        standardsFramework: "OHS",
+        overallScore: 87.5,
+        totalItems: 8,
+        compliantItems: 7,
+        nonCompliantItems: 1,
+        criticalIssues: 0,
+        responses: JSON.stringify({
+          "1": true, "2": true, "3": 4, "4": true, "5": false, "6": 5, "7": true, "8": "Minor issue with exit sign visibility"
+        }),
+        digitalSignature: "SMitchell_2025-01-05_14:30",
+        signedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        status: "completed"
+      },
+      {
+        scheduleId: 2,
+        reportNumber: "AUD-2025-002",
+        auditDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+        inspectorId: "INSP002",
+        inspectorName: "David Rodriguez",
+        location: "Municipal Animal Pound",
+        facilityType: "pound",
+        missionType: "animal_intervention",
+        standardsFramework: "PAWS",
+        overallScore: 92.0,
+        totalItems: 10,
+        compliantItems: 9,
+        nonCompliantItems: 1,
+        criticalIssues: 1,
+        responses: JSON.stringify({
+          "1": true, "2": true, "3": 5, "4": true, "5": true, "6": false, "7": 4, "8": true, "9": true, "10": "Critical: Heating system malfunction in kennel area"
+        }),
+        digitalSignature: "DRodriguez_2025-01-02_16:45",
+        signedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        status: "completed"
+      }
+    ];
+
+    sampleAuditReports.forEach(report => {
+      const id = this.currentAuditReportId++;
+      const fullReport: AuditReport = {
+        ...report,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.auditReports.set(id, fullReport);
+    });
+
+    // Sample Audit Non-Compliances
+    const sampleNonCompliances = [
+      {
+        auditReportId: 1,
+        itemNumber: "5",
+        description: "Emergency exit sign partially obscured by equipment",
+        severity: "minor",
+        category: "safety",
+        standardReference: "OHS-001.5",
+        correctiveAction: "Relocate equipment to ensure clear visibility of exit sign",
+        assignedTo: "MAINT001",
+        assignedToName: "Mike Johnson",
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        priority: "medium",
+        status: "open",
+        resolvedAt: null,
+        resolutionNotes: null,
+        evidence: JSON.stringify([])
+      },
+      {
+        auditReportId: 2,
+        itemNumber: "6",
+        description: "Heating system malfunction in kennel area affecting animal comfort",
+        severity: "critical",
+        category: "equipment",
+        standardReference: "PAWS-003.2",
+        correctiveAction: "Immediate repair of heating system and temporary relocation of animals if necessary",
+        assignedTo: "HVAC001",
+        assignedToName: "Tony Stevens",
+        dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // tomorrow
+        priority: "urgent",
+        status: "in_progress",
+        resolvedAt: null,
+        resolutionNotes: "HVAC contractor scheduled for emergency repair",
+        evidence: JSON.stringify([])
+      }
+    ];
+
+    sampleNonCompliances.forEach(nc => {
+      const id = this.currentAuditNonComplianceId++;
+      const fullNonCompliance: AuditNonCompliance = {
+        ...nc,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.auditNonCompliances.set(id, fullNonCompliance);
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -1297,6 +1572,185 @@ export class MemStorage implements IStorage {
 
   async getRiskEventsByAssessment(riskAssessmentId: number): Promise<RiskEvent[]> {
     return Array.from(this.riskEvents.values()).filter(event => event.riskAssessmentId === riskAssessmentId);
+  }
+
+  // BeaverAudit operations implementations
+  // Audit Schedule operations
+  async createAuditSchedule(insertSchedule: InsertAuditSchedule): Promise<AuditSchedule> {
+    const id = this.currentAuditScheduleId++;
+    const schedule: AuditSchedule = {
+      ...insertSchedule,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.auditSchedules.set(id, schedule);
+    return schedule;
+  }
+
+  async getAuditSchedule(id: number): Promise<AuditSchedule | undefined> {
+    return this.auditSchedules.get(id);
+  }
+
+  async getAllAuditSchedules(): Promise<AuditSchedule[]> {
+    return Array.from(this.auditSchedules.values());
+  }
+
+  async updateAuditSchedule(id: number, updates: Partial<AuditSchedule>): Promise<AuditSchedule | undefined> {
+    const existing = this.auditSchedules.get(id);
+    if (!existing) return undefined;
+    const updated: AuditSchedule = { ...existing, ...updates, updatedAt: new Date() };
+    this.auditSchedules.set(id, updated);
+    return updated;
+  }
+
+  async getAuditSchedulesByInspector(inspectorId: string): Promise<AuditSchedule[]> {
+    return Array.from(this.auditSchedules.values()).filter(schedule => schedule.inspectorId === inspectorId);
+  }
+
+  // Audit Template operations
+  async createAuditTemplate(insertTemplate: InsertAuditTemplate): Promise<AuditTemplate> {
+    const id = this.currentAuditTemplateId++;
+    const template: AuditTemplate = {
+      ...insertTemplate,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.auditTemplates.set(id, template);
+    return template;
+  }
+
+  async getAuditTemplate(id: number): Promise<AuditTemplate | undefined> {
+    return this.auditTemplates.get(id);
+  }
+
+  async getAllAuditTemplates(): Promise<AuditTemplate[]> {
+    return Array.from(this.auditTemplates.values());
+  }
+
+  async updateAuditTemplate(id: number, updates: Partial<AuditTemplate>): Promise<AuditTemplate | undefined> {
+    const existing = this.auditTemplates.get(id);
+    if (!existing) return undefined;
+    const updated: AuditTemplate = { ...existing, ...updates, updatedAt: new Date() };
+    this.auditTemplates.set(id, updated);
+    return updated;
+  }
+
+  async getAuditTemplatesByType(facilityType: string, missionType: string): Promise<AuditTemplate[]> {
+    return Array.from(this.auditTemplates.values()).filter(template => 
+      template.facilityType === facilityType && template.missionType === missionType
+    );
+  }
+
+  // Audit Report operations
+  async createAuditReport(insertReport: InsertAuditReport): Promise<AuditReport> {
+    const id = this.currentAuditReportId++;
+    const report: AuditReport = {
+      ...insertReport,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.auditReports.set(id, report);
+    return report;
+  }
+
+  async getAuditReport(id: number): Promise<AuditReport | undefined> {
+    return this.auditReports.get(id);
+  }
+
+  async getAllAuditReports(): Promise<AuditReport[]> {
+    return Array.from(this.auditReports.values());
+  }
+
+  async updateAuditReport(id: number, updates: Partial<AuditReport>): Promise<AuditReport | undefined> {
+    const existing = this.auditReports.get(id);
+    if (!existing) return undefined;
+    const updated: AuditReport = { ...existing, ...updates, updatedAt: new Date() };
+    this.auditReports.set(id, updated);
+    return updated;
+  }
+
+  async getAuditReportsBySchedule(scheduleId: number): Promise<AuditReport[]> {
+    return Array.from(this.auditReports.values()).filter(report => report.scheduleId === scheduleId);
+  }
+
+  async getAuditReportsByInspector(inspectorId: string): Promise<AuditReport[]> {
+    return Array.from(this.auditReports.values()).filter(report => report.inspectorId === inspectorId);
+  }
+
+  // Audit Non-Compliance operations
+  async createAuditNonCompliance(insertNonCompliance: InsertAuditNonCompliance): Promise<AuditNonCompliance> {
+    const id = this.currentAuditNonComplianceId++;
+    const nonCompliance: AuditNonCompliance = {
+      ...insertNonCompliance,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.auditNonCompliances.set(id, nonCompliance);
+    return nonCompliance;
+  }
+
+  async getAuditNonCompliance(id: number): Promise<AuditNonCompliance | undefined> {
+    return this.auditNonCompliances.get(id);
+  }
+
+  async getAllAuditNonCompliances(): Promise<AuditNonCompliance[]> {
+    return Array.from(this.auditNonCompliances.values());
+  }
+
+  async updateAuditNonCompliance(id: number, updates: Partial<AuditNonCompliance>): Promise<AuditNonCompliance | undefined> {
+    const existing = this.auditNonCompliances.get(id);
+    if (!existing) return undefined;
+    const updated: AuditNonCompliance = { ...existing, ...updates, updatedAt: new Date() };
+    this.auditNonCompliances.set(id, updated);
+    return updated;
+  }
+
+  async getAuditNonCompliancesByReport(auditReportId: number): Promise<AuditNonCompliance[]> {
+    return Array.from(this.auditNonCompliances.values()).filter(nc => nc.auditReportId === auditReportId);
+  }
+
+  async getAuditNonCompliancesByStatus(status: string): Promise<AuditNonCompliance[]> {
+    return Array.from(this.auditNonCompliances.values()).filter(nc => nc.status === status);
+  }
+
+  // Audit Evidence operations
+  async createAuditEvidence(insertEvidence: InsertAuditEvidence): Promise<AuditEvidence> {
+    const id = this.currentAuditEvidenceId++;
+    const evidence: AuditEvidence = {
+      ...insertEvidence,
+      id,
+      createdAt: new Date(),
+    };
+    this.auditEvidence.set(id, evidence);
+    return evidence;
+  }
+
+  async getAuditEvidence(id: number): Promise<AuditEvidence | undefined> {
+    return this.auditEvidence.get(id);
+  }
+
+  async getAllAuditEvidence(): Promise<AuditEvidence[]> {
+    return Array.from(this.auditEvidence.values());
+  }
+
+  async updateAuditEvidence(id: number, updates: Partial<AuditEvidence>): Promise<AuditEvidence | undefined> {
+    const existing = this.auditEvidence.get(id);
+    if (!existing) return undefined;
+    const updated: AuditEvidence = { ...existing, ...updates };
+    this.auditEvidence.set(id, updated);
+    return updated;
+  }
+
+  async getAuditEvidenceByReport(auditReportId: number): Promise<AuditEvidence[]> {
+    return Array.from(this.auditEvidence.values()).filter(evidence => evidence.auditReportId === auditReportId);
+  }
+
+  async getAuditEvidenceByNonCompliance(nonComplianceId: number): Promise<AuditEvidence[]> {
+    return Array.from(this.auditEvidence.values()).filter(evidence => evidence.nonComplianceId === nonComplianceId);
   }
 }
 

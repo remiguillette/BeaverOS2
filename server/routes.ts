@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -748,6 +748,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(event);
     } catch (error) {
       res.status(400).json({ error: "Invalid risk event data" });
+    }
+  });
+
+  // BeaverAudit endpoints
+  // Audit Schedules
+  app.get("/api/audit-schedules", async (req, res) => {
+    try {
+      const schedules = await storage.getAllAuditSchedules();
+      res.json(schedules);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch audit schedules" });
+    }
+  });
+
+  app.get("/api/audit-schedules/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const schedule = await storage.getAuditSchedule(id);
+      if (!schedule) {
+        return res.status(404).json({ error: "Audit schedule not found" });
+      }
+      res.json(schedule);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch audit schedule" });
+    }
+  });
+
+  app.post("/api/audit-schedules", async (req, res) => {
+    try {
+      const validatedData = insertAuditScheduleSchema.parse(req.body);
+      const schedule = await storage.createAuditSchedule(validatedData);
+      res.json(schedule);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid audit schedule data" });
+    }
+  });
+
+  app.patch("/api/audit-schedules/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateAuditSchedule(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Audit schedule not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update audit schedule" });
+    }
+  });
+
+  // Audit Templates
+  app.get("/api/audit-templates", async (req, res) => {
+    try {
+      const templates = await storage.getAllAuditTemplates();
+      res.json(templates);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch audit templates" });
+    }
+  });
+
+  app.post("/api/audit-templates", async (req, res) => {
+    try {
+      const validatedData = insertAuditTemplateSchema.parse(req.body);
+      const template = await storage.createAuditTemplate(validatedData);
+      res.json(template);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid audit template data" });
+    }
+  });
+
+  // Audit Reports
+  app.get("/api/audit-reports", async (req, res) => {
+    try {
+      const reports = await storage.getAllAuditReports();
+      res.json(reports);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch audit reports" });
+    }
+  });
+
+  app.post("/api/audit-reports", async (req, res) => {
+    try {
+      const validatedData = insertAuditReportSchema.parse(req.body);
+      const report = await storage.createAuditReport(validatedData);
+      res.json(report);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid audit report data" });
+    }
+  });
+
+  app.patch("/api/audit-reports/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateAuditReport(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Audit report not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update audit report" });
+    }
+  });
+
+  // Audit Non-Compliances
+  app.get("/api/audit-non-compliances", async (req, res) => {
+    try {
+      const nonCompliances = await storage.getAllAuditNonCompliances();
+      res.json(nonCompliances);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch audit non-compliances" });
+    }
+  });
+
+  app.post("/api/audit-non-compliances", async (req, res) => {
+    try {
+      const validatedData = insertAuditNonComplianceSchema.parse(req.body);
+      const nonCompliance = await storage.createAuditNonCompliance(validatedData);
+      res.json(nonCompliance);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid audit non-compliance data" });
+    }
+  });
+
+  app.patch("/api/audit-non-compliances/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateAuditNonCompliance(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Audit non-compliance not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update audit non-compliance" });
+    }
+  });
+
+  // Audit Evidence
+  app.get("/api/audit-evidence", async (req, res) => {
+    try {
+      const evidence = await storage.getAllAuditEvidence();
+      res.json(evidence);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch audit evidence" });
+    }
+  });
+
+  app.post("/api/audit-evidence", async (req, res) => {
+    try {
+      const validatedData = insertAuditEvidenceSchema.parse(req.body);
+      const evidence = await storage.createAuditEvidence(validatedData);
+      res.json(evidence);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid audit evidence data" });
     }
   });
 

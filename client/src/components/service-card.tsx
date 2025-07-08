@@ -1,4 +1,4 @@
-import { Shield, MessageCircle, QrCode, User, FileText, CreditCard, Monitor, IdCard, Cat } from "lucide-react";
+import { Shield, MessageCircle, QrCode, User, FileText, CreditCard, Monitor, IdCard, Cat, ClipboardCheck } from "lucide-react";
 
 interface Service {
   id: string;
@@ -18,6 +18,7 @@ const iconMap = {
   monitor: Monitor,
   id: IdCard,
   cat: Cat,
+  audit: ClipboardCheck,
 };
 
 interface ServiceCardProps {

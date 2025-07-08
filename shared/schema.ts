@@ -359,6 +359,96 @@ export const riskEvents = pgTable("risk_events", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// BeaverAudit tables
+export const auditSchedules = pgTable("audit_schedules", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  auditType: text("audit_type").notNull(), // recurring, one_time
+  facilityType: text("facility_type").notNull(), // command_post, community_center, pound, vehicle, equipment
+  missionType: text("mission_type").notNull(), // animal_intervention, fire_safety, first_aid, health_safety
+  standardsFramework: text("standards_framework").notNull(), // OHS, PSC, PAWS, municipal_laws, CSA
+  inspectorId: text("inspector_id").notNull(),
+  inspectorName: text("inspector_name").notNull(),
+  location: text("location").notNull(),
+  scheduledDate: timestamp("scheduled_date").notNull(),
+  frequency: text("frequency"), // daily, weekly, monthly, quarterly, annually
+  status: text("status").notNull().default("scheduled"), // scheduled, in_progress, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const auditTemplates = pgTable("audit_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  facilityType: text("facility_type").notNull(),
+  missionType: text("mission_type").notNull(),
+  standardsFramework: text("standards_framework").notNull(),
+  questions: text("questions"), // JSON string of audit questions
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const auditReports = pgTable("audit_reports", {
+  id: serial("id").primaryKey(),
+  scheduleId: integer("schedule_id").notNull(),
+  reportNumber: text("report_number").notNull().unique(),
+  auditDate: timestamp("audit_date").notNull(),
+  inspectorId: text("inspector_id").notNull(),
+  inspectorName: text("inspector_name").notNull(),
+  location: text("location").notNull(),
+  facilityType: text("facility_type").notNull(),
+  missionType: text("mission_type").notNull(),
+  standardsFramework: text("standards_framework").notNull(),
+  overallScore: real("overall_score").default(0), // compliance percentage
+  totalItems: integer("total_items").default(0),
+  compliantItems: integer("compliant_items").default(0),
+  nonCompliantItems: integer("non_compliant_items").default(0),
+  criticalIssues: integer("critical_issues").default(0),
+  responses: text("responses"), // JSON string of audit responses
+  digitalSignature: text("digital_signature"),
+  signedAt: timestamp("signed_at"),
+  status: text("status").notNull().default("draft"), // draft, completed, reviewed, approved
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const auditNonCompliances = pgTable("audit_non_compliances", {
+  id: serial("id").primaryKey(),
+  auditReportId: integer("audit_report_id").notNull(),
+  itemNumber: text("item_number").notNull(),
+  description: text("description").notNull(),
+  severity: text("severity").notNull(), // critical, minor, urgent
+  category: text("category"), // safety, documentation, equipment, training
+  standardReference: text("standard_reference"),
+  correctiveAction: text("corrective_action"),
+  assignedTo: text("assigned_to"),
+  assignedToName: text("assigned_to_name"),
+  dueDate: timestamp("due_date"),
+  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
+  status: text("status").notNull().default("open"), // open, in_progress, resolved, closed
+  resolvedAt: timestamp("resolved_at"),
+  resolutionNotes: text("resolution_notes"),
+  evidence: text("evidence"), // JSON string of evidence files/photos
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const auditEvidence = pgTable("audit_evidence", {
+  id: serial("id").primaryKey(),
+  auditReportId: integer("audit_report_id").notNull(),
+  nonComplianceId: integer("non_compliance_id"), // optional reference
+  fileName: text("file_name").notNull(),
+  fileType: text("file_type").notNull(), // photo, video, pdf, document
+  fileSize: integer("file_size"),
+  fileData: text("file_data"), // base64 encoded file data
+  gpsLatitude: real("gps_latitude"),
+  gpsLongitude: real("gps_longitude"),
+  timestamp: timestamp("timestamp").defaultNow(),
+  description: text("description"),
+  uploadedBy: text("uploaded_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // BeaverRisk insert schemas
 export const insertRiskLocationSchema = createInsertSchema(riskLocations).omit({
   id: true,
@@ -427,3 +517,57 @@ export type MitigationPlan = typeof mitigationPlans.$inferSelect;
 export type InsertMitigationPlan = z.infer<typeof insertMitigationPlanSchema>;
 export type RiskEvent = typeof riskEvents.$inferSelect;
 export type InsertRiskEvent = z.infer<typeof insertRiskEventSchema>;
+
+// BeaverAudit insert schemas
+export const insertAuditScheduleSchema = createInsertSchema(auditSchedules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  scheduledDate: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+});
+
+export const insertAuditTemplateSchema = createInsertSchema(auditTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAuditReportSchema = createInsertSchema(auditReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  auditDate: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+  signedAt: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+  overallScore: z.union([z.number(), z.string().transform((str) => str === "" ? 0 : Number(str))]).optional(),
+});
+
+export const insertAuditNonComplianceSchema = createInsertSchema(auditNonCompliances).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  dueDate: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+  resolvedAt: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+});
+
+export const insertAuditEvidenceSchema = createInsertSchema(auditEvidence).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  timestamp: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+  fileSize: z.union([z.number(), z.string().transform((str) => str === "" ? undefined : Number(str))]).optional(),
+});
+
+// BeaverAudit types
+export type AuditSchedule = typeof auditSchedules.$inferSelect;
+export type InsertAuditSchedule = z.infer<typeof insertAuditScheduleSchema>;
+export type AuditTemplate = typeof auditTemplates.$inferSelect;
+export type InsertAuditTemplate = z.infer<typeof insertAuditTemplateSchema>;
+export type AuditReport = typeof auditReports.$inferSelect;
+export type InsertAuditReport = z.infer<typeof insertAuditReportSchema>;
+export type AuditNonCompliance = typeof auditNonCompliances.$inferSelect;
+export type InsertAuditNonCompliance = z.infer<typeof insertAuditNonComplianceSchema>;
+export type AuditEvidence = typeof auditEvidence.$inferSelect;
+export type InsertAuditEvidence = z.infer<typeof insertAuditEvidenceSchema>;
