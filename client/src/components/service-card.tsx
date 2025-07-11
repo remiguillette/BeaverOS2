@@ -1,4 +1,5 @@
 import { Shield, MessageCircle, QrCode, User, FileText, CreditCard, Monitor, IdCard, Cat, ClipboardCheck } from "lucide-react";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface Service {
   id: string;
@@ -28,6 +29,7 @@ interface ServiceCardProps {
 
 export function ServiceCard({ service, onClick }: ServiceCardProps) {
   const IconComponent = iconMap[service.icon as keyof typeof iconMap] || Shield;
+  const { t } = useTranslation();
 
   return (
     <div
@@ -49,7 +51,7 @@ export function ServiceCard({ service, onClick }: ServiceCardProps) {
           </div>
           <div className="mt-auto">
             <span className="inline-block text-xs sm:text-sm bg-beaver-surface-light px-2 sm:px-3 py-1 sm:py-2 rounded text-gray-400">
-              Click to Open
+              {t('dashboard.clickToOpen')}
             </span>
           </div>
         </div>
