@@ -1,6 +1,5 @@
-import { LogOut, Boxes, Zap, Activity, Languages, User } from "lucide-react";
+import { LogOut, Languages, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ServiceCard } from "@/components/service-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -237,44 +236,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-xs sm:text-sm">Total Services</p>
-                  <p className="text-xl sm:text-2xl font-bold text-beaver-orange">{services.length}</p>
-                </div>
-                <Boxes className="text-beaver-orange w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-xs sm:text-sm">Active Connections</p>
-                  <p className="text-xl sm:text-2xl font-bold text-green-400">7</p>
-                </div>
-                <Zap className="text-green-400 w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-beaver-surface border-beaver-surface-light sm:col-span-2 lg:col-span-1">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-xs sm:text-sm">System Status</p>
-                  <p className="text-xl sm:text-2xl font-bold text-green-400">Online</p>
-                </div>
-                <Activity className="text-green-400 w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </main>
     </div>
   );
