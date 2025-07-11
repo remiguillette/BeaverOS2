@@ -200,19 +200,12 @@ export default function BeaverPatch() {
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-beaver-orange/20 rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-beaver-orange" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-beaver-orange">Frontline Dispatch</h1>
-                <p className="text-gray-400">Computer-Aided Dispatch System</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
               <Badge variant="outline" className="text-green-400 border-green-400">
                 <Activity className="w-3 h-3 mr-1" />
                 System Online
               </Badge>
+            </div>
+            <div className="flex items-center space-x-3">
               <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
                 <DialogTrigger asChild>
                   <button
