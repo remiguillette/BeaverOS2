@@ -43,7 +43,12 @@ export function ServiceHeader({
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            <span className="text-gray-300 hidden sm:inline">{userName || user?.name}</span>
+            <button
+              onClick={() => setLocation("/profile")}
+              className="text-gray-300 hover:text-white transition-colors cursor-pointer hidden sm:inline"
+            >
+              {userName || user?.name}
+            </button>
             {actionButton}
             <Button
               onClick={handleBackToServices}

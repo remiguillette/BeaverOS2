@@ -121,7 +121,13 @@ export default function Dashboard() {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
-              <span className="text-gray-300 hidden sm:inline">{user?.name}</span>
+              <button
+                onClick={() => setLocation("/profile")}
+                className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <span className="hidden sm:inline">{user?.name}</span>
+                <span className="sm:hidden">Profile</span>
+              </button>
               <Button
                 onClick={handleLogout}
                 variant="ghost"

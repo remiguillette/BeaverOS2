@@ -6,6 +6,16 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  email: text("email"),
+  department: text("department"),
+  position: text("position"),
+  phone: text("phone"),
+  avatar: text("avatar"), // URL to profile picture
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const incidents = pgTable("incidents", {
@@ -203,10 +213,23 @@ export const posTransactions = pgTable("pos_transactions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateUserProfileSchema = createInsertSchema(users).omit({
+  id: true,
   username: true,
   password: true,
+  createdAt: true,
+  updatedAt: true,
 });
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
 
 export const insertIncidentSchema = createInsertSchema(incidents).omit({
   id: true,
