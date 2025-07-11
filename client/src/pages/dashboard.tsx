@@ -160,25 +160,19 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             {/* Logo and Title */}
             <div className="flex items-center space-x-2 md:space-x-4">
-              <div className={`w-8 h-8 md:w-10 lg:w-12 md:h-10 lg:h-12 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0 scale-75'}`}>
+              <div className={`w-10 h-10 md:w-12 lg:w-16 md:h-12 lg:h-16 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0 scale-75'}`}>
                 <img 
                   src={beaverImage} 
                   alt="BEAVERNET Logo" 
-                  className="w-6 h-6 md:w-8 lg:w-10 md:h-8 lg:h-10 object-contain" 
+                  className="w-8 h-8 md:w-10 lg:w-14 md:h-10 lg:h-14 object-contain" 
                 />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center space-x-1">
-                  <span className={`text-[#0d6efd] text-lg md:text-2xl lg:text-4xl font-bold transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0 translate-x-[-20px]'}`}>
-                    BEAVER
-                  </span>
-                  <span className={`text-[#f89422] text-lg md:text-2xl lg:text-4xl font-bold transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100' : 'opacity-0 translate-x-[20px]'}`}>
-                    NET
+                  <span className={`text-[#f89422] text-lg md:text-2xl lg:text-4xl font-bold transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0 translate-x-[-20px]'}`}>
+                    BEAVERNET
                   </span>
                 </div>
-                <p className={`text-[#f89422] text-sm md:text-lg lg:text-2xl font-bold whitespace-nowrap transition-all duration-700 delay-400 ${isLoaded ? 'opacity-100' : 'opacity-0 translate-y-[10px]'}`}>
-                  System
-                </p>
               </div>
             </div>
 
