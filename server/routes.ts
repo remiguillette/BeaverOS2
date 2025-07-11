@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema, insertCharacterSchema, insertLicenseSchema, insertVehicleRegistrationSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema, insertCharacterSchema, insertLicenseSchema, insertVehicleRegistrationSchema, insertCallEntryLogSchema } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -46,9 +46,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // PIN Authentication endpoint for 911 Dispatchers
+  app.post("/api/auth/verify-pin", async (req, res) => {
+    try {
+      const { userId, pin } = req.body;
+      
+      if (!userId || !pin) {
+        return res.status(400).json({ error: "User ID and PIN are required" });
+      }
+
+      const isValid = await storage.verifyEmployeePin(userId, pin);
+      
+      if (isValid) {
+        // Generate session ID for tracking
+        const sessionId = `SESSION-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        res.json({ 
+          success: true, 
+          sessionId,
+          message: "PIN verified successfully" 
+        });
+      } else {
+        res.status(401).json({ 
+          success: false, 
+          message: "Invalid PIN" 
+        });
+      }
+    } catch (error) {
+      console.error("PIN verification error:", error);
+      res.status(500).json({ error: "PIN verification failed" });
+    }
+  });
+
+  // Chip Card Authentication endpoint
+  app.post("/api/auth/verify-chip-card", async (req, res) => {
+    try {
+      const { chipCardId } = req.body;
+      
+      if (!chipCardId) {
+        return res.status(400).json({ error: "Chip card ID is required" });
+      }
+
+      const user = await storage.verifyChipCard(chipCardId);
+      
+      if (user) {
+        // Generate session ID for tracking
+        const sessionId = `SESSION-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        res.json({ 
+          success: true, 
+          sessionId,
+          user: {
+            id: user.id,
+            username: user.username,
+            name: `${user.firstName} ${user.lastName}`,
+            accessLevel: user.accessLevel,
+            department: user.department,
+            position: user.position
+          },
+          message: "Chip card verified successfully" 
+        });
+      } else {
+        res.status(401).json({ 
+          success: false, 
+          message: "Invalid chip card" 
+        });
+      }
+    } catch (error) {
+      console.error("Chip card verification error:", error);
+      res.status(500).json({ error: "Chip card verification failed" });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", authenticated: true });
+  });
+
+  // Call entry log endpoints
+  app.post("/api/call-entry-logs", async (req, res) => {
+    try {
+      const validatedData = insertCallEntryLogSchema.parse(req.body);
+      const log = await storage.createCallEntryLog(validatedData);
+      res.json(log);
+    } catch (error) {
+      console.error("Call entry log creation error:", error);
+      res.status(400).json({ error: "Invalid call entry log data" });
+    }
+  });
+
+  app.get("/api/call-entry-logs", async (req, res) => {
+    try {
+      const incidentId = req.query.incidentId ? parseInt(req.query.incidentId as string) : undefined;
+      const logs = await storage.getCallEntryLogs(incidentId);
+      res.json(logs);
+    } catch (error) {
+      console.error("Call entry logs fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch call entry logs" });
+    }
+  });
+
+  app.get("/api/call-entry-logs/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const logs = await storage.getCallEntryLogsByUser(userId);
+      res.json(logs);
+    } catch (error) {
+      console.error("User call entry logs fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch user call entry logs" });
+    }
   });
 
   // User profile endpoints

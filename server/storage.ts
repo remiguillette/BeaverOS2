@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type UpdateUserProfile, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence, type Character, type InsertCharacter, type License, type InsertLicense, type VehicleRegistration, type InsertVehicleRegistration } from "@shared/schema";
+import { users, type User, type InsertUser, type UpdateUserProfile, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence, type Character, type InsertCharacter, type License, type InsertLicense, type VehicleRegistration, type InsertVehicleRegistration, type CallEntryLog, type InsertCallEntryLog } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -9,6 +9,13 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
   updateUserProfile(id: number, profileData: UpdateUserProfile): Promise<User | undefined>;
+  verifyEmployeePin(userId: number, pin: string): Promise<boolean>;
+  verifyChipCard(chipCardId: string): Promise<User | undefined>;
+  
+  // Call entry log operations
+  createCallEntryLog(log: InsertCallEntryLog): Promise<CallEntryLog>;
+  getCallEntryLogs(incidentId?: number): Promise<CallEntryLog[]>;
+  getCallEntryLogsByUser(userId: number): Promise<CallEntryLog[]>;
   
   // Incident operations
   createIncident(incident: InsertIncident): Promise<Incident>;
@@ -195,6 +202,7 @@ export class MemStorage implements IStorage {
   private characters: Map<number, Character>;
   private licenses: Map<number, License>;
   private vehicleRegistrations: Map<number, VehicleRegistration>;
+  private callEntryLogs: Map<number, CallEntryLog>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -218,6 +226,7 @@ export class MemStorage implements IStorage {
   private currentCharacterId: number;
   private currentLicenseId: number;
   private currentVehicleRegistrationId: number;
+  private currentCallEntryLogId: number;
 
   constructor() {
     this.users = new Map();
@@ -243,6 +252,7 @@ export class MemStorage implements IStorage {
     this.characters = new Map();
     this.licenses = new Map();
     this.vehicleRegistrations = new Map();
+    this.callEntryLogs = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -266,6 +276,7 @@ export class MemStorage implements IStorage {
     this.currentCharacterId = 1;
     this.currentLicenseId = 1;
     this.currentVehicleRegistrationId = 1;
+    this.currentCallEntryLogId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -285,12 +296,35 @@ export class MemStorage implements IStorage {
       phone: "+1-555-0123",
       avatar: null,
       accessLevel: "SuperAdmin",
+      employeePin: "1234",
+      chipCardId: "CARD-001-RG",
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    // Sample 911 Dispatcher user
+    const dispatcherUser: User = {
+      id: 2,
+      username: "dispatcher1",
+      password: "911dispatch",
+      firstName: "Sarah",
+      lastName: "Johnson",
+      email: "s.johnson@beavernet.system",
+      department: "Emergency Services",
+      position: "911 Dispatcher",
+      phone: "+1-555-0124",
+      avatar: null,
+      accessLevel: "911 Dispatcher",
+      employeePin: "5678",
+      chipCardId: "CARD-002-SJ",
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     this.users.set(1, sampleUser);
-    this.currentUserId = 2;
+    this.users.set(2, dispatcherUser);
+    this.currentUserId = 3;
 
     // Sample units
     const sampleUnits = [
@@ -1419,6 +1453,43 @@ export class MemStorage implements IStorage {
     const updated: User = { ...existing, ...profileData, updatedAt: new Date() };
     this.users.set(id, updated);
     return updated;
+  }
+
+  async verifyEmployeePin(userId: number, pin: string): Promise<boolean> {
+    const user = this.users.get(userId);
+    return user ? user.employeePin === pin : false;
+  }
+
+  async verifyChipCard(chipCardId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.chipCardId === chipCardId
+    );
+  }
+
+  // Call entry log operations
+  async createCallEntryLog(log: InsertCallEntryLog): Promise<CallEntryLog> {
+    const id = this.currentCallEntryLogId++;
+    const fullLog: CallEntryLog = {
+      ...log,
+      id,
+      createdAt: new Date(),
+    };
+    this.callEntryLogs.set(id, fullLog);
+    return fullLog;
+  }
+
+  async getCallEntryLogs(incidentId?: number): Promise<CallEntryLog[]> {
+    const logs = Array.from(this.callEntryLogs.values());
+    if (incidentId) {
+      return logs.filter(log => log.incidentId === incidentId);
+    }
+    return logs;
+  }
+
+  async getCallEntryLogsByUser(userId: number): Promise<CallEntryLog[]> {
+    return Array.from(this.callEntryLogs.values()).filter(
+      log => log.callTakerId === userId
+    );
   }
 
   async createIncident(insertIncident: InsertIncident): Promise<Incident> {

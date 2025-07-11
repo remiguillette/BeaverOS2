@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
+import { DispatcherAuthModal } from "./dispatcher-auth-modal";
 
 interface AccessProtectedRouteProps {
   children: React.ReactNode;
@@ -25,6 +26,11 @@ export function AccessProtectedRoute({ children, pageName }: AccessProtectedRout
     isLoading: true,
     hasAccess: false,
   });
+  const [showDispatcherAuth, setShowDispatcherAuth] = useState(false);
+  const [dispatcherSession, setDispatcherSession] = useState<{
+    sessionId: string;
+    callTaker: { id: number; name: string };
+  } | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated || isLoading || !user) {
@@ -59,6 +65,11 @@ export function AccessProtectedRoute({ children, pageName }: AccessProtectedRout
             hasAccess: data.hasAccess,
             message: data.message
           });
+          
+          // Show dispatcher auth modal for 911 Dispatcher users on BeaverPatch
+          if (data.hasAccess && user?.accessLevel === "911 Dispatcher" && pageName === "beaverpatch") {
+            setShowDispatcherAuth(true);
+          }
         } else {
           const errorData = await response.json();
           setAccessCheck({
@@ -118,5 +129,28 @@ export function AccessProtectedRoute({ children, pageName }: AccessProtectedRout
     );
   }
 
+  // Show dispatcher authentication modal for 911 Dispatcher users
+  if (user?.accessLevel === "911 Dispatcher" && pageName === "beaverpatch" && showDispatcherAuth) {
+    return (
+      <>
+        <DispatcherAuthModal
+          isOpen={showDispatcherAuth}
+          onClose={() => setShowDispatcherAuth(false)}
+          onSuccess={(sessionId, callTaker) => {
+            setDispatcherSession({ sessionId, callTaker });
+            setShowDispatcherAuth(false);
+          }}
+        />
+        <div className="min-h-screen bg-beaver-dark flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-beaver-orange text-xl mb-4">911 Dispatcher Authentication Required</div>
+            <p className="text-gray-300">Please complete authentication to access BeaverPatch</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // If dispatcher has authenticated, render children with session context
   return <>{children}</>;
 }

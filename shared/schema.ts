@@ -14,9 +14,25 @@ export const users = pgTable("users", {
   phone: text("phone"),
   avatar: text("avatar"), // URL to profile picture
   accessLevel: text("access_level").notNull().default("User"), // SuperAdmin, Admin, IT Web Support, 911 Supervisor, 911 Dispatcher, User
+  employeePin: text("employee_pin"), // 4-digit PIN for 911 Dispatcher authentication
+  chipCardId: text("chip_card_id"), // Chip card ID for scanner authentication
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 911 Call Entry Tracking
+export const callEntryLogs = pgTable("call_entry_logs", {
+  id: serial("id").primaryKey(),
+  incidentId: integer("incident_id").references(() => incidents.id),
+  callTakerId: integer("call_taker_id").references(() => users.id),
+  callTakerName: text("call_taker_name").notNull(),
+  authMethod: text("auth_method").notNull(), // "pin" or "chip_card"
+  entryTime: timestamp("entry_time").defaultNow(),
+  sessionId: text("session_id").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const incidents = pgTable("incidents", {
@@ -255,9 +271,16 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertCallEntryLogSchema = createInsertSchema(callEntryLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
+export type CallEntryLog = typeof callEntryLogs.$inferSelect;
+export type InsertCallEntryLog = z.infer<typeof insertCallEntryLogSchema>;
 
 export const insertIncidentSchema = createInsertSchema(incidents).omit({
   id: true,
