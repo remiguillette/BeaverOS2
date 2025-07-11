@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,6 +45,7 @@ export default function BeaverCRM() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const queryClient = useQueryClient();
+  const newCustomerButtonRef = useRef<HTMLButtonElement>(null);
 
   // Fetch customers
   const { data: customers = [], isLoading } = useQuery({
@@ -118,6 +119,34 @@ export default function BeaverCRM() {
     return phone;
   };
 
+  // Animated gradient effect for buttons
+  useEffect(() => {
+    let angle = 0;
+    let animationFrameId: number;
+
+    const rotateGradient = () => {
+      angle = (angle + 1) % 360;
+      
+      // Apply to all buttons with gradient effect
+      const buttons = [newCustomerButtonRef.current];
+      buttons.forEach(button => {
+        if (button) {
+          button.style.setProperty("--gradient-angle", `${angle}deg`);
+        }
+      });
+      
+      animationFrameId = requestAnimationFrame(rotateGradient);
+    };
+
+    rotateGradient();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
@@ -140,10 +169,13 @@ export default function BeaverCRM() {
                 </Badge>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
-                      <Plus className="w-4 h-4 mr-2" />
-                      New Customer
-                    </Button>
+                    <button
+                      ref={newCustomerButtonRef}
+                      className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm"
+                    >
+                      <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 text-[#f89422]" />
+                      <span className="hidden sm:inline">New Customer</span>
+                    </button>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-beaver-surface border-beaver-surface-light">
                     <DialogHeader>

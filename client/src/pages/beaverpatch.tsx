@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Shield, Users, AlertTriangle, Activity, Plus, Filter, Search, Phone, Clock, MapPin, Car, Truck, Ambulance, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,7 @@ export default function BeaverPatch() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const newIncidentButtonRef = useRef<HTMLButtonElement>(null);
 
   const { data: incidents = [], isLoading: loadingIncidents } = useQuery<Incident[]>({
     queryKey: ["/api/incidents"],
@@ -156,6 +157,34 @@ export default function BeaverPatch() {
   const activeIncidents = incidents.filter(incident => incident.status !== "resolved");
   const highPriorityIncidents = incidents.filter(incident => incident.priority === "high");
 
+  // Animated gradient effect for buttons
+  useEffect(() => {
+    let angle = 0;
+    let animationFrameId: number;
+
+    const rotateGradient = () => {
+      angle = (angle + 1) % 360;
+      
+      // Apply to all buttons with gradient effect
+      const buttons = [newIncidentButtonRef.current];
+      buttons.forEach(button => {
+        if (button) {
+          button.style.setProperty("--gradient-angle", `${angle}deg`);
+        }
+      });
+      
+      animationFrameId = requestAnimationFrame(rotateGradient);
+    };
+
+    rotateGradient();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
@@ -186,10 +215,13 @@ export default function BeaverPatch() {
               </Badge>
               <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
                 <DialogTrigger asChild>
-                  <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Incident
-                  </Button>
+                  <button
+                    ref={newIncidentButtonRef}
+                    className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm"
+                  >
+                    <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 text-[#f89422]" />
+                    <span className="hidden sm:inline">New Incident</span>
+                  </button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl bg-beaver-surface border-beaver-surface-light">
                   <IncidentForm onClose={() => setShowIncidentForm(false)} />

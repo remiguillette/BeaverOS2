@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -141,6 +141,7 @@ export default function BeaverRisk() {
   const [selectedRisk, setSelectedRisk] = useState<RiskAssessment | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const newAssessmentButtonRef = useRef<HTMLButtonElement>(null);
 
   // Data fetching hooks
   const { data: riskLocations = [], isLoading: locationsLoading } = useQuery<RiskLocation[]>({
@@ -183,6 +184,34 @@ export default function BeaverRisk() {
     activePlans: mitigationPlans.filter(p => p.status === "in_progress").length,
     recentEvents: riskEvents.filter(e => new Date(e.eventDate) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
   };
+
+  // Animated gradient effect for buttons
+  useEffect(() => {
+    let angle = 0;
+    let animationFrameId: number;
+
+    const rotateGradient = () => {
+      angle = (angle + 1) % 360;
+      
+      // Apply to all buttons with gradient effect
+      const buttons = [newAssessmentButtonRef.current];
+      buttons.forEach(button => {
+        if (button) {
+          button.style.setProperty("--gradient-angle", `${angle}deg`);
+        }
+      });
+      
+      animationFrameId = requestAnimationFrame(rotateGradient);
+    };
+
+    rotateGradient();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
 
   // Risk Assessment Dialog
   const RiskAssessmentDialog = ({ assessment, onClose }: { assessment?: RiskAssessment; onClose: () => void }) => {
@@ -497,10 +526,13 @@ export default function BeaverRisk() {
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Assessment
-                </Button>
+                <button
+                  ref={newAssessmentButtonRef}
+                  className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm"
+                >
+                  <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 text-[#f89422]" />
+                  <span className="hidden sm:inline">New Assessment</span>
+                </button>
               </DialogTrigger>
               <RiskAssessmentDialog onClose={() => {}} />
             </Dialog>
