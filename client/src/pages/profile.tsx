@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Mail, Phone, Building, UserCheck, ArrowLeft, Save } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import { EnhancedHeader } from "@/components/enhanced-header";
 
 const updateProfileSchema = z.object({
   firstName: z.string().optional(),
@@ -128,24 +129,13 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-beaver-dark">
-      {/* Header */}
-      <header className="bg-beaver-surface border-b border-beaver-surface-light">
-        <div className="w-full px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <div className="flex items-center space-x-3">
-              <h1 className="text-xl font-bold text-beaver-orange">User Profile</h1>
-            </div>
-            <Button
-              onClick={() => setLocation("/dashboard")}
-              variant="ghost"
-              className="bg-beaver-surface-light hover:bg-gray-700 text-white"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
+      <EnhancedHeader
+        serviceName="Profile"
+        serviceIcon={User}
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
+        backButtonAction={() => setLocation("/dashboard")}
+      />
 
       {/* Main Content */}
       <main className="w-full px-3 sm:px-6 lg:px-8 py-6">

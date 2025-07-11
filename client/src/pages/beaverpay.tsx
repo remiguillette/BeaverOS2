@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ServiceHeader } from "@/components/service-header";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import { insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema } from "@shared/schema";
 import type { Invoice, Payment, PosTransaction } from "@shared/schema";
 import PayPalButton from "@/components/PayPalButton";
@@ -130,19 +130,12 @@ export default function BeaverPay() {
   return (
     <div className="min-h-screen bg-beaver-dark">
       {/* Service Header */}
-      <ServiceHeader
+      <EnhancedHeader
         serviceName="BeaverPay"
         serviceIcon={CreditCard}
-        userName={user?.name}
-        actionButton={
-          <Button
-            onClick={() => setLocation("/dashboard")}
-            variant="outline"
-            className="bg-beaver-surface border-beaver-surface-light text-white hover:bg-beaver-orange hover:text-black"
-          >
-            ← Back to Dashboard
-          </Button>
-        }
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
+        backButtonAction={() => setLocation("/dashboard")}
       />
 
       {/* Main Content */}

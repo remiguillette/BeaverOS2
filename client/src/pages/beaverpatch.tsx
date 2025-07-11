@@ -13,7 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { IncidentForm } from "@/components/incident-form";
 import { DispatchMap } from "@/components/dispatch-map";
-import { ServiceHeader } from "@/components/service-header";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import type { Incident, Unit } from "@shared/schema";
 
 export default function BeaverPatch() {
@@ -172,10 +172,12 @@ export default function BeaverPatch() {
 
   return (
     <div className="min-h-screen bg-beaver-dark">
-      <ServiceHeader 
+      <EnhancedHeader 
         serviceName="BeaverPatch" 
         serviceIcon={Shield} 
         actionButton={actionButton}
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
       />
 
       {/* Main Content */}

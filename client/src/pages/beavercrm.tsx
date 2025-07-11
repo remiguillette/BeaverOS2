@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ServiceHeader } from "@/components/service-header";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import { insertCustomerSchema, type Customer, type InsertCustomer } from "@shared/schema";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -137,10 +137,12 @@ export default function BeaverCRM() {
 
   return (
     <div className="min-h-screen bg-beaver-dark">
-      <ServiceHeader 
+      <EnhancedHeader 
         serviceName="BeaverCRM" 
         serviceIcon={Users} 
         actionButton={actionButton}
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
       />
 
       {/* Main Content */}

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ServiceHeader } from "@/components/service-header";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import { 
   ClipboardCheck, 
   Calendar, 
@@ -320,15 +320,13 @@ export default function BeaverAudit() {
   const criticalIssues = nonCompliances.filter(nc => nc.severity === "critical").length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <ServiceHeader
+    <div className="min-h-screen bg-beaver-dark">
+      <EnhancedHeader
         serviceName="BeaverAudit"
         serviceIcon={ClipboardCheck}
-        actionButton={
-          <Button onClick={handleBackToDashboard} variant="outline">
-            Back to Dashboard
-          </Button>
-        }
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
+        backButtonAction={handleBackToDashboard}
       />
 
       <div className="container mx-auto p-6">

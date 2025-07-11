@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ServiceHeader } from "@/components/service-header";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import { insertAnimalSchema, insertEnforcementReportSchema } from "@shared/schema";
 import type { Animal, EnforcementReport } from "@shared/schema";
 
@@ -130,10 +130,11 @@ export default function BeaverPaws() {
 
   return (
     <div className="min-h-screen bg-beaver-dark">
-      <ServiceHeader 
+      <EnhancedHeader 
         serviceName="BeaverPaws" 
         serviceIcon={Cat}
-        userName={`Welcome, ${user?.name}`}
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
       />
 
       {/* Main Content */}

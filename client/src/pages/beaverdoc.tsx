@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ServiceHeader } from "@/components/service-header";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import { FileText, Upload, Shield, Clock, Hash, User, CheckCircle, FileCheck, ExternalLink, Download, Eye } from "lucide-react";
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -515,15 +515,13 @@ This document has passed all security verification checks and maintains its lega
 
 
   return (
-    <div className="min-h-screen bg-background">
-      <ServiceHeader
+    <div className="min-h-screen bg-beaver-dark">
+      <EnhancedHeader
         serviceName="BeaverDoc"
         serviceIcon={FileText}
-        actionButton={
-          <Button onClick={handleBackToDashboard} variant="outline">
-            Back to Dashboard
-          </Button>
-        }
+        showBackButton={true}
+        backButtonText="Back to Dashboard"
+        backButtonAction={handleBackToDashboard}
       />
 
       <div className="container mx-auto p-6">
