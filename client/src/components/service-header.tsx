@@ -34,10 +34,8 @@ export function ServiceHeader({
               <img src={beaverImage} alt="Beaver" className="w-6 h-6 object-contain" />
             </div>
             <h1 className="text-xl font-bold text-beaver-orange">BEAVERNET</h1>
-            <div className="hidden sm:block text-gray-400">|</div>
-            <div className="flex items-center space-x-2">
-              <ServiceIcon className="w-5 h-5 text-beaver-orange" />
-              <span className="text-lg font-semibold text-white">{serviceName}</span>
+            <div className="hidden sm:block text-gray-400">|
+            
             </div>
           </div>
 
