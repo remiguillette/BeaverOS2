@@ -50,8 +50,8 @@ const services = [
   {
     id: "beaverdmv",
     name: "BeaverDMV",
-    description: "Vérification du permis de conduire",
-    port: "TBD",
+    description: "Driver's License & Vehicle Registration",
+    port: ":5010",
     icon: "id",
   },
   {
@@ -91,6 +91,8 @@ export default function Dashboard() {
       setLocation("/BeaverRisk");
     } else if (service.id === "beaveraudit") {
       setLocation("/BeaverAudit");
+    } else if (service.id === "beaverdmv") {
+      setLocation("/BeaverDMV");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} not yet implemented`);

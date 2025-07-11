@@ -13,6 +13,7 @@ import BeaverDoc from "@/pages/beaverdoc";
 import BeaverPay from "@/pages/beaverpay";
 import BeaverRisk from "@/pages/beaverisk";
 import BeaverAudit from "@/pages/beaveraudit";
+import BeaverDMV from "@/pages/beaverdmv";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
@@ -100,6 +101,11 @@ function Router() {
       <Route path="/BeaverAudit">
         <ProtectedRoute>
           <BeaverAudit />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/BeaverDMV">
+        <ProtectedRoute>
+          <BeaverDMV />
         </ProtectedRoute>
       </Route>
       <Route path="/profile">

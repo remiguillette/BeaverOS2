@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MapPin, Phone, Clock, AlertTriangle, Heart, User, Baby } from "lucide-react";
+import { Plus, MapPin, Phone, Clock, AlertTriangle, Heart, User, Baby, Search, Car, CreditCard, CheckCircle, XCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,6 +31,12 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("call-info");
   const [isMedicalEmergency, setIsMedicalEmergency] = useState(false);
+  const [licenseQuery, setLicenseQuery] = useState("");
+  const [vehicleQuery, setVehicleQuery] = useState("");
+  const [licenseResult, setLicenseResult] = useState<any>(null);
+  const [vehicleResult, setVehicleResult] = useState<any>(null);
+  const [isSearchingLicense, setIsSearchingLicense] = useState(false);
+  const [isSearchingVehicle, setIsSearchingVehicle] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -119,6 +125,106 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
     }
   };
 
+  // DMV Search Functions
+  const searchLicense = async (licenseNumber: string) => {
+    if (!licenseNumber.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a license number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearchingLicense(true);
+    try {
+      const response = await fetch(`/api/licenses/search?licenseNumber=${encodeURIComponent(licenseNumber)}`);
+      if (response.ok) {
+        const result = await response.json();
+        setLicenseResult(result);
+        toast({
+          title: "License Found",
+          description: `License ${licenseNumber} found in database`,
+        });
+      } else {
+        const error = await response.json();
+        setLicenseResult(null);
+        toast({
+          title: "License Not Found",
+          description: error.error || "No license found with that number",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      setLicenseResult(null);
+      toast({
+        title: "Search Error",
+        description: "Failed to search license database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingLicense(false);
+    }
+  };
+
+  const searchVehicle = async (plateNumber: string) => {
+    if (!plateNumber.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a plate number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearchingVehicle(true);
+    try {
+      const response = await fetch(`/api/vehicles/search?plate=${encodeURIComponent(plateNumber)}`);
+      if (response.ok) {
+        const result = await response.json();
+        setVehicleResult(result);
+        toast({
+          title: "Vehicle Found",
+          description: `Vehicle ${plateNumber} found in database`,
+        });
+      } else {
+        const error = await response.json();
+        setVehicleResult(null);
+        toast({
+          title: "Vehicle Not Found",
+          description: error.error || "No vehicle found with that plate number",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      setVehicleResult(null);
+      toast({
+        title: "Search Error",
+        description: "Failed to search vehicle database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingVehicle(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "ACTIVE":
+        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+      case "SUSPENDED":
+        return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="w-3 h-3 mr-1" />Suspended</Badge>;
+      case "EXPIRED":
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1" />Expired</Badge>;
+      case "REVOKED":
+        return <Badge className="bg-red-600 hover:bg-red-700"><XCircle className="w-3 h-3 mr-1" />Revoked</Badge>;
+      case "STOLEN":
+        return <Badge className="bg-red-700 hover:bg-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Stolen</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
   // Watch type changes to trigger medical emergency UI
   const watchedType = form.watch("type");
   if (watchedType === "medical" && !isMedicalEmergency) {
@@ -131,7 +237,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
     <div className="w-full">
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-beaver-surface border-beaver-surface-light">
+          <TabsList className="grid w-full grid-cols-5 bg-beaver-surface border-beaver-surface-light">
             <TabsTrigger value="call-info" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <Phone className="w-4 h-4 mr-2" />
               Call Info
@@ -139,6 +245,10 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
             <TabsTrigger value="location" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <MapPin className="w-4 h-4 mr-2" />
               Location
+            </TabsTrigger>
+            <TabsTrigger value="dmv" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
+              <Search className="w-4 h-4 mr-2" />
+              DMV
             </TabsTrigger>
             <TabsTrigger value="triage" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black" disabled={!isMedicalEmergency}>
               <Heart className="w-4 h-4 mr-2" />
@@ -355,6 +465,183 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* DMV Database Query Tab */}
+          <TabsContent value="dmv" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* License Search */}
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader>
+                  <CardTitle className="text-beaver-orange flex items-center">
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Driver's License Search
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Enter license number (e.g., D12345678)"
+                      value={licenseQuery}
+                      onChange={(e) => setLicenseQuery(e.target.value)}
+                      className="bg-beaver-surface-light border-gray-600 text-white"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          searchLicense(licenseQuery);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => searchLicense(licenseQuery)}
+                      disabled={isSearchingLicense}
+                      className="bg-beaver-orange hover:bg-orange-600 text-black"
+                    >
+                      {isSearchingLicense ? <Clock className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                    </Button>
+                  </div>
+
+                  {licenseResult && (
+                    <div className="mt-4 p-4 bg-beaver-surface-light border border-gray-600 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-white font-semibold">
+                            {licenseResult.character ? 
+                              `${licenseResult.character.firstName} ${licenseResult.character.lastName}` : 
+                              "Unknown Driver"
+                            }
+                          </h4>
+                          <p className="text-gray-400 text-sm">{licenseResult.license.licenseNumber}</p>
+                        </div>
+                        {getStatusBadge(licenseResult.license.status)}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-gray-400">Type</p>
+                          <p className="text-white">{licenseResult.license.type}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Expires</p>
+                          <p className="text-white">{new Date(licenseResult.license.expiration).toLocaleDateString()}</p>
+                        </div>
+                        {licenseResult.license.restrictions && (
+                          <div className="col-span-2">
+                            <p className="text-gray-400">Restrictions</p>
+                            <p className="text-white">{licenseResult.license.restrictions}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {licenseResult.character && (
+                        <div className="mt-3 pt-3 border-t border-gray-600">
+                          <p className="text-gray-400 text-sm">Address</p>
+                          <p className="text-white text-sm">
+                            {licenseResult.character.address}, {licenseResult.character.city}, {licenseResult.character.province} {licenseResult.character.postalCode}
+                          </p>
+                          {licenseResult.character.phone && (
+                            <p className="text-white text-sm">Phone: {licenseResult.character.phone}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Vehicle Search */}
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader>
+                  <CardTitle className="text-beaver-orange flex items-center">
+                    <Car className="w-5 h-5 mr-2" />
+                    Vehicle Registration Search
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Enter plate number (e.g., ABC123)"
+                      value={vehicleQuery}
+                      onChange={(e) => setVehicleQuery(e.target.value)}
+                      className="bg-beaver-surface-light border-gray-600 text-white"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          searchVehicle(vehicleQuery);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => searchVehicle(vehicleQuery)}
+                      disabled={isSearchingVehicle}
+                      className="bg-beaver-orange hover:bg-orange-600 text-black"
+                    >
+                      {isSearchingVehicle ? <Clock className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                    </Button>
+                  </div>
+
+                  {vehicleResult && (
+                    <div className="mt-4 p-4 bg-beaver-surface-light border border-gray-600 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-white font-semibold">
+                            {vehicleResult.vehicle.year} {vehicleResult.vehicle.make} {vehicleResult.vehicle.model}
+                          </h4>
+                          <p className="text-gray-400 text-sm">Plate: {vehicleResult.vehicle.plate}</p>
+                          <p className="text-gray-400 text-sm">
+                            Owner: {vehicleResult.character ? 
+                              `${vehicleResult.character.firstName} ${vehicleResult.character.lastName}` : 
+                              "Unknown"
+                            }
+                          </p>
+                        </div>
+                        {getStatusBadge(vehicleResult.vehicle.status)}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-gray-400">Type</p>
+                          <p className="text-white">{vehicleResult.vehicle.vehicleType}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Color</p>
+                          <p className="text-white">{vehicleResult.vehicle.color}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Registration Exp.</p>
+                          <p className="text-white">{new Date(vehicleResult.vehicle.expiration).toLocaleDateString()}</p>
+                        </div>
+                        {vehicleResult.vehicle.insuranceExpiration && (
+                          <div>
+                            <p className="text-gray-400">Insurance Exp.</p>
+                            <p className="text-white">{new Date(vehicleResult.vehicle.insuranceExpiration).toLocaleDateString()}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {vehicleResult.vehicle.vin && (
+                        <div className="mt-3 pt-3 border-t border-gray-600">
+                          <p className="text-gray-400 text-sm">VIN</p>
+                          <p className="text-white text-sm font-mono">{vehicleResult.vehicle.vin}</p>
+                        </div>
+                      )}
+
+                      {vehicleResult.character && (
+                        <div className="mt-3 pt-3 border-t border-gray-600">
+                          <p className="text-gray-400 text-sm">Owner Address</p>
+                          <p className="text-white text-sm">
+                            {vehicleResult.character.address}, {vehicleResult.character.city}, {vehicleResult.character.province} {vehicleResult.character.postalCode}
+                          </p>
+                          {vehicleResult.character.phone && (
+                            <p className="text-white text-sm">Phone: {vehicleResult.character.phone}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Medical Triage Tab */}

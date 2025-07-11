@@ -610,6 +610,100 @@ export const insertAuditEvidenceSchema = createInsertSchema(auditEvidence).omit(
   fileSize: z.union([z.number(), z.string().transform((str) => str === "" ? undefined : Number(str))]).optional(),
 });
 
+// BeaverDMV - License and Vehicle Registration Tables
+export const characters = pgTable("characters", {
+  id: serial("id").primaryKey(),
+  syncId: text("sync_id").unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  dateOfBirth: timestamp("date_of_birth"),
+  address: text("address"),
+  city: text("city"),
+  province: text("province"),
+  postalCode: text("postal_code"),
+  phone: text("phone"),
+  email: text("email"),
+  emergencyContact: text("emergency_contact"),
+  emergencyPhone: text("emergency_phone"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const licenses = pgTable("licenses", {
+  id: serial("id").primaryKey(),
+  syncId: text("sync_id").unique(),
+  owner: text("owner").notNull(), // character ID
+  characterId: integer("character_id").references(() => characters.id),
+  type: text("type").notNull().default("DRIVERS"), // DRIVERS, MOTORCYCLE, CDL, etc.
+  licenseNumber: text("license_number").notNull().unique(),
+  status: text("status").notNull().default("ACTIVE"), // ACTIVE, SUSPENDED, EXPIRED, REVOKED
+  expiration: timestamp("expiration").notNull(),
+  restrictions: text("restrictions"), // glasses required, daylight only, etc.
+  endorsements: text("endorsements"), // motorcycle, hazmat, etc.
+  issueDate: timestamp("issue_date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const vehicleRegistrations = pgTable("vehicle_registrations", {
+  id: serial("id").primaryKey(),
+  syncId: text("sync_id").unique(),
+  owner: text("owner").notNull(), // character ID
+  characterId: integer("character_id").references(() => characters.id),
+  // Vehicle details
+  vehicleType: text("vehicle_type").notNull(), // COUPE, SEDAN, SUV, TRUCK, MOTORCYCLE, etc.
+  make: text("make").notNull(),
+  model: text("model").notNull(),
+  year: text("year").notNull(),
+  color: text("color").notNull(),
+  plate: text("plate").notNull().unique(),
+  vin: text("vin").unique(),
+  // Registration details
+  status: text("status").notNull().default("ACTIVE"), // ACTIVE, EXPIRED, SUSPENDED, STOLEN
+  expiration: timestamp("expiration").notNull(),
+  registrationNumber: text("registration_number").unique(),
+  insuranceCompany: text("insurance_company"),
+  insurancePolicy: text("insurance_policy"),
+  insuranceExpiration: timestamp("insurance_expiration"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// BeaverDMV Insert Schemas
+export const insertCharacterSchema = createInsertSchema(characters).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  dateOfBirth: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+});
+
+export const insertLicenseSchema = createInsertSchema(licenses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  expiration: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+  issueDate: z.union([z.date(), z.string().transform((str) => str === "" ? new Date() : new Date(str))]).optional(),
+});
+
+export const insertVehicleRegistrationSchema = createInsertSchema(vehicleRegistrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  expiration: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+  insuranceExpiration: z.union([z.date(), z.string().transform((str) => str === "" ? undefined : new Date(str))]).optional(),
+});
+
+// BeaverDMV types
+export type Character = typeof characters.$inferSelect;
+export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
+export type License = typeof licenses.$inferSelect;
+export type InsertLicense = z.infer<typeof insertLicenseSchema>;
+export type VehicleRegistration = typeof vehicleRegistrations.$inferSelect;
+export type InsertVehicleRegistration = z.infer<typeof insertVehicleRegistrationSchema>;
+
 // BeaverAudit types
 export type AuditSchedule = typeof auditSchedules.$inferSelect;
 export type InsertAuditSchedule = z.infer<typeof insertAuditScheduleSchema>;

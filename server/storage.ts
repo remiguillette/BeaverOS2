@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type UpdateUserProfile, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence } from "@shared/schema";
+import { users, type User, type InsertUser, type UpdateUserProfile, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence, type Character, type InsertCharacter, type License, type InsertLicense, type VehicleRegistration, type InsertVehicleRegistration } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -141,6 +141,34 @@ export interface IStorage {
   updateAuditEvidence(id: number, updates: Partial<AuditEvidence>): Promise<AuditEvidence | undefined>;
   getAuditEvidenceByReport(auditReportId: number): Promise<AuditEvidence[]>;
   getAuditEvidenceByNonCompliance(nonComplianceId: number): Promise<AuditEvidence[]>;
+
+  // BeaverDMV operations
+  // Character operations
+  createCharacter(character: InsertCharacter): Promise<Character>;
+  getCharacter(id: number): Promise<Character | undefined>;
+  getAllCharacters(): Promise<Character[]>;
+  updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined>;
+  searchCharacters(query: string): Promise<Character[]>;
+  getCharacterBySyncId(syncId: string): Promise<Character | undefined>;
+
+  // License operations
+  createLicense(license: InsertLicense): Promise<License>;
+  getLicense(id: number): Promise<License | undefined>;
+  getAllLicenses(): Promise<License[]>;
+  updateLicense(id: number, updates: Partial<License>): Promise<License | undefined>;
+  getLicenseByNumber(licenseNumber: string): Promise<License | undefined>;
+  getLicensesByCharacterId(characterId: number): Promise<License[]>;
+  getLicensesByOwner(owner: string): Promise<License[]>;
+
+  // Vehicle Registration operations  
+  createVehicleRegistration(registration: InsertVehicleRegistration): Promise<VehicleRegistration>;
+  getVehicleRegistration(id: number): Promise<VehicleRegistration | undefined>;
+  getAllVehicleRegistrations(): Promise<VehicleRegistration[]>;
+  updateVehicleRegistration(id: number, updates: Partial<VehicleRegistration>): Promise<VehicleRegistration | undefined>;
+  getVehicleRegistrationByPlate(plate: string): Promise<VehicleRegistration | undefined>;
+  getVehicleRegistrationByVin(vin: string): Promise<VehicleRegistration | undefined>;
+  getVehicleRegistrationsByCharacterId(characterId: number): Promise<VehicleRegistration[]>;
+  getVehicleRegistrationsByOwner(owner: string): Promise<VehicleRegistration[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -164,6 +192,9 @@ export class MemStorage implements IStorage {
   private auditReports: Map<number, AuditReport>;
   private auditNonCompliances: Map<number, AuditNonCompliance>;
   private auditEvidence: Map<number, AuditEvidence>;
+  private characters: Map<number, Character>;
+  private licenses: Map<number, License>;
+  private vehicleRegistrations: Map<number, VehicleRegistration>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -184,6 +215,9 @@ export class MemStorage implements IStorage {
   private currentAuditReportId: number;
   private currentAuditNonComplianceId: number;
   private currentAuditEvidenceId: number;
+  private currentCharacterId: number;
+  private currentLicenseId: number;
+  private currentVehicleRegistrationId: number;
 
   constructor() {
     this.users = new Map();
@@ -206,6 +240,9 @@ export class MemStorage implements IStorage {
     this.auditReports = new Map();
     this.auditNonCompliances = new Map();
     this.auditEvidence = new Map();
+    this.characters = new Map();
+    this.licenses = new Map();
+    this.vehicleRegistrations = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -226,6 +263,9 @@ export class MemStorage implements IStorage {
     this.currentAuditReportId = 1;
     this.currentAuditNonComplianceId = 1;
     this.currentAuditEvidenceId = 1;
+    this.currentCharacterId = 1;
+    this.currentLicenseId = 1;
+    this.currentVehicleRegistrationId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -1098,6 +1138,246 @@ export class MemStorage implements IStorage {
       };
       this.auditNonCompliances.set(id, fullNonCompliance);
     });
+
+    // BeaverDMV Sample Data
+    // Sample Characters
+    const sampleCharacters = [
+      {
+        syncId: "CHAR001",
+        firstName: "John",
+        lastName: "Smith",
+        dateOfBirth: new Date("1985-06-15"),
+        address: "123 Main Street",
+        city: "Beaverton",
+        province: "Ontario",
+        postalCode: "K7A 2B3",
+        phone: "+1-613-555-0101",
+        email: "john.smith@email.com",
+        emergencyContact: "Jane Smith",
+        emergencyPhone: "+1-613-555-0102"
+      },
+      {
+        syncId: "CHAR002",
+        firstName: "Sarah",
+        lastName: "Johnson",
+        dateOfBirth: new Date("1990-03-22"),
+        address: "456 Oak Avenue",
+        city: "Beaverton",
+        province: "Ontario",
+        postalCode: "K7A 3C4",
+        phone: "+1-613-555-0201",
+        email: "sarah.johnson@email.com",
+        emergencyContact: "Mike Johnson",
+        emergencyPhone: "+1-613-555-0202"
+      },
+      {
+        syncId: "CHAR003",
+        firstName: "Robert",
+        lastName: "Davis",
+        dateOfBirth: new Date("1978-11-08"),
+        address: "789 Pine Road",
+        city: "Beaverton",
+        province: "Ontario",
+        postalCode: "K7A 4D5",
+        phone: "+1-613-555-0301",
+        email: "robert.davis@email.com",
+        emergencyContact: "Lisa Davis",
+        emergencyPhone: "+1-613-555-0302"
+      },
+      {
+        syncId: "CHAR004",
+        firstName: "Emily",
+        lastName: "Wilson",
+        dateOfBirth: new Date("1995-08-14"),
+        address: "321 Cedar Lane",
+        city: "Beaverton",
+        province: "Ontario",
+        postalCode: "K7A 5E6",
+        phone: "+1-613-555-0401",
+        email: "emily.wilson@email.com",
+        emergencyContact: "Thomas Wilson",
+        emergencyPhone: "+1-613-555-0402"
+      }
+    ];
+
+    sampleCharacters.forEach(char => {
+      const id = this.currentCharacterId++;
+      const fullCharacter: Character = {
+        ...char,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.characters.set(id, fullCharacter);
+    });
+
+    // Sample Licenses
+    const sampleLicenses = [
+      {
+        syncId: "LIC001",
+        owner: "CHAR001",
+        characterId: 1,
+        type: "DRIVERS",
+        licenseNumber: "D12345678",
+        status: "ACTIVE",
+        expiration: new Date("2027-06-15"),
+        restrictions: "Must wear corrective lenses",
+        endorsements: null,
+        issueDate: new Date("2022-06-15")
+      },
+      {
+        syncId: "LIC002", 
+        owner: "CHAR002",
+        characterId: 2,
+        type: "DRIVERS",
+        licenseNumber: "D23456789",
+        status: "ACTIVE",
+        expiration: new Date("2028-03-22"),
+        restrictions: null,
+        endorsements: "Motorcycle",
+        issueDate: new Date("2023-03-22")
+      },
+      {
+        syncId: "LIC003",
+        owner: "CHAR003",
+        characterId: 3,
+        type: "CDL",
+        licenseNumber: "C34567890",
+        status: "ACTIVE",
+        expiration: new Date("2026-11-08"),
+        restrictions: "No nighttime driving",
+        endorsements: "Hazmat, Passenger",
+        issueDate: new Date("2021-11-08")
+      },
+      {
+        syncId: "LIC004",
+        owner: "CHAR004",
+        characterId: 4,
+        type: "DRIVERS",
+        licenseNumber: "D45678901",
+        status: "SUSPENDED",
+        expiration: new Date("2029-08-14"),
+        restrictions: null,
+        endorsements: null,
+        issueDate: new Date("2024-08-14")
+      }
+    ];
+
+    sampleLicenses.forEach(license => {
+      const id = this.currentLicenseId++;
+      const fullLicense: License = {
+        ...license,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.licenses.set(id, fullLicense);
+    });
+
+    // Sample Vehicle Registrations
+    const sampleVehicleRegistrations = [
+      {
+        syncId: "VEH001",
+        owner: "CHAR001",
+        characterId: 1,
+        vehicleType: "SEDAN",
+        make: "TOYOTA",
+        model: "CAMRY",
+        year: "2020",
+        color: "BLUE",
+        plate: "ABC123",
+        vin: "1HGCM82633A123456",
+        status: "ACTIVE",
+        expiration: new Date("2025-12-31"),
+        registrationNumber: "REG123456",
+        insuranceCompany: "Beaver Insurance Co.",
+        insurancePolicy: "POL123456",
+        insuranceExpiration: new Date("2025-06-15")
+      },
+      {
+        syncId: "VEH002",
+        owner: "CHAR002",
+        characterId: 2,
+        vehicleType: "SUV",
+        make: "HONDA",
+        model: "CR-V",
+        year: "2022",
+        color: "WHITE",
+        plate: "XYZ789",
+        vin: "2HGCM82633A234567",
+        status: "ACTIVE",
+        expiration: new Date("2025-12-31"),
+        registrationNumber: "REG234567",
+        insuranceCompany: "Safe Drive Insurance",
+        insurancePolicy: "POL234567",
+        insuranceExpiration: new Date("2025-03-22")
+      },
+      {
+        syncId: "VEH003",
+        owner: "CHAR003",
+        characterId: 3,
+        vehicleType: "TRUCK",
+        make: "FORD",
+        model: "F-150",
+        year: "2019",
+        color: "RED",
+        plate: "TRK456",
+        vin: "3HGCM82633A345678",
+        status: "ACTIVE",
+        expiration: new Date("2025-12-31"),
+        registrationNumber: "REG345678",
+        insuranceCompany: "Commercial Auto Insurance",
+        insurancePolicy: "POL345678",
+        insuranceExpiration: new Date("2025-11-08")
+      },
+      {
+        syncId: "VEH004",
+        owner: "CHAR004",
+        characterId: 4,
+        vehicleType: "COUPE",
+        make: "FORD",
+        model: "MUSTANG",
+        year: "2021",
+        color: "SILVER",
+        plate: "1234ABCD",
+        vin: "4HGCM82633A456789",
+        status: "SUSPENDED",
+        expiration: new Date("2025-12-31"),
+        registrationNumber: "REG456789",
+        insuranceCompany: "Young Driver Insurance",
+        insurancePolicy: "POL456789",
+        insuranceExpiration: new Date("2025-08-14")
+      },
+      {
+        syncId: "VEH005",
+        owner: "CHAR002",
+        characterId: 2,
+        vehicleType: "MOTORCYCLE",
+        make: "YAMAHA",
+        model: "YZF-R3",
+        year: "2023",
+        color: "BLACK",
+        plate: "BIKE88",
+        vin: "5HGCM82633A567890",
+        status: "ACTIVE",
+        expiration: new Date("2025-12-31"),
+        registrationNumber: "REG567890",
+        insuranceCompany: "Motorcycle Insurance Plus",
+        insurancePolicy: "POL567890",
+        insuranceExpiration: new Date("2025-03-22")
+      }
+    ];
+
+    sampleVehicleRegistrations.forEach(vehicle => {
+      const id = this.currentVehicleRegistrationId++;
+      const fullVehicle: VehicleRegistration = {
+        ...vehicle,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.vehicleRegistrations.set(id, fullVehicle);
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -1795,6 +2075,136 @@ export class MemStorage implements IStorage {
 
   async getAuditEvidenceByNonCompliance(nonComplianceId: number): Promise<AuditEvidence[]> {
     return Array.from(this.auditEvidence.values()).filter(evidence => evidence.nonComplianceId === nonComplianceId);
+  }
+
+  // BeaverDMV Implementation Methods
+  // Character operations
+  async createCharacter(insertCharacter: InsertCharacter): Promise<Character> {
+    const id = this.currentCharacterId++;
+    const character: Character = {
+      ...insertCharacter,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.characters.set(id, character);
+    return character;
+  }
+
+  async getCharacter(id: number): Promise<Character | undefined> {
+    return this.characters.get(id);
+  }
+
+  async getAllCharacters(): Promise<Character[]> {
+    return Array.from(this.characters.values());
+  }
+
+  async updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined> {
+    const existing = this.characters.get(id);
+    if (!existing) return undefined;
+    const updated: Character = { ...existing, ...updates, updatedAt: new Date() };
+    this.characters.set(id, updated);
+    return updated;
+  }
+
+  async searchCharacters(query: string): Promise<Character[]> {
+    const searchLower = query.toLowerCase();
+    return Array.from(this.characters.values()).filter(character =>
+      character.firstName?.toLowerCase().includes(searchLower) ||
+      character.lastName?.toLowerCase().includes(searchLower) ||
+      character.phone?.toLowerCase().includes(searchLower) ||
+      character.email?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  async getCharacterBySyncId(syncId: string): Promise<Character | undefined> {
+    return Array.from(this.characters.values()).find(character => character.syncId === syncId);
+  }
+
+  // License operations
+  async createLicense(insertLicense: InsertLicense): Promise<License> {
+    const id = this.currentLicenseId++;
+    const license: License = {
+      ...insertLicense,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.licenses.set(id, license);
+    return license;
+  }
+
+  async getLicense(id: number): Promise<License | undefined> {
+    return this.licenses.get(id);
+  }
+
+  async getAllLicenses(): Promise<License[]> {
+    return Array.from(this.licenses.values());
+  }
+
+  async updateLicense(id: number, updates: Partial<License>): Promise<License | undefined> {
+    const existing = this.licenses.get(id);
+    if (!existing) return undefined;
+    const updated: License = { ...existing, ...updates, updatedAt: new Date() };
+    this.licenses.set(id, updated);
+    return updated;
+  }
+
+  async getLicenseByNumber(licenseNumber: string): Promise<License | undefined> {
+    return Array.from(this.licenses.values()).find(license => license.licenseNumber === licenseNumber);
+  }
+
+  async getLicensesByCharacterId(characterId: number): Promise<License[]> {
+    return Array.from(this.licenses.values()).filter(license => license.characterId === characterId);
+  }
+
+  async getLicensesByOwner(owner: string): Promise<License[]> {
+    return Array.from(this.licenses.values()).filter(license => license.owner === owner);
+  }
+
+  // Vehicle Registration operations
+  async createVehicleRegistration(insertRegistration: InsertVehicleRegistration): Promise<VehicleRegistration> {
+    const id = this.currentVehicleRegistrationId++;
+    const registration: VehicleRegistration = {
+      ...insertRegistration,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.vehicleRegistrations.set(id, registration);
+    return registration;
+  }
+
+  async getVehicleRegistration(id: number): Promise<VehicleRegistration | undefined> {
+    return this.vehicleRegistrations.get(id);
+  }
+
+  async getAllVehicleRegistrations(): Promise<VehicleRegistration[]> {
+    return Array.from(this.vehicleRegistrations.values());
+  }
+
+  async updateVehicleRegistration(id: number, updates: Partial<VehicleRegistration>): Promise<VehicleRegistration | undefined> {
+    const existing = this.vehicleRegistrations.get(id);
+    if (!existing) return undefined;
+    const updated: VehicleRegistration = { ...existing, ...updates, updatedAt: new Date() };
+    this.vehicleRegistrations.set(id, updated);
+    return updated;
+  }
+
+  async getVehicleRegistrationByPlate(plate: string): Promise<VehicleRegistration | undefined> {
+    return Array.from(this.vehicleRegistrations.values()).find(registration => registration.plate === plate);
+  }
+
+  async getVehicleRegistrationByVin(vin: string): Promise<VehicleRegistration | undefined> {
+    return Array.from(this.vehicleRegistrations.values()).find(registration => registration.vin === vin);
+  }
+
+  async getVehicleRegistrationsByCharacterId(characterId: number): Promise<VehicleRegistration[]> {
+    return Array.from(this.vehicleRegistrations.values()).filter(registration => registration.characterId === characterId);
+  }
+
+  async getVehicleRegistrationsByOwner(owner: string): Promise<VehicleRegistration[]> {
+    return Array.from(this.vehicleRegistrations.values()).filter(registration => registration.owner === owner);
   }
 }
 

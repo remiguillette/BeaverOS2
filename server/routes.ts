@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema, insertCharacterSchema, insertLicenseSchema, insertVehicleRegistrationSchema } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -931,6 +931,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(evidence);
     } catch (error) {
       res.status(400).json({ error: "Invalid audit evidence data" });
+    }
+  });
+
+  // BeaverDMV API Routes
+  // Character endpoints
+  app.get("/api/characters", async (req, res) => {
+    try {
+      const characters = await storage.getAllCharacters();
+      res.json(characters);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch characters" });
+    }
+  });
+
+  app.get("/api/characters/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ error: "Search query required" });
+      }
+      const characters = await storage.searchCharacters(query);
+      res.json(characters);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search characters" });
+    }
+  });
+
+  app.get("/api/characters/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const character = await storage.getCharacter(id);
+      if (!character) {
+        return res.status(404).json({ error: "Character not found" });
+      }
+      res.json(character);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch character" });
+    }
+  });
+
+  app.post("/api/characters", async (req, res) => {
+    try {
+      const validatedData = insertCharacterSchema.parse(req.body);
+      const character = await storage.createCharacter(validatedData);
+      res.json(character);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid character data" });
+    }
+  });
+
+  // License endpoints
+  app.get("/api/licenses", async (req, res) => {
+    try {
+      const licenses = await storage.getAllLicenses();
+      res.json(licenses);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch licenses" });
+    }
+  });
+
+  app.get("/api/licenses/search", async (req, res) => {
+    try {
+      const licenseNumber = req.query.licenseNumber as string;
+      if (!licenseNumber) {
+        return res.status(400).json({ error: "License number required" });
+      }
+      const license = await storage.getLicenseByNumber(licenseNumber);
+      if (!license) {
+        return res.status(404).json({ error: "License not found" });
+      }
+      
+      // Get associated character
+      const character = license.characterId ? await storage.getCharacter(license.characterId) : null;
+      
+      res.json({
+        license,
+        character
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search license" });
+    }
+  });
+
+  app.get("/api/licenses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const license = await storage.getLicense(id);
+      if (!license) {
+        return res.status(404).json({ error: "License not found" });
+      }
+      res.json(license);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch license" });
+    }
+  });
+
+  app.post("/api/licenses", async (req, res) => {
+    try {
+      const validatedData = insertLicenseSchema.parse(req.body);
+      const license = await storage.createLicense(validatedData);
+      res.json(license);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid license data" });
+    }
+  });
+
+  // Vehicle Registration endpoints
+  app.get("/api/vehicles", async (req, res) => {
+    try {
+      const vehicles = await storage.getAllVehicleRegistrations();
+      res.json(vehicles);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch vehicles" });
+    }
+  });
+
+  app.get("/api/vehicles/search", async (req, res) => {
+    try {
+      const plate = req.query.plate as string;
+      const vin = req.query.vin as string;
+      
+      if (!plate && !vin) {
+        return res.status(400).json({ error: "Plate number or VIN required" });
+      }
+
+      let vehicle;
+      if (plate) {
+        vehicle = await storage.getVehicleRegistrationByPlate(plate);
+      } else if (vin) {
+        vehicle = await storage.getVehicleRegistrationByVin(vin);
+      }
+
+      if (!vehicle) {
+        return res.status(404).json({ error: "Vehicle not found" });
+      }
+
+      // Get associated character
+      const character = vehicle.characterId ? await storage.getCharacter(vehicle.characterId) : null;
+      
+      res.json({
+        vehicle,
+        character
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search vehicle" });
+    }
+  });
+
+  app.get("/api/vehicles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const vehicle = await storage.getVehicleRegistration(id);
+      if (!vehicle) {
+        return res.status(404).json({ error: "Vehicle not found" });
+      }
+      res.json(vehicle);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch vehicle" });
+    }
+  });
+
+  app.post("/api/vehicles", async (req, res) => {
+    try {
+      const validatedData = insertVehicleRegistrationSchema.parse(req.body);
+      const vehicle = await storage.createVehicleRegistration(validatedData);
+      res.json(vehicle);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid vehicle data" });
     }
   });
 
