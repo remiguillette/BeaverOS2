@@ -30,6 +30,33 @@ export const incidents = pgTable("incidents", {
   complainant: text("complainant"),
   description: text("description").notNull(),
   peopleInvolved: integer("people_involved").default(0),
+  
+  // 911 Call Information
+  callBackPhone: text("call_back_phone"),
+  landlineDetection: boolean("landline_detection").default(false),
+  locationPhone: text("location_phone"),
+  callerName: text("caller_name"),
+  calledFrom: text("called_from"),
+  natureOfProblem: text("nature_of_problem"),
+  problemCode: text("problem_code"), // red, yellow, blue
+  mapPage: text("map_page"),
+  city: text("city"),
+  crossStreet: text("cross_street"),
+  comments: text("comments"),
+  
+  // Patient Triage (Medical Emergencies)
+  withPatientNow: boolean("with_patient_now"),
+  numberHurtSick: integer("number_hurt_sick"),
+  patientAge: text("patient_age"),
+  patientGender: text("patient_gender"),
+  breathingStatus: text("breathing_status"), // yes, no, unknown, uncertain, ineffective_agonal
+  chiefComplaintCode: text("chief_complaint_code"),
+  
+  // Pregnancy-specific (if applicable)
+  pregnancyComplications: text("pregnancy_complications"), // no, miscarriage, threatened_miscarriage, stillbirth
+  pregnancyWeeks: text("pregnancy_weeks"), // trimester or specific weeks
+  babyVisible: text("baby_visible"), // no, completely_out, head_visible, etc.
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
