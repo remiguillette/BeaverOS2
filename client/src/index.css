@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,500&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -70,37 +72,24 @@
 
 /* Enhanced Header Styles */
 .border-gradient-button {
-  position: relative;
-  background: linear-gradient(
-    var(--gradient-angle, 45deg),
-    transparent,
-    rgba(13, 110, 253, 0.3),
-    rgba(248, 148, 34, 0.3),
-    transparent
-  );
-  border: 2px solid transparent;
-  border-radius: 0.5rem;
-  background-clip: padding-box;
+  --c: #171717;
+  --p: 10%;
+  background: linear-gradient(var(--c), var(--c)) padding-box,
+    conic-gradient(
+      from var(--gradient-angle, 0deg),
+      transparent,
+      #f89422 var(--p),
+      transparent calc(var(--p) * 2)
+    )
+    border-box;
+  border: 1px solid transparent;
+  border-radius: 3rem;
+  color: #f89422;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
   transition: all 0.3s ease;
   cursor: pointer;
-  --gradient-angle: 45deg;
-}
-
-.border-gradient-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 2px;
-  background: linear-gradient(
-    var(--gradient-angle, 45deg),
-    #0d6efd,
-    #f89422,
-    #0d6efd
-  );
-  border-radius: inherit;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  z-index: -1;
+  --gradient-angle: 0deg;
 }
 
 .border-gradient-button:hover {
