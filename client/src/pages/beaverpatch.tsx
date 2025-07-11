@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Shield, Users, AlertTriangle, Activity, Plus, Filter, Search, Phone, Clock, MapPin, Car, Truck, Ambulance, Zap } from "lucide-react";
+import { Shield, Users, AlertTriangle, Activity, Plus, Filter, Search, Phone, Clock, MapPin, Car, Truck, Ambulance, Zap, BarChart3, Map, Radio, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,14 +19,13 @@ import type { Incident, Unit } from "@shared/schema";
 export default function BeaverPatch() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const [showIncidentForm, setShowIncidentForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("call-entry");
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const newIncidentButtonRef = useRef<HTMLButtonElement>(null);
 
   const { data: incidents = [], isLoading: loadingIncidents } = useQuery<Incident[]>({
     queryKey: ["/api/incidents"],
@@ -157,38 +156,10 @@ export default function BeaverPatch() {
   const activeIncidents = incidents.filter(incident => incident.status !== "resolved");
   const highPriorityIncidents = incidents.filter(incident => incident.priority === "high");
 
-  // Animated gradient effect for buttons
-  useEffect(() => {
-    let angle = 0;
-    let animationFrameId: number;
-
-    const rotateGradient = () => {
-      angle = (angle + 1) % 360;
-      
-      // Apply to all buttons with gradient effect
-      const buttons = [newIncidentButtonRef.current];
-      buttons.forEach(button => {
-        if (button) {
-          button.style.setProperty("--gradient-angle", `${angle}deg`);
-        }
-      });
-      
-      animationFrameId = requestAnimationFrame(rotateGradient);
-    };
-
-    rotateGradient();
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
-        serviceName="BeaverPatch" 
+        serviceName="BeaverPatch CAD" 
         serviceIcon={Shield} 
         showBackButton={true}
         backButtonText="Back to Dashboard"
@@ -196,128 +167,147 @@ export default function BeaverPatch() {
 
       {/* Main Content */}
       <main className="w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Page Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <Badge variant="outline" className="text-green-400 border-green-400">
-                <Activity className="w-3 h-3 mr-1" />
-                System Online
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
-                <DialogTrigger asChild>
-                  <button
-                    ref={newIncidentButtonRef}
-                    className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm"
-                  >
-                    <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 text-[#f89422]" />
-                    <span className="hidden sm:inline">New Incident</span>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl bg-beaver-surface border-beaver-surface-light">
-                  <IncidentForm onClose={() => setShowIncidentForm(false)} />
-                </DialogContent>
-              </Dialog>
+        {/* System Status Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <Badge variant="outline" className="text-green-400 border-green-400">
+              <Radio className="w-3 h-3 mr-1" />
+              CAD Online
+            </Badge>
+            <div className="flex items-center space-x-4 text-sm text-gray-300">
+              <span className="flex items-center">
+                <AlertTriangle className="w-4 h-4 mr-1 text-red-400" />
+                {activeIncidents.length} Active
+              </span>
+              <span className="flex items-center">
+                <Users className="w-4 h-4 mr-1 text-green-400" />
+                {availableUnits.length} Available
+              </span>
+              <span className="flex items-center">
+                <Clock className="w-4 h-4 mr-1 text-yellow-400" />
+                {new Date().toLocaleTimeString()}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Dashboard Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-beaver-orange flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2" />
-                Active Incidents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white mb-2">{activeIncidents.length}</div>
-              <div className="text-sm text-red-400">{highPriorityIncidents.length} high priority</div>
-            </CardContent>
-          </Card>
+        {/* CAD Tabbed Interface */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-beaver-surface border-beaver-surface-light">
+            <TabsTrigger value="call-entry" className="flex items-center space-x-2">
+              <Headphones className="w-4 h-4" />
+              <span>Call Entry</span>
+            </TabsTrigger>
+            <TabsTrigger value="dispatch" className="flex items-center space-x-2">
+              <Radio className="w-4 h-4" />
+              <span>Dispatch</span>
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center space-x-2">
+              <Map className="w-4 h-4" />
+              <span>Map View</span>
+            </TabsTrigger>
+            <TabsTrigger value="statistics" className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span>Statistics</span>
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-beaver-orange flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                Available Units
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white mb-2">{availableUnits.length}</div>
-              <div className="text-sm text-green-400">out of {units.length} total</div>
-            </CardContent>
-          </Card>
+          {/* Call Entry Tab - Primary Interface */}
+          <TabsContent value="call-entry" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Call Entry Form - Takes 2/3 width */}
+              <div className="lg:col-span-2">
+                <Card className="bg-beaver-surface border-beaver-surface-light">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-beaver-orange flex items-center">
+                      <Phone className="w-6 h-6 mr-3" />
+                      911 Call Entry
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentForm onClose={() => {}} />
+                  </CardContent>
+                </Card>
+              </div>
 
-          <Card className="bg-beaver-surface border-beaver-surface-light">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-beaver-orange flex items-center">
-                <Clock className="w-5 h-5 mr-2" />
-                Response Time
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white mb-2">4.2</div>
-              <div className="text-sm text-gray-400">minutes avg</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Interface */}
-        <div className="space-y-6">
-          {/* Top Row: Incident Dashboard and Map */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Incidents Panel - Takes 2/3 width */}
-            <div className="lg:col-span-2">
-              <Card className="bg-beaver-surface border-beaver-surface-light h-full">
-                <CardHeader className="pb-4">
-                  <div className="flex flex-col space-y-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg text-beaver-orange">Incident Dashboard</CardTitle>
-                      <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <Input
-                          placeholder="Search incidents..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10 bg-beaver-surface-light border-gray-600 text-white w-64"
-                        />
-                      </div>
+              {/* Active Incidents Quick View */}
+              <div className="lg:col-span-1">
+                <Card className="bg-beaver-surface border-beaver-surface-light h-full">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-beaver-orange">Active Incidents</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {activeIncidents.length === 0 ? (
+                        <div className="text-center text-gray-400 py-8">No active incidents</div>
+                      ) : (
+                        activeIncidents.slice(0, 5).map((incident) => (
+                          <div
+                            key={incident.id}
+                            className="p-3 bg-gray-800 rounded-lg border border-gray-700 cursor-pointer hover:bg-gray-700"
+                            onClick={() => setSelectedIncident(incident)}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <Badge className={getIncidentPriorityColor(incident.priority)}>
+                                {incident.priority.toUpperCase()}
+                              </Badge>
+                              <span className="text-xs text-gray-400">
+                                {incident.incidentNumber}
+                              </span>
+                            </div>
+                            <div className="text-sm text-white font-medium mb-1">
+                              {incident.type}
+                            </div>
+                            <div className="text-xs text-gray-400 truncate">
+                              {incident.address}
+                            </div>
+                            <div className={`text-xs ${getStatusColor(incident.status)} mt-1`}>
+                              {incident.status.toUpperCase()}
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-4">
-                      <Select value={filterType} onValueChange={setFilterType}>
-                        <SelectTrigger className="w-48 bg-beaver-surface-light border-gray-600 text-white">
-                          <SelectValue placeholder="Filter by type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="medical">Medical</SelectItem>
-                          <SelectItem value="fire">Fire</SelectItem>
-                          <SelectItem value="accident">Accident</SelectItem>
-                          <SelectItem value="assault">Assault</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Dispatch Tab - Unit Assignment and Management */}
+          <TabsContent value="dispatch" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Incident Management */}
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg text-beaver-orange">Incident Management</CardTitle>
+                    <div className="flex items-center space-x-2">
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger className="w-48 bg-beaver-surface-light border-gray-600 text-white">
-                          <SelectValue placeholder="Filter by status" />
+                        <SelectTrigger className="w-40 bg-beaver-surface-light border-gray-600 text-white">
+                          <SelectValue placeholder="Filter" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Status</SelectItem>
                           <SelectItem value="new">New</SelectItem>
                           <SelectItem value="dispatched">Dispatched</SelectItem>
                           <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="resolved">Resolved</SelectItem>
                         </SelectContent>
                       </Select>
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <Input
+                          placeholder="Search..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 bg-beaver-surface-light border-gray-600 text-white w-48"
+                        />
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
                     {loadingIncidents ? (
                       <div className="text-center text-gray-400 py-8">Loading incidents...</div>
                     ) : filteredIncidents.length === 0 ? (
@@ -354,11 +344,8 @@ export default function BeaverPatch() {
                                   <span>{incident.address}</span>
                                 </div>
                               </div>
-                              <div className="text-sm text-gray-400 truncate">
-                                {incident.description}
-                              </div>
                             </div>
-                            <div className="flex flex-col items-end space-y-2 ml-4">
+                            <div className="flex flex-col items-end space-y-2">
                               <div className="text-xs text-gray-500">
                                 {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}
                               </div>
@@ -373,7 +360,7 @@ export default function BeaverPatch() {
                                   disabled={updateIncidentStatusMutation.isPending}
                                   className="bg-red-600 hover:bg-red-700 text-white border-red-600 text-xs"
                                 >
-                                  Close Incident
+                                  Close
                                 </Button>
                               )}
                             </div>
@@ -384,154 +371,226 @@ export default function BeaverPatch() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Map Panel - Takes 1/3 width */}
-            <div className="lg:col-span-1">
-              <DispatchMap
-                incidents={incidents}
-                units={units}
-                onIncidentSelect={setSelectedIncident}
-                className="h-full min-h-[500px]"
-              />
-            </div>
-          </div>
-
-          {/* Bottom Row: Unit Assignment and Unit Status */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Unit Assignment Panel */}
-            {selectedIncident ? (
-              <Card className="bg-beaver-surface border-beaver-surface-light">
-                <CardHeader>
-                  <CardTitle className="text-lg text-beaver-orange">Assign Units to Incident</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-4 bg-beaver-surface-light rounded-lg border border-beaver-orange/30">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Badge className={getIncidentPriorityColor(selectedIncident.priority)}>
-                          {selectedIncident.priority.toUpperCase()}
-                        </Badge>
-                        <span className="text-white font-medium">{selectedIncident.incidentNumber}</span>
-                      </div>
-                      <div className="text-sm text-gray-300">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Zap className="w-4 h-4 text-yellow-400" />
-                          <span>{selectedIncident.type}</span>
+              {/* Unit Assignment for Selected Incident */}
+              {selectedIncident ? (
+                <Card className="bg-beaver-surface border-beaver-surface-light">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-beaver-orange">Assign Units</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-beaver-surface-light rounded-lg border border-beaver-orange/30">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <Badge className={getIncidentPriorityColor(selectedIncident.priority)}>
+                            {selectedIncident.priority.toUpperCase()}
+                          </Badge>
+                          <span className="text-white font-medium">{selectedIncident.incidentNumber}</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          <span>{selectedIncident.address}</span>
+                        <div className="text-sm text-gray-300">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Zap className="w-4 h-4 text-yellow-400" />
+                            <span>{selectedIncident.type}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            <span>{selectedIncident.address}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="text-sm text-gray-300 font-medium">Available Units:</div>
-                      {availableUnits.length === 0 ? (
-                        <div className="text-sm text-gray-400 p-4 bg-gray-800 rounded-lg text-center">
-                          No units currently available
-                        </div>
-                      ) : (
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
-                          {availableUnits.map((unit) => (
-                            <div key={unit.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                                  {getUnitTypeIcon(unit.type)}
+                      <div className="space-y-3">
+                        <div className="text-sm text-gray-300 font-medium">Available Units:</div>
+                        {availableUnits.length === 0 ? (
+                          <div className="text-sm text-gray-400 p-4 bg-gray-800 rounded-lg text-center">
+                            No units currently available
+                          </div>
+                        ) : (
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {availableUnits.map((unit) => (
+                              <div key={unit.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    {getUnitTypeIcon(unit.type)}
+                                  </div>
+                                  <div>
+                                    <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
+                                    <div className="text-xs text-gray-400">{unit.type}</div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
-                                  <div className="text-xs text-gray-400">{unit.type} • {unit.currentLocation}</div>
-                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => assignUnitMutation.mutate({ 
+                                    incidentId: selectedIncident.id, 
+                                    unitId: unit.id 
+                                  })}
+                                  disabled={assignUnitMutation.isPending}
+                                  className="bg-beaver-orange hover:bg-orange-600 text-black font-medium text-xs"
+                                >
+                                  {assignUnitMutation.isPending ? "Assigning..." : "Assign"}
+                                </Button>
                               </div>
-                              <Button
-                                size="sm"
-                                onClick={() => assignUnitMutation.mutate({ 
-                                  incidentId: selectedIncident.id, 
-                                  unitId: unit.id 
-                                })}
-                                disabled={assignUnitMutation.isPending}
-                                className="bg-beaver-orange hover:bg-orange-600 text-black font-medium"
-                              >
-                                {assignUnitMutation.isPending ? "Assigning..." : "Assign"}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-beaver-surface border-beaver-surface-light">
-                <CardContent className="flex items-center justify-center h-64">
-                  <div className="text-center text-gray-400">
-                    <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-                    <p className="text-lg font-medium">Select an Incident</p>
-                    <p className="text-sm">Click on an incident from the dashboard to assign units</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-beaver-surface border-beaver-surface-light">
+                  <CardContent className="flex items-center justify-center h-64">
+                    <div className="text-center text-gray-400">
+                      <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-500" />
+                      <p className="text-lg font-medium">Select an Incident</p>
+                      <p className="text-sm">Click on an incident to assign units</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
 
-            {/* Units Status Panel */}
-            <Card className="bg-beaver-surface border-beaver-surface-light">
-              <CardHeader>
-                <CardTitle className="text-lg text-beaver-orange">Unit Status Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {loadingUnits ? (
-                    <div className="text-center text-gray-400 py-8">Loading units...</div>
-                  ) : (
-                    units.map((unit) => (
-                      <div key={unit.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white ${
-                            unit.status === "available" ? "bg-green-500" :
-                            unit.status === "dispatched" ? "bg-yellow-500" :
-                            unit.status === "responding" ? "bg-blue-500" :
-                            unit.status === "busy" ? "bg-red-500" :
-                            unit.status === "enroute" ? "bg-orange-500" :
-                            "bg-gray-500"
-                          }`}>
-                            {getUnitTypeIcon(unit.type)}
-                          </div>
-                          <div>
-                            <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
-                            <div className="text-xs text-gray-400">{unit.type} • {unit.currentLocation}</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="text-right">
-                            <div className={`text-sm font-medium ${getUnitStatusColor(unit.status)}`}>
+          {/* Map Tab */}
+          <TabsContent value="map" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3">
+                <DispatchMap
+                  incidents={incidents}
+                  units={units}
+                  onIncidentSelect={setSelectedIncident}
+                  className="h-[600px] w-full"
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <Card className="bg-beaver-surface border-beaver-surface-light h-full">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-beaver-orange">Unit Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                      {loadingUnits ? (
+                        <div className="text-center text-gray-400 py-8">Loading units...</div>
+                      ) : (
+                        units.map((unit) => (
+                          <div key={unit.id} className="p-3 bg-gray-800 rounded-lg border border-gray-700">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white ${
+                                unit.status === "available" ? "bg-green-500" :
+                                unit.status === "dispatched" ? "bg-yellow-500" :
+                                unit.status === "responding" ? "bg-blue-500" :
+                                unit.status === "busy" ? "bg-red-500" :
+                                unit.status === "enroute" ? "bg-orange-500" :
+                                "bg-gray-500"
+                              }`}>
+                                {getUnitTypeIcon(unit.type)}
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
+                                <div className="text-xs text-gray-400">{unit.type}</div>
+                              </div>
+                            </div>
+                            <div className={`text-xs font-medium ${getUnitStatusColor(unit.status)}`}>
                               {unit.status.replace("_", " ").toUpperCase()}
                             </div>
-                            <div className="text-xs text-gray-500">
-                              {unit.updatedAt ? new Date(unit.updatedAt).toLocaleTimeString() : ""}
-                            </div>
+                            {unit.status !== "available" && unit.status !== "off_duty" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateUnitStatusMutation.mutate({ unitId: unit.id, status: "available" })}
+                                disabled={updateUnitStatusMutation.isPending}
+                                className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-xs mt-2 w-full"
+                              >
+                                Return to Service
+                              </Button>
+                            )}
                           </div>
-                          {unit.status !== "available" && unit.status !== "off_duty" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateUnitStatusMutation.mutate({ unitId: unit.id, status: "available" })}
-                              disabled={updateUnitStatusMutation.isPending}
-                              className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-xs"
-                            >
-                              Return to Service
-                            </Button>
-                          )}
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Statistics Tab */}
+          <TabsContent value="statistics" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-beaver-orange flex items-center">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    Active Incidents
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white mb-2">{activeIncidents.length}</div>
+                  <div className="text-sm text-red-400">{highPriorityIncidents.length} high priority</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-beaver-orange flex items-center">
+                    <Users className="w-5 h-5 mr-2" />
+                    Available Units
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white mb-2">{availableUnits.length}</div>
+                  <div className="text-sm text-green-400">out of {units.length} total</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-beaver-orange flex items-center">
+                    <Clock className="w-5 h-5 mr-2" />
+                    Response Time
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white mb-2">4.2</div>
+                  <div className="text-sm text-gray-400">minutes avg</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-8">
+              <Card className="bg-beaver-surface border-beaver-surface-light">
+                <CardHeader>
+                  <CardTitle className="text-lg text-beaver-orange">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {incidents.slice(0, 10).map((incident) => (
+                      <div key={incident.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Badge className={getIncidentPriorityColor(incident.priority)}>
+                            {incident.priority.toUpperCase()}
+                          </Badge>
+                          <div>
+                            <div className="text-sm text-white font-medium">{incident.incidentNumber}</div>
+                            <div className="text-xs text-gray-400">{incident.type} • {incident.address}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-sm ${getStatusColor(incident.status)}`}>
+                            {incident.status.toUpperCase()}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}
+                          </div>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+        </Tabs>
       </main>
     </div>
   );
