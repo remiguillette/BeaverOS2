@@ -80,6 +80,7 @@ export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
   const languageButtonRef = useRef<HTMLButtonElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
   const loginButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleLogout = () => {
@@ -93,17 +94,20 @@ export default function Dashboard() {
 
   // Animated gradient effect for buttons
   useEffect(() => {
-    const buttons = [languageButtonRef.current, loginButtonRef.current];
     let angle = 0;
     let animationFrameId: number;
 
     const rotateGradient = () => {
       angle = (angle + 1) % 360;
+      
+      // Apply to all buttons with gradient effect
+      const buttons = [languageButtonRef.current, profileButtonRef.current, loginButtonRef.current];
       buttons.forEach(button => {
         if (button) {
           button.style.setProperty("--gradient-angle", `${angle}deg`);
         }
       });
+      
       animationFrameId = requestAnimationFrame(rotateGradient);
     };
 
@@ -197,6 +201,7 @@ export default function Dashboard() {
 
               {/* Profile Button */}
               <button
+                ref={profileButtonRef}
                 onClick={() => setLocation("/profile")}
                 className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm"
                 aria-label="View Profile"
