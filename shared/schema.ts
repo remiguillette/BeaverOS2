@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   position: text("position"),
   phone: text("phone"),
   avatar: text("avatar"), // URL to profile picture
+  accessLevel: text("access_level").notNull().default("User"), // SuperAdmin, Admin, IT Web Support, 911 Supervisor, 911 Dispatcher, User
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

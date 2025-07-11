@@ -36,7 +36,8 @@ const basicAuth = async (req: Request, res: Response, next: NextFunction) => {
         id: user.id,
         email: user.email,
         department: user.department,
-        position: user.position
+        position: user.position,
+        accessLevel: user.accessLevel
       };
       next();
     } else {
@@ -48,6 +49,26 @@ const basicAuth = async (req: Request, res: Response, next: NextFunction) => {
     res.setHeader('WWW-Authenticate', 'Basic realm="BEAVERNET System"');
     return res.status(401).json({ message: 'Authentication failed' });
   }
+};
+
+// Access level authorization middleware
+const requireAccessLevel = (allowedLevels: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    
+    if (!user || !user.accessLevel) {
+      return res.status(403).json({ message: 'Access denied: No access level specified' });
+    }
+
+    if (!allowedLevels.includes(user.accessLevel)) {
+      return res.status(403).json({ 
+        message: `Access denied: Requires one of the following access levels: ${allowedLevels.join(', ')}`,
+        userLevel: user.accessLevel
+      });
+    }
+
+    next();
+  };
 };
 
 // Apply basic auth to all API routes

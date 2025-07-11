@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { AccessProtectedRoute } from "@/components/access-protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import BeaverPatch from "@/pages/beaverpatch";
@@ -69,9 +70,9 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/BeaverPatch">
-        <ProtectedRoute>
+        <AccessProtectedRoute pageName="beaverpatch">
           <BeaverPatch />
-        </ProtectedRoute>
+        </AccessProtectedRoute>
       </Route>
       <Route path="/BeaverPaws">
         <ProtectedRoute>

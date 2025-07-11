@@ -284,6 +284,7 @@ export class MemStorage implements IStorage {
       position: "System Administrator",
       phone: "+1-555-0123",
       avatar: null,
+      accessLevel: "SuperAdmin",
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),

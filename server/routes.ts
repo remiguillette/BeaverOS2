@@ -11,6 +11,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ user: req.user });
   });
 
+  // Access control endpoint for protected pages
+  app.get("/api/auth/check-access/:page", (req, res) => {
+    const page = req.params.page;
+    const user = req.user;
+    
+    if (!user || !user.accessLevel) {
+      return res.status(403).json({ 
+        hasAccess: false, 
+        message: 'Access denied: No access level specified' 
+      });
+    }
+
+    // Define access requirements for different pages
+    const pageAccessRequirements: { [key: string]: string[] } = {
+      'beaverpatch': ['SuperAdmin', 'Admin', 'IT Web Support', '911 Supervisor', '911 Dispatcher']
+    };
+
+    const requiredLevels = pageAccessRequirements[page];
+    
+    if (!requiredLevels) {
+      return res.json({ hasAccess: true, message: 'No access restrictions for this page' });
+    }
+
+    const hasAccess = requiredLevels.includes(user.accessLevel);
+
+    res.json({
+      hasAccess,
+      userLevel: user.accessLevel,
+      requiredLevels,
+      message: hasAccess 
+        ? 'Access granted' 
+        : `Access denied: Requires one of the following access levels: ${requiredLevels.join(', ')}`
+    });
+  });
+
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", authenticated: true });
