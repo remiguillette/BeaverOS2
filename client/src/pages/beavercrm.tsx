@@ -118,29 +118,11 @@ export default function BeaverCRM() {
     return phone;
   };
 
-  const actionButton = (
-    <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-beaver-orange hover:bg-orange-600 text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          New Customer
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-beaver-surface border-beaver-surface-light">
-        <DialogHeader>
-          <DialogTitle className="text-beaver-orange">Add New Customer</DialogTitle>
-        </DialogHeader>
-        <CustomerForm onClose={() => setIsFormOpen(false)} />
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
         serviceName="BeaverCRM" 
         serviceIcon={Users} 
-        actionButton={actionButton}
         showBackButton={true}
         backButtonText="Back to Dashboard"
       />
@@ -152,9 +134,25 @@ export default function BeaverCRM() {
           <div className="p-6 border-b border-beaver-surface-light">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-beaver-orange">Customer Directory</h2>
-              <Badge variant="outline" className="text-beaver-orange border-beaver-orange">
-                {displayedCustomers.length} customers
-              </Badge>
+              <div className="flex items-center space-x-3">
+                <Badge variant="outline" className="text-beaver-orange border-beaver-orange">
+                  {displayedCustomers.length} customers
+                </Badge>
+                <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-beaver-orange hover:bg-orange-600 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Customer
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-beaver-surface border-beaver-surface-light">
+                    <DialogHeader>
+                      <DialogTitle className="text-beaver-orange">Add New Customer</DialogTitle>
+                    </DialogHeader>
+                    <CustomerForm onClose={() => setIsFormOpen(false)} />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />

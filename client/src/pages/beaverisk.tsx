@@ -483,17 +483,6 @@ export default function BeaverRisk() {
       <EnhancedHeader
         serviceName="BeaverRisk"
         serviceIcon={Shield}
-        actionButton={
-          <Dialog>
-            <DialogTrigger asChild>
-              <button className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm">
-                <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 text-[#f89422]" />
-                <span className="hidden sm:inline">New Assessment</span>
-              </button>
-            </DialogTrigger>
-            <RiskAssessmentDialog onClose={() => {}} />
-          </Dialog>
-        }
         showBackButton={true}
         backButtonText="Back to Dashboard"
       />
@@ -501,8 +490,21 @@ export default function BeaverRisk() {
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-beaver-orange mb-2">Risk Assessment & Strategic Planning</h1>
-          <p className="text-gray-400">Comprehensive risk management for civil protection operations</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-beaver-orange mb-2">Risk Assessment & Strategic Planning</h1>
+              <p className="text-gray-400">Comprehensive risk management for civil protection operations</p>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Assessment
+                </Button>
+              </DialogTrigger>
+              <RiskAssessmentDialog onClose={() => {}} />
+            </Dialog>
+          </div>
         </div>
 
         {/* Statistics Cards */}

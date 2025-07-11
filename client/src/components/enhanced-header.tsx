@@ -7,7 +7,6 @@ import beaverImage from "@assets/beaver_1751858605395.png";
 interface EnhancedHeaderProps {
   serviceName?: string;
   serviceIcon?: LucideIcon;
-  actionButton?: React.ReactNode;
   showBackButton?: boolean;
   backButtonText?: string;
   backButtonAction?: () => void;
@@ -16,7 +15,6 @@ interface EnhancedHeaderProps {
 export function EnhancedHeader({ 
   serviceName, 
   serviceIcon: ServiceIcon, 
-  actionButton,
   showBackButton = false,
   backButtonText = "Back to Dashboard",
   backButtonAction
@@ -146,8 +144,7 @@ export function EnhancedHeader({
               <span className="hidden sm:inline">Profile</span>
             </button>
 
-            {/* Action Button (if provided) */}
-            {actionButton}
+
 
             {/* Back Button (if needed) */}
             {showBackButton && (

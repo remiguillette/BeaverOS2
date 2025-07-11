@@ -156,26 +156,11 @@ export default function BeaverPatch() {
   const activeIncidents = incidents.filter(incident => incident.status !== "resolved");
   const highPriorityIncidents = incidents.filter(incident => incident.priority === "high");
 
-  const actionButton = (
-    <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
-      <DialogTrigger asChild>
-        <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
-          <Plus className="w-4 h-4 mr-2" />
-          New Incident
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl bg-beaver-surface border-beaver-surface-light">
-        <IncidentForm onClose={() => setShowIncidentForm(false)} />
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
         serviceName="BeaverPatch" 
         serviceIcon={Shield} 
-        actionButton={actionButton}
         showBackButton={true}
         backButtonText="Back to Dashboard"
       />
@@ -194,10 +179,23 @@ export default function BeaverPatch() {
                 <p className="text-gray-400">Computer-Aided Dispatch System</p>
               </div>
             </div>
-            <Badge variant="outline" className="text-green-400 border-green-400">
-              <Activity className="w-3 h-3 mr-1" />
-              System Online
-            </Badge>
+            <div className="flex items-center space-x-3">
+              <Badge variant="outline" className="text-green-400 border-green-400">
+                <Activity className="w-3 h-3 mr-1" />
+                System Online
+              </Badge>
+              <Dialog open={showIncidentForm} onOpenChange={setShowIncidentForm}>
+                <DialogTrigger asChild>
+                  <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Incident
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl bg-beaver-surface border-beaver-surface-light">
+                  <IncidentForm onClose={() => setShowIncidentForm(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
 
