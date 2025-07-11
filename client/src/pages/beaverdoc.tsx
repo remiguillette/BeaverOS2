@@ -525,12 +525,7 @@ This document has passed all security verification checks and maintains its lega
       />
 
       <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Legal Document Traceability System</h1>
-          <p className="text-muted-foreground">
-            Secure document traceability solution with unique identifiers and security tokens for guaranteed authenticity and legal value.
-          </p>
-        </div>
+
 
         <Tabs defaultValue="documents" className="w-full">
           <TabsList className="grid w-full grid-cols-4">

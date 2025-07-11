@@ -140,13 +140,7 @@ export default function BeaverPay() {
 
       {/* Main Content */}
       <main className="w-full px-3 sm:px-6 lg:px-8 py-6">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Payment Management</h1>
-          <p className="text-gray-400">
-            Manage invoices, payments, and POS transactions with PayPal and Google Pay integration
-          </p>
-        </div>
+
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

@@ -139,13 +139,7 @@ export default function BeaverPaws() {
 
       {/* Main Content */}
       <main className="w-full px-3 sm:px-6 lg:px-8 py-6">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Animal Controls</h1>
-          <p className="text-gray-400">
-            Register pets and manage animal control enforcement activities
-          </p>
-        </div>
+
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

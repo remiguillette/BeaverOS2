@@ -330,12 +330,7 @@ export default function BeaverAudit() {
       />
 
       <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Public Safety Audit & Compliance</h1>
-          <p className="text-muted-foreground">
-            Plan and conduct audits, verify compliance with standards, report non-compliances, and track corrective actions.
-          </p>
-        </div>
+
 
         {/* Dashboard Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">

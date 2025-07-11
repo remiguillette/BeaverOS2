@@ -520,9 +520,7 @@ export default function BeaverRisk() {
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-beaver-orange mb-2">Risk Assessment & Strategic Planning</h1>
-              <p className="text-gray-400">Comprehensive risk management for civil protection operations</p>
+            <div className="flex items-center space-x-3">
             </div>
             <Dialog>
               <DialogTrigger asChild>
