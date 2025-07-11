@@ -140,7 +140,7 @@ export default function BeaverCRM() {
                 </Badge>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-beaver-orange hover:bg-orange-600 text-white">
+                    <Button className="bg-beaver-orange hover:bg-orange-600 text-black">
                       <Plus className="w-4 h-4 mr-2" />
                       New Customer
                     </Button>
@@ -243,7 +243,7 @@ export default function BeaverCRM() {
                     onClick={() => setEditingCustomer(selectedCustomer)}
                     size="sm"
                     variant="outline"
-                    className="border-beaver-orange text-beaver-orange hover:bg-beaver-orange hover:text-white"
+                    className="border-beaver-orange text-beaver-orange hover:bg-beaver-orange hover:text-black"
                   >
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
@@ -253,19 +253,19 @@ export default function BeaverCRM() {
 
               <Tabs defaultValue="identity" className="w-full">
                 <TabsList className="grid w-full grid-cols-4 bg-beaver-surface-light">
-                  <TabsTrigger value="identity" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
+                  <TabsTrigger value="identity" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
                     <User className="w-4 h-4 mr-2" />
                     Identity
                   </TabsTrigger>
-                  <TabsTrigger value="contact" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
+                  <TabsTrigger value="contact" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
                     <Phone className="w-4 h-4 mr-2" />
                     Contact
                   </TabsTrigger>
-                  <TabsTrigger value="professional" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
+                  <TabsTrigger value="professional" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
                     <Building className="w-4 h-4 mr-2" />
                     Professional
                   </TabsTrigger>
-                  <TabsTrigger value="notes" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-white">
+                  <TabsTrigger value="notes" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
                     <FileText className="w-4 h-4 mr-2" />
                     Notes
                   </TabsTrigger>
