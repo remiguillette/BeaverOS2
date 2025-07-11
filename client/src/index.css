@@ -68,6 +68,119 @@
   }
 }
 
+/* Enhanced Header Styles */
+.border-gradient-button {
+  position: relative;
+  background: linear-gradient(
+    var(--gradient-angle, 45deg),
+    transparent,
+    rgba(13, 110, 253, 0.3),
+    rgba(248, 148, 34, 0.3),
+    transparent
+  );
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  background-clip: padding-box;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  --gradient-angle: 45deg;
+}
+
+.border-gradient-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: linear-gradient(
+    var(--gradient-angle, 45deg),
+    #0d6efd,
+    #f89422,
+    #0d6efd
+  );
+  border-radius: inherit;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: -1;
+}
+
+.border-gradient-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(248, 148, 34, 0.3);
+}
+
+.border-gradient-button:active {
+  transform: translateY(-1px);
+}
+
+/* Logo Animation Classes */
+.header-logo-remi {
+  animation: slideInFromLeft 0.7s ease-out;
+}
+
+.header-logo-guillette {
+  animation: slideInFromRight 0.7s ease-out 0.2s both;
+}
+
+.header-logo-groupe {
+  animation: slideInFromBottom 0.7s ease-out 0.4s both;
+}
+
+.header-logo-group {
+  animation: slideInFromBottom 0.7s ease-out 0.6s both;
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive container */
+.container-responsive {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    padding: 0 2rem;
+  }
+}
+
 .beaver-orange {
   color: var(--beaver-orange);
 }
