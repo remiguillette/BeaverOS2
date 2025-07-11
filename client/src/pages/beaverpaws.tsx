@@ -86,6 +86,7 @@ export default function BeaverPaws() {
   const [showResponseForm, setShowResponseForm] = useState(false);
   const [showFirstAidForm, setShowFirstAidForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [responseCases, setResponseCases] = useState<ResponseTrackingFormData[]>([]);
   const { toast } = useToast();
 
   const getPriorityColor = (priority: string) => {
@@ -108,6 +109,12 @@ export default function BeaverPaws() {
     }
   };
 
+  // Calculate stats from response cases
+  const activeCases = responseCases.filter(case_ => case_.interventionStatus === "ongoing").length;
+  const resolvedCases = responseCases.filter(case_ => case_.interventionStatus === "resolved").length;
+  const emergencyCases = responseCases.filter(case_ => case_.priorityLevel === "urgent").length;
+  const totalCases = responseCases.length;
+
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
@@ -126,7 +133,7 @@ export default function BeaverPaws() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Active Cases</p>
-                  <p className="text-2xl font-bold text-white">12</p>
+                  <p className="text-2xl font-bold text-white">{activeCases}</p>
                 </div>
                 <AlertTriangle className="w-8 h-8 text-orange-500" />
               </div>
@@ -136,8 +143,8 @@ export default function BeaverPaws() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Resolved Today</p>
-                  <p className="text-2xl font-bold text-white">8</p>
+                  <p className="text-sm text-gray-400">Resolved Cases</p>
+                  <p className="text-2xl font-bold text-white">{resolvedCases}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
@@ -148,7 +155,7 @@ export default function BeaverPaws() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Emergency Calls</p>
-                  <p className="text-2xl font-bold text-white">3</p>
+                  <p className="text-2xl font-bold text-white">{emergencyCases}</p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-red-500" />
               </div>
@@ -158,8 +165,8 @@ export default function BeaverPaws() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Animals Registered</p>
-                  <p className="text-2xl font-bold text-white">156</p>
+                  <p className="text-sm text-gray-400">Total Cases</p>
+                  <p className="text-2xl font-bold text-white">{totalCases}</p>
                 </div>
                 <Tag className="w-8 h-8 text-blue-500" />
               </div>
@@ -213,58 +220,64 @@ export default function BeaverPaws() {
                   <DialogHeader>
                     <DialogTitle className="text-white">Field Response Tracking</DialogTitle>
                   </DialogHeader>
-                  <ResponseTrackingForm onClose={() => setShowResponseForm(false)} />
+                  <ResponseTrackingForm 
+                    onClose={() => setShowResponseForm(false)} 
+                    onSubmit={(data) => setResponseCases(prev => [...prev, data])}
+                  />
                 </DialogContent>
               </Dialog>
             </div>
 
-            {/* Sample Response Cases */}
+            {/* Response Cases */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-beaver-surface border-beaver-surface-light hover:border-beaver-orange transition-colors">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-white">CASE-2025-001</CardTitle>
-                    <Badge className="bg-red-500 text-white">Urgent</Badge>
-                  </div>
-                  <p className="text-sm text-gray-400">Stray Animal - Injured</p>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-sm text-gray-300">
-                    <p><strong>Location:</strong> 123 Main St, Downtown</p>
-                    <p><strong>Officer:</strong> J. Smith</p>
-                    <p><strong>Reported:</strong> 2 hours ago</p>
-                    <p><strong>Status:</strong> <span className="text-yellow-400">In Progress</span></p>
-                  </div>
-                  <div className="flex justify-end pt-2">
-                    <Button variant="outline" size="sm" className="border-beaver-orange text-beaver-orange hover:bg-beaver-orange hover:text-black">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-beaver-surface border-beaver-surface-light hover:border-beaver-orange transition-colors">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-white">CASE-2025-002</CardTitle>
-                    <Badge className="bg-blue-500 text-white">Normal</Badge>
-                  </div>
-                  <p className="text-sm text-gray-400">Noise Complaint - Barking</p>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-sm text-gray-300">
-                    <p><strong>Location:</strong> 456 Oak Ave, Westside</p>
-                    <p><strong>Officer:</strong> M. Johnson</p>
-                    <p><strong>Reported:</strong> 4 hours ago</p>
-                    <p><strong>Status:</strong> <span className="text-green-400">Resolved</span></p>
-                  </div>
-                  <div className="flex justify-end pt-2">
-                    <Button variant="outline" size="sm" className="border-beaver-orange text-beaver-orange hover:bg-beaver-orange hover:text-black">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              {responseCases.length === 0 ? (
+                <div className="col-span-full text-center text-gray-400 py-12">
+                  <Clipboard className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+                  <p className="text-lg mb-2">No response cases yet</p>
+                  <p className="text-sm">Create your first case using the "New Response Case" button above</p>
+                </div>
+              ) : (
+                responseCases
+                  .filter(case_ => 
+                    searchQuery === "" || 
+                    case_.caseNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    case_.interventionCategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    case_.complainantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    case_.respondingOfficers.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((case_, index) => (
+                    <Card key={index} className="bg-beaver-surface border-beaver-surface-light hover:border-beaver-orange transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg text-white">{case_.caseNumber}</CardTitle>
+                          <Badge className={getPriorityColor(case_.priorityLevel)}>
+                            {case_.priorityLevel.charAt(0).toUpperCase() + case_.priorityLevel.slice(1)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-400">
+                          {case_.interventionCategory.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - {case_.animalSpecies.charAt(0).toUpperCase() + case_.animalSpecies.slice(1)}
+                        </p>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="text-sm text-gray-300">
+                          <p><strong>Location:</strong> {case_.interventionAddress}</p>
+                          <p><strong>Officer:</strong> {case_.respondingOfficers}</p>
+                          <p><strong>Reported:</strong> {new Date(case_.dateTimeCall).toLocaleString()}</p>
+                          <p><strong>Status:</strong> <span className={`font-medium ${getStatusColor(case_.interventionStatus).includes('green') ? 'text-green-400' : 
+                            getStatusColor(case_.interventionStatus).includes('yellow') ? 'text-yellow-400' : 
+                            getStatusColor(case_.interventionStatus).includes('orange') ? 'text-orange-400' : 'text-blue-400'}`}>
+                            {case_.interventionStatus.charAt(0).toUpperCase() + case_.interventionStatus.slice(1)}
+                          </span></p>
+                        </div>
+                        <div className="flex justify-end pt-2">
+                          <Button variant="outline" size="sm" className="border-beaver-orange text-beaver-orange hover:bg-beaver-orange hover:text-black">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+              )}
             </div>
           </TabsContent>
 
@@ -476,7 +489,7 @@ export default function BeaverPaws() {
 }
 
 // Response Tracking Form Component
-function ResponseTrackingForm({ onClose }: { onClose: () => void }) {
+function ResponseTrackingForm({ onClose, onSubmit: onSubmitCase }: { onClose: () => void; onSubmit: (data: ResponseTrackingFormData) => void }) {
   const { toast } = useToast();
   
   const form = useForm<ResponseTrackingFormData>({
@@ -484,9 +497,41 @@ function ResponseTrackingForm({ onClose }: { onClose: () => void }) {
     defaultValues: {
       caseNumber: `CASE-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(3, '0')}`,
       dateTimeCall: new Date().toISOString().slice(0, 16),
+      dateTimeResponse: "",
+      respondingOfficers: "",
+      sourceOfReport: "",
       priorityLevel: "normal",
+      complainantName: "",
+      complainantAddress: "",
+      complainantPhone: "",
+      complainantPhoneSecondary: "",
+      complainantEmail: "",
       consentToContact: true,
+      interventionAddress: "",
+      locationType: "",
+      locationDetails: "",
+      interventionCategory: "",
+      detailedDescription: "",
+      animalSpecies: "",
+      animalBreed: "",
+      animalDescription: "",
+      animalCondition: "",
+      animalIdentification: "",
       ownerKnown: false,
+      ownerName: "",
+      ownerAddress: "",
+      ownerContact: "",
+      arrivalDateTime: "",
+      officerFindings: "",
+      actionsTaken: "",
+      equipmentUsed: "",
+      photosEvidence: "",
+      testimoniesCollected: "",
+      interventionStatus: "",
+      endDateTime: "",
+      finalReport: "",
+      recommendations: "",
+      nextFollowUpDate: "",
     },
   });
 
@@ -494,6 +539,7 @@ function ResponseTrackingForm({ onClose }: { onClose: () => void }) {
 
   const onSubmit = (data: ResponseTrackingFormData) => {
     console.log("Response Tracking Form submitted:", data);
+    onSubmitCase(data);
     toast({
       title: "Response Case Created",
       description: `Case ${data.caseNumber} has been successfully created.`,
