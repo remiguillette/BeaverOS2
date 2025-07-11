@@ -9,12 +9,75 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { EnhancedHeader } from "@/components/enhanced-header";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Response Tracking Form Schema based on Field Response Tracking documentation
+const responseTrackingSchema = z.object({
+  // Section 1: Response Identification
+  caseNumber: z.string().min(1, "Case number is required"),
+  dateTimeCall: z.string().min(1, "Call date/time is required"),
+  dateTimeResponse: z.string().optional(),
+  respondingOfficers: z.string().min(1, "Responding officer is required"),
+  sourceOfReport: z.string().min(1, "Source of report is required"),
+  priorityLevel: z.enum(["urgent", "high", "normal", "low"]),
+  
+  // Section 2: Complainant/Requester Information
+  complainantName: z.string().min(1, "Complainant name is required"),
+  complainantAddress: z.string().min(1, "Complainant address is required"),
+  complainantPhone: z.string().min(1, "Phone number is required"),
+  complainantPhoneSecondary: z.string().optional(),
+  complainantEmail: z.string().email().optional().or(z.literal("")),
+  consentToContact: z.boolean().default(true),
+  
+  // Section 3: Location of Intervention
+  interventionAddress: z.string().min(1, "Intervention address is required"),
+  locationType: z.string().min(1, "Location type is required"),
+  locationDetails: z.string().optional(),
+  
+  // Section 4: Reason and Description
+  interventionCategory: z.string().min(1, "Intervention category is required"),
+  detailedDescription: z.string().min(1, "Detailed description is required"),
+  
+  // Section 5: Animal Details
+  animalSpecies: z.string().min(1, "Animal species is required"),
+  animalBreed: z.string().optional(),
+  animalDescription: z.string().min(1, "Animal description is required"),
+  animalCondition: z.string().min(1, "Animal condition is required"),
+  animalIdentification: z.string().optional(),
+  ownerKnown: z.boolean().default(false),
+  ownerName: z.string().optional(),
+  ownerAddress: z.string().optional(),
+  ownerContact: z.string().optional(),
+  
+  // Section 6: Officer Actions and Findings
+  arrivalDateTime: z.string().optional(),
+  officerFindings: z.string().min(1, "Officer findings are required"),
+  actionsTaken: z.string().min(1, "Actions taken are required"),
+  equipmentUsed: z.string().optional(),
+  photosEvidence: z.string().optional(),
+  testimoniesCollected: z.string().optional(),
+  
+  // Section 7: Resolution and Follow-up
+  interventionStatus: z.string().min(1, "Intervention status is required"),
+  endDateTime: z.string().optional(),
+  finalReport: z.string().optional(),
+  recommendations: z.string().optional(),
+  nextFollowUpDate: z.string().optional(),
+});
+
+type ResponseTrackingFormData = z.infer<typeof responseTrackingSchema>;
 
 export default function BeaverPaws() {
   const { user } = useAuth();
@@ -150,12 +213,7 @@ export default function BeaverPaws() {
                   <DialogHeader>
                     <DialogTitle className="text-white">Field Response Tracking</DialogTitle>
                   </DialogHeader>
-                  <div className="text-center text-gray-400 py-8">
-                    <Clipboard className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-                    <p>Response Tracking Form</p>
-                    <p className="text-sm">Based on Field Response Tracking documentation</p>
-                    <p className="text-xs mt-2">Form functionality coming soon</p>
-                  </div>
+                  <ResponseTrackingForm onClose={() => setShowResponseForm(false)} />
                 </DialogContent>
               </Dialog>
             </div>
@@ -414,5 +472,726 @@ export default function BeaverPaws() {
         </Tabs>
       </main>
     </div>
+  );
+}
+
+// Response Tracking Form Component
+function ResponseTrackingForm({ onClose }: { onClose: () => void }) {
+  const { toast } = useToast();
+  
+  const form = useForm<ResponseTrackingFormData>({
+    resolver: zodResolver(responseTrackingSchema),
+    defaultValues: {
+      caseNumber: `CASE-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(3, '0')}`,
+      dateTimeCall: new Date().toISOString().slice(0, 16),
+      priorityLevel: "normal",
+      consentToContact: true,
+      ownerKnown: false,
+    },
+  });
+
+  const ownerKnown = form.watch("ownerKnown");
+
+  const onSubmit = (data: ResponseTrackingFormData) => {
+    console.log("Response Tracking Form submitted:", data);
+    toast({
+      title: "Response Case Created",
+      description: `Case ${data.caseNumber} has been successfully created.`,
+    });
+    onClose();
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        
+        {/* Section 1: Response Identification */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            1. Response Identification
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="caseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Case/Response Number *</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="dateTimeCall"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Date & Time of Call/Report *</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="dateTimeResponse"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Date & Time of Response</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="respondingOfficers"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Responding Officer(s) *</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="sourceOfReport"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Source of Report *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                        <SelectValue placeholder="Select source" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="citizen_call">Citizen Call</SelectItem>
+                      <SelectItem value="online_complaint">Online Complaint</SelectItem>
+                      <SelectItem value="officer_observation">Officer Observation</SelectItem>
+                      <SelectItem value="police_request">Police Request</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="priorityLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Priority Level *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        
+        {/* Section 2: Complainant/Requester Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            2. Complainant/Requester Information
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="complainantName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Full Name *</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="complainantEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Email Address</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="complainantAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Full Address *</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="complainantPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Phone Number (Primary) *</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="complainantPhoneSecondary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Phone Number (Secondary)</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="consentToContact"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="border-beaver-surface-light data-[state=checked]:bg-beaver-orange data-[state=checked]:border-beaver-orange"
+                  />
+                </FormControl>
+                <FormLabel className="text-white">Consent to be contacted for follow-up</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        {/* Section 3: Location of Intervention */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            3. Location of the Intervention
+          </h3>
+          
+          <FormField
+            control={form.control}
+            name="interventionAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Complete Address of Intervention *</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="locationType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Type of Location *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                        <SelectValue placeholder="Select location type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="private_residence">Private Residence</SelectItem>
+                      <SelectItem value="public_park">Public Park</SelectItem>
+                      <SelectItem value="business">Business</SelectItem>
+                      <SelectItem value="public_road">Public Road</SelectItem>
+                      <SelectItem value="vacant_lot">Vacant Lot</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="locationDetails"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Location Details</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="e.g., backyard, near shed, intersection" className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        
+        {/* Section 4: Reason and Description */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            4. Reason and Description of the Intervention
+          </h3>
+          
+          <FormField
+            control={form.control}
+            name="interventionCategory"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Intervention Category *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="stray_animal">Stray Animal</SelectItem>
+                    <SelectItem value="bite">Bite</SelectItem>
+                    <SelectItem value="neglect_abuse">Neglect/Abuse</SelectItem>
+                    <SelectItem value="nuisance_barking">Nuisance - Barking</SelectItem>
+                    <SelectItem value="nuisance_odors">Nuisance - Odors</SelectItem>
+                    <SelectItem value="distressed_injured">Distressed/Injured Animal</SelectItem>
+                    <SelectItem value="wild_animal">Wild Animal</SelectItem>
+                    <SelectItem value="license_check">License Check</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="detailedDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Detailed Description of the Report *</FormLabel>
+                <FormControl>
+                  <Textarea {...field} className="bg-beaver-surface border-beaver-surface-light text-white" rows={4} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        {/* Section 5: Animal Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            5. Details of the Animal(s) Involved
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="animalSpecies"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Species *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                        <SelectValue placeholder="Select species" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="dog">Dog</SelectItem>
+                      <SelectItem value="cat">Cat</SelectItem>
+                      <SelectItem value="bird">Bird</SelectItem>
+                      <SelectItem value="raccoon">Raccoon</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="animalBreed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Breed (if applicable)</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="animalDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Description of the Animal *</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Color, size, sex, distinguishing marks, collar, etc." className="bg-beaver-surface border-beaver-surface-light text-white" rows={3} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="animalCondition"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Condition of the Animal *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                        <SelectValue placeholder="Select condition" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="aggressive">Aggressive</SelectItem>
+                      <SelectItem value="fearful">Fearful</SelectItem>
+                      <SelectItem value="injured">Injured</SelectItem>
+                      <SelectItem value="healthy">Apparently Healthy</SelectItem>
+                      <SelectItem value="deceased">Deceased</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="animalIdentification"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Identification (Tag/Microchip)</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="ownerKnown"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="border-beaver-surface-light data-[state=checked]:bg-beaver-orange data-[state=checked]:border-beaver-orange"
+                  />
+                </FormControl>
+                <FormLabel className="text-white">Owner information known</FormLabel>
+              </FormItem>
+            )}
+          />
+          
+          {ownerKnown && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <FormField
+                control={form.control}
+                name="ownerName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Owner Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="ownerContact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Owner Contact</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="ownerAddress"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="text-white">Owner Address</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+        </div>
+        
+        {/* Section 6: Officer Actions and Findings */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            6. Actions and Findings of the Field Officer
+          </h3>
+          
+          <FormField
+            control={form.control}
+            name="arrivalDateTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Date & Time of Arrival at Scene</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="officerFindings"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Officer's Findings *</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Objective description of the situation upon arrival" className="bg-beaver-surface border-beaver-surface-light text-white" rows={4} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="actionsTaken"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Actions Taken *</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="e.g., capture of animal, discussion with owner, issuance of notice, transport to shelter/vet" className="bg-beaver-surface border-beaver-surface-light text-white" rows={4} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="equipmentUsed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Equipment Used</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="e.g., cage, capture leash, microchip reader" className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="photosEvidence"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Photos and Evidence</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digital file references" className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="testimoniesCollected"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Testimonies Collected on Site</FormLabel>
+                <FormControl>
+                  <Textarea {...field} className="bg-beaver-surface border-beaver-surface-light text-white" rows={3} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        {/* Section 7: Resolution and Follow-up */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white border-b border-beaver-surface-light pb-2">
+            7. Resolution and Follow-up
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="interventionStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Status of Intervention *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-beaver-surface border-beaver-surface-light text-white">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="resolved">Resolved</SelectItem>
+                      <SelectItem value="ongoing">Ongoing</SelectItem>
+                      <SelectItem value="transferred">Transferred to Another Service</SelectItem>
+                      <SelectItem value="requires_followup">Requires Follow-up</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="endDateTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Date & Time Intervention Ended</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="finalReport"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Final Officer's Report</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Summary of actions and conclusion" className="bg-beaver-surface border-beaver-surface-light text-white" rows={4} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="recommendations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Recommendations</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="e.g., post-adoption follow-up, future inspection, owner education" className="bg-beaver-surface border-beaver-surface-light text-white" rows={3} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="nextFollowUpDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Date of Next Follow-up (if necessary)</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} className="bg-beaver-surface border-beaver-surface-light text-white" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        {/* Form Actions */}
+        <div className="flex justify-end space-x-2 pt-6 border-t border-beaver-surface-light">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-beaver-orange hover:bg-beaver-orange/90 text-black">
+            Create Response Case
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
