@@ -160,7 +160,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             {/* Logo and Title */}
             <div className="flex items-center space-x-2 md:space-x-4">
-              <div className={`w-10 h-10 md:w-12 lg:w-16 md:h-12 lg:h-16 bg-black rounded-lg flex items-center justify-center border-2 border-beaver-orange transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0 scale-75'}`}>
+              <div className={`w-10 h-10 md:w-12 lg:w-16 md:h-12 lg:h-16 bg-black rounded-lg flex items-center justify-center transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0 scale-75'}`}>
                 <img 
                   src={beaverImage} 
                   alt="BEAVERNET Logo" 
