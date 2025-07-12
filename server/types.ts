@@ -9,6 +9,7 @@ declare global {
         email?: string | null;
         department?: string | null;
         position?: string | null;
+        accessLevel?: string | null;
       };
     }
   }
