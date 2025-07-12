@@ -344,6 +344,8 @@
     "police": "Police",
     "traffic": "Traffic",
     "ems": "EMS",
+    "ambulance": "Ambulance",
+    "accident": "Accident",
     "new": "NEW",
     "active": "ACTIVE",
     "resolved": "RESOLVED",
