@@ -2378,4 +2378,538 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq, like, or, and, desc, asc } from "drizzle-orm";
+import { 
+  users, 
+  incidents, 
+  units, 
+  incidentUnits, 
+  animals, 
+  enforcementReports, 
+  customers, 
+  documents, 
+  invoices, 
+  payments, 
+  posTransactions, 
+  riskLocations, 
+  riskAssessments, 
+  mitigationPlans, 
+  riskEvents, 
+  auditSchedules, 
+  auditTemplates, 
+  auditReports, 
+  auditNonCompliances, 
+  auditEvidence, 
+  characters, 
+  licenses, 
+  vehicleRegistrations, 
+  callEntryLogs, 
+  chatSessions, 
+  chatMessages, 
+  chatSecurityLogs 
+} from "@shared/schema";
+
+class DatabaseStorage implements IStorage {
+  // Chat Session methods
+  async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
+    const [session] = await db.insert(chatSessions).values(insertSession).returning();
+    return session;
+  }
+
+  async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
+    const [session] = await db.select().from(chatSessions).where(eq(chatSessions.sessionId, sessionId));
+    return session;
+  }
+
+  async getAllChatSessions(): Promise<ChatSession[]> {
+    return await db.select().from(chatSessions).orderBy(desc(chatSessions.createdAt));
+  }
+
+  async updateChatSessionStatus(sessionId: string, status: string): Promise<ChatSession | undefined> {
+    const [updated] = await db.update(chatSessions)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(chatSessions.sessionId, sessionId))
+      .returning();
+    return updated;
+  }
+
+  // Chat Message methods
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await db.insert(chatMessages).values(insertMessage).returning();
+    return message;
+  }
+
+  async getChatMessage(id: number): Promise<ChatMessage | undefined> {
+    const [message] = await db.select().from(chatMessages).where(eq(chatMessages.id, id));
+    return message;
+  }
+
+  async getChatMessages(sessionId: string): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages)
+      .where(eq(chatMessages.sessionId, sessionId))
+      .orderBy(asc(chatMessages.createdAt));
+  }
+
+  // Chat Security Log methods
+  async createChatSecurityLog(insertLog: InsertChatSecurityLog): Promise<ChatSecurityLog> {
+    const [log] = await db.insert(chatSecurityLogs).values(insertLog).returning();
+    return log;
+  }
+
+  async getAllChatSecurityLogs(): Promise<ChatSecurityLog[]> {
+    return await db.select().from(chatSecurityLogs).orderBy(desc(chatSecurityLogs.createdAt));
+  }
+
+  async getChatSecurityLogsBySession(sessionId: string): Promise<ChatSecurityLog[]> {
+    return await db.select().from(chatSecurityLogs)
+      .where(eq(chatSecurityLogs.sessionId, sessionId))
+      .orderBy(desc(chatSecurityLogs.createdAt));
+  }
+
+  // Keep all other methods from MemStorage as fallback
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [updated] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return updated;
+  }
+
+  async updateUserProfile(id: number, profileData: UpdateUserProfile): Promise<User | undefined> {
+    const [updated] = await db.update(users).set(profileData).where(eq(users.id, id)).returning();
+    return updated;
+  }
+
+  async verifyEmployeePin(userId: number, pin: string): Promise<boolean> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    return user?.employeePin === pin;
+  }
+
+  async verifyChipCard(chipCardId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.chipCardId, chipCardId));
+    return user;
+  }
+
+  // Placeholder implementations for other methods - extend as needed
+  async createCallEntryLog(log: InsertCallEntryLog): Promise<CallEntryLog> {
+    const [result] = await db.insert(callEntryLogs).values(log).returning();
+    return result;
+  }
+
+  async getCallEntryLogs(incidentId?: number): Promise<CallEntryLog[]> {
+    if (incidentId) {
+      return await db.select().from(callEntryLogs).where(eq(callEntryLogs.incidentId, incidentId));
+    }
+    return await db.select().from(callEntryLogs);
+  }
+
+  async getCallEntryLogsByUser(userId: number): Promise<CallEntryLog[]> {
+    return await db.select().from(callEntryLogs).where(eq(callEntryLogs.userId, userId));
+  }
+
+  // For now, use fallback implementations for other methods
+  private memStorage = new MemStorage();
+  
+  async createIncident(incident: InsertIncident): Promise<Incident> {
+    return this.memStorage.createIncident(incident);
+  }
+
+  async getIncident(id: number): Promise<Incident | undefined> {
+    return this.memStorage.getIncident(id);
+  }
+
+  async getAllIncidents(): Promise<Incident[]> {
+    return this.memStorage.getAllIncidents();
+  }
+
+  async updateIncident(id: number, updates: Partial<Incident>): Promise<Incident | undefined> {
+    return this.memStorage.updateIncident(id, updates);
+  }
+
+  async createUnit(unit: InsertUnit): Promise<Unit> {
+    return this.memStorage.createUnit(unit);
+  }
+
+  async getUnit(id: number): Promise<Unit | undefined> {
+    return this.memStorage.getUnit(id);
+  }
+
+  async getAllUnits(): Promise<Unit[]> {
+    return this.memStorage.getAllUnits();
+  }
+
+  async updateUnit(id: number, updates: Partial<Unit>): Promise<Unit | undefined> {
+    return this.memStorage.updateUnit(id, updates);
+  }
+
+  async assignUnitToIncident(assignment: InsertIncidentUnit): Promise<IncidentUnit> {
+    return this.memStorage.assignUnitToIncident(assignment);
+  }
+
+  async getIncidentUnits(incidentId: number): Promise<IncidentUnit[]> {
+    return this.memStorage.getIncidentUnits(incidentId);
+  }
+
+  async getUnitAssignments(unitId: number): Promise<IncidentUnit[]> {
+    return this.memStorage.getUnitAssignments(unitId);
+  }
+
+  async createAnimal(animal: InsertAnimal): Promise<Animal> {
+    return this.memStorage.createAnimal(animal);
+  }
+
+  async getAnimal(id: number): Promise<Animal | undefined> {
+    return this.memStorage.getAnimal(id);
+  }
+
+  async getAllAnimals(): Promise<Animal[]> {
+    return this.memStorage.getAllAnimals();
+  }
+
+  async updateAnimal(id: number, updates: Partial<Animal>): Promise<Animal | undefined> {
+    return this.memStorage.updateAnimal(id, updates);
+  }
+
+  async getAnimalsByOwner(ownerName: string): Promise<Animal[]> {
+    return this.memStorage.getAnimalsByOwner(ownerName);
+  }
+
+  async createEnforcementReport(report: InsertEnforcementReport): Promise<EnforcementReport> {
+    return this.memStorage.createEnforcementReport(report);
+  }
+
+  async getEnforcementReport(id: number): Promise<EnforcementReport | undefined> {
+    return this.memStorage.getEnforcementReport(id);
+  }
+
+  async getAllEnforcementReports(): Promise<EnforcementReport[]> {
+    return this.memStorage.getAllEnforcementReports();
+  }
+
+  async updateEnforcementReport(id: number, updates: Partial<EnforcementReport>): Promise<EnforcementReport | undefined> {
+    return this.memStorage.updateEnforcementReport(id, updates);
+  }
+
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    return this.memStorage.createCustomer(customer);
+  }
+
+  async getCustomer(id: number): Promise<Customer | undefined> {
+    return this.memStorage.getCustomer(id);
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    return this.memStorage.getAllCustomers();
+  }
+
+  async updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined> {
+    return this.memStorage.updateCustomer(id, updates);
+  }
+
+  async searchCustomers(query: string): Promise<Customer[]> {
+    return this.memStorage.searchCustomers(query);
+  }
+
+  async createDocument(document: InsertDocument): Promise<Document> {
+    return this.memStorage.createDocument(document);
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    return this.memStorage.getDocument(id);
+  }
+
+  async getAllDocuments(): Promise<Document[]> {
+    return this.memStorage.getAllDocuments();
+  }
+
+  async updateDocument(id: number, updates: Partial<Document>): Promise<Document | undefined> {
+    return this.memStorage.updateDocument(id, updates);
+  }
+
+  async getDocumentByUid(uid: string): Promise<Document | undefined> {
+    return this.memStorage.getDocumentByUid(uid);
+  }
+
+  async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
+    return this.memStorage.createInvoice(invoice);
+  }
+
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    return this.memStorage.getInvoice(id);
+  }
+
+  async getAllInvoices(): Promise<Invoice[]> {
+    return this.memStorage.getAllInvoices();
+  }
+
+  async updateInvoice(id: number, updates: Partial<Invoice>): Promise<Invoice | undefined> {
+    return this.memStorage.updateInvoice(id, updates);
+  }
+
+  async getInvoiceByNumber(invoiceNumber: string): Promise<Invoice | undefined> {
+    return this.memStorage.getInvoiceByNumber(invoiceNumber);
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    return this.memStorage.createPayment(payment);
+  }
+
+  async getPayment(id: number): Promise<Payment | undefined> {
+    return this.memStorage.getPayment(id);
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    return this.memStorage.getAllPayments();
+  }
+
+  async updatePayment(id: number, updates: Partial<Payment>): Promise<Payment | undefined> {
+    return this.memStorage.updatePayment(id, updates);
+  }
+
+  async createPosTransaction(transaction: InsertPosTransaction): Promise<PosTransaction> {
+    return this.memStorage.createPosTransaction(transaction);
+  }
+
+  async getPosTransaction(id: number): Promise<PosTransaction | undefined> {
+    return this.memStorage.getPosTransaction(id);
+  }
+
+  async getAllPosTransactions(): Promise<PosTransaction[]> {
+    return this.memStorage.getAllPosTransactions();
+  }
+
+  async updatePosTransaction(id: number, updates: Partial<PosTransaction>): Promise<PosTransaction | undefined> {
+    return this.memStorage.updatePosTransaction(id, updates);
+  }
+
+  async createRiskLocation(location: InsertRiskLocation): Promise<RiskLocation> {
+    return this.memStorage.createRiskLocation(location);
+  }
+
+  async getRiskLocation(id: number): Promise<RiskLocation | undefined> {
+    return this.memStorage.getRiskLocation(id);
+  }
+
+  async getAllRiskLocations(): Promise<RiskLocation[]> {
+    return this.memStorage.getAllRiskLocations();
+  }
+
+  async updateRiskLocation(id: number, updates: Partial<RiskLocation>): Promise<RiskLocation | undefined> {
+    return this.memStorage.updateRiskLocation(id, updates);
+  }
+
+  async createRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    return this.memStorage.createRiskAssessment(assessment);
+  }
+
+  async getRiskAssessment(id: number): Promise<RiskAssessment | undefined> {
+    return this.memStorage.getRiskAssessment(id);
+  }
+
+  async getAllRiskAssessments(): Promise<RiskAssessment[]> {
+    return this.memStorage.getAllRiskAssessments();
+  }
+
+  async updateRiskAssessment(id: number, updates: Partial<RiskAssessment>): Promise<RiskAssessment | undefined> {
+    return this.memStorage.updateRiskAssessment(id, updates);
+  }
+
+  async createMitigationPlan(plan: InsertMitigationPlan): Promise<MitigationPlan> {
+    return this.memStorage.createMitigationPlan(plan);
+  }
+
+  async getMitigationPlan(id: number): Promise<MitigationPlan | undefined> {
+    return this.memStorage.getMitigationPlan(id);
+  }
+
+  async getAllMitigationPlans(): Promise<MitigationPlan[]> {
+    return this.memStorage.getAllMitigationPlans();
+  }
+
+  async updateMitigationPlan(id: number, updates: Partial<MitigationPlan>): Promise<MitigationPlan | undefined> {
+    return this.memStorage.updateMitigationPlan(id, updates);
+  }
+
+  async getMitigationPlansByRiskAssessment(riskAssessmentId: number): Promise<MitigationPlan[]> {
+    return this.memStorage.getMitigationPlansByRiskAssessment(riskAssessmentId);
+  }
+
+  async createRiskEvent(event: InsertRiskEvent): Promise<RiskEvent> {
+    return this.memStorage.createRiskEvent(event);
+  }
+
+  async getRiskEvent(id: number): Promise<RiskEvent | undefined> {
+    return this.memStorage.getRiskEvent(id);
+  }
+
+  async getAllRiskEvents(): Promise<RiskEvent[]> {
+    return this.memStorage.getAllRiskEvents();
+  }
+
+  async updateRiskEvent(id: number, updates: Partial<RiskEvent>): Promise<RiskEvent | undefined> {
+    return this.memStorage.updateRiskEvent(id, updates);
+  }
+
+  async getRiskEventsByAssessment(assessmentId: number): Promise<RiskEvent[]> {
+    return this.memStorage.getRiskEventsByAssessment(assessmentId);
+  }
+
+  async createAuditSchedule(schedule: InsertAuditSchedule): Promise<AuditSchedule> {
+    return this.memStorage.createAuditSchedule(schedule);
+  }
+
+  async getAuditSchedule(id: number): Promise<AuditSchedule | undefined> {
+    return this.memStorage.getAuditSchedule(id);
+  }
+
+  async getAllAuditSchedules(): Promise<AuditSchedule[]> {
+    return this.memStorage.getAllAuditSchedules();
+  }
+
+  async updateAuditSchedule(id: number, updates: Partial<AuditSchedule>): Promise<AuditSchedule | undefined> {
+    return this.memStorage.updateAuditSchedule(id, updates);
+  }
+
+  async createAuditTemplate(template: InsertAuditTemplate): Promise<AuditTemplate> {
+    return this.memStorage.createAuditTemplate(template);
+  }
+
+  async getAuditTemplate(id: number): Promise<AuditTemplate | undefined> {
+    return this.memStorage.getAuditTemplate(id);
+  }
+
+  async getAllAuditTemplates(): Promise<AuditTemplate[]> {
+    return this.memStorage.getAllAuditTemplates();
+  }
+
+  async createAuditReport(report: InsertAuditReport): Promise<AuditReport> {
+    return this.memStorage.createAuditReport(report);
+  }
+
+  async getAuditReport(id: number): Promise<AuditReport | undefined> {
+    return this.memStorage.getAuditReport(id);
+  }
+
+  async getAllAuditReports(): Promise<AuditReport[]> {
+    return this.memStorage.getAllAuditReports();
+  }
+
+  async updateAuditReport(id: number, updates: Partial<AuditReport>): Promise<AuditReport | undefined> {
+    return this.memStorage.updateAuditReport(id, updates);
+  }
+
+  async createAuditNonCompliance(nonCompliance: InsertAuditNonCompliance): Promise<AuditNonCompliance> {
+    return this.memStorage.createAuditNonCompliance(nonCompliance);
+  }
+
+  async getAuditNonCompliance(id: number): Promise<AuditNonCompliance | undefined> {
+    return this.memStorage.getAuditNonCompliance(id);
+  }
+
+  async getAllAuditNonCompliances(): Promise<AuditNonCompliance[]> {
+    return this.memStorage.getAllAuditNonCompliances();
+  }
+
+  async updateAuditNonCompliance(id: number, updates: Partial<AuditNonCompliance>): Promise<AuditNonCompliance | undefined> {
+    return this.memStorage.updateAuditNonCompliance(id, updates);
+  }
+
+  async createAuditEvidence(evidence: InsertAuditEvidence): Promise<AuditEvidence> {
+    return this.memStorage.createAuditEvidence(evidence);
+  }
+
+  async getAuditEvidence(id: number): Promise<AuditEvidence | undefined> {
+    return this.memStorage.getAuditEvidence(id);
+  }
+
+  async getAllAuditEvidences(): Promise<AuditEvidence[]> {
+    return this.memStorage.getAllAuditEvidences();
+  }
+
+  async updateAuditEvidence(id: number, updates: Partial<AuditEvidence>): Promise<AuditEvidence | undefined> {
+    return this.memStorage.updateAuditEvidence(id, updates);
+  }
+
+  async createCharacter(character: InsertCharacter): Promise<Character> {
+    return this.memStorage.createCharacter(character);
+  }
+
+  async getCharacter(id: number): Promise<Character | undefined> {
+    return this.memStorage.getCharacter(id);
+  }
+
+  async getAllCharacters(): Promise<Character[]> {
+    return this.memStorage.getAllCharacters();
+  }
+
+  async updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined> {
+    return this.memStorage.updateCharacter(id, updates);
+  }
+
+  async createLicense(license: InsertLicense): Promise<License> {
+    return this.memStorage.createLicense(license);
+  }
+
+  async getLicense(id: number): Promise<License | undefined> {
+    return this.memStorage.getLicense(id);
+  }
+
+  async getAllLicenses(): Promise<License[]> {
+    return this.memStorage.getAllLicenses();
+  }
+
+  async updateLicense(id: number, updates: Partial<License>): Promise<License | undefined> {
+    return this.memStorage.updateLicense(id, updates);
+  }
+
+  async getLicenseByNumber(licenseNumber: string): Promise<License | undefined> {
+    return this.memStorage.getLicenseByNumber(licenseNumber);
+  }
+
+  async createVehicleRegistration(registration: InsertVehicleRegistration): Promise<VehicleRegistration> {
+    return this.memStorage.createVehicleRegistration(registration);
+  }
+
+  async getVehicleRegistration(id: number): Promise<VehicleRegistration | undefined> {
+    return this.memStorage.getVehicleRegistration(id);
+  }
+
+  async getAllVehicleRegistrations(): Promise<VehicleRegistration[]> {
+    return this.memStorage.getAllVehicleRegistrations();
+  }
+
+  async updateVehicleRegistration(id: number, updates: Partial<VehicleRegistration>): Promise<VehicleRegistration | undefined> {
+    return this.memStorage.updateVehicleRegistration(id, updates);
+  }
+
+  async getVehicleRegistrationByPlate(plate: string): Promise<VehicleRegistration | undefined> {
+    return this.memStorage.getVehicleRegistrationByPlate(plate);
+  }
+
+  async getVehicleRegistrationByVin(vin: string): Promise<VehicleRegistration | undefined> {
+    return this.memStorage.getVehicleRegistrationByVin(vin);
+  }
+
+  async getVehicleRegistrationsByCharacterId(characterId: number): Promise<VehicleRegistration[]> {
+    return this.memStorage.getVehicleRegistrationsByCharacterId(characterId);
+  }
+
+  async getVehicleRegistrationsByOwner(owner: string): Promise<VehicleRegistration[]> {
+    return this.memStorage.getVehicleRegistrationsByOwner(owner);
+  }
+}
+
+export const storage = new DatabaseStorage();
