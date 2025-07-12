@@ -123,6 +123,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", authenticated: true });
   });
 
+  // BeaverTalk health check endpoint
+  app.get("/api/chat/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      service: "BeaverTalk", 
+      version: "1.0.0",
+      authenticated: true,
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Call entry log endpoints
   app.post("/api/call-entry-logs", async (req, res) => {
     try {
