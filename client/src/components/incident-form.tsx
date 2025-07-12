@@ -17,6 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { SmartAddressInput } from "./smart-address-input";
 
 const incidentFormSchema = insertIncidentSchema.extend({
   incidentNumber: z.string().min(1, "Incident number is required"),
@@ -407,25 +408,15 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="text-white">{t('beaverpatch.address')}</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="address"
-                      {...form.register("address")}
-                      placeholder={t('beaverpatch.enterFullAddress')}
-                      className="bg-beaver-surface-light border-gray-600 text-white flex-1"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleGeolocation}
-                      variant="outline"
-                      className="bg-beaver-surface-light border-gray-600 text-white hover:bg-gray-600"
-                    >
-                      <MapPin className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                <SmartAddressInput
+                  value={form.watch("address") || ""}
+                  onChange={(value) => form.setValue("address", value)}
+                  onCrossStreetChange={(crossStreet) => form.setValue("crossStreet", crossStreet)}
+                  onGeolocation={handleGeolocation}
+                  latitude={form.watch("latitude") || undefined}
+                  longitude={form.watch("longitude") || undefined}
+                  className="flex-1"
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">

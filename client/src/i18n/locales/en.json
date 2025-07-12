@@ -367,7 +367,11 @@
     "active": "ACTIVE",
     "resolved": "RESOLVED",
     "enroute": "ENROUTE",
-    "off_duty": "OFF DUTY"
+    "off_duty": "OFF DUTY",
+    "streetSuggestions": "Street Suggestions",
+    "intersectionSuggestions": "Intersection Suggestions",
+    "detectedStreets": "Detected Streets",
+    "suggestedCrossStreet": "Suggested Cross Street"
   },
   "beaverpaws": {
     "title": "BeaverPaws Animal Controls",
