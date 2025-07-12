@@ -19,12 +19,12 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
 
-  // Mock map implementation (in a real app, this would use a mapping library like Leaflet or Google Maps)
+  // Mock map implementation centered on Niagara Falls, Ontario
   const mapBounds = {
-    minLat: 45.50,
-    maxLat: 45.53,
-    minLon: -122.70,
-    maxLon: -122.65
+    minLat: 43.070,    // Southern boundary of Niagara Falls, ON
+    maxLat: 43.110,    // Northern boundary of Niagara Falls, ON
+    minLon: -79.110,   // Western boundary 
+    maxLon: -79.050    // Eastern boundary
   };
 
   const getUnitIcon = (type: string) => {
@@ -88,7 +88,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         <div className="flex items-center justify-between">
           <CardTitle className="text-beaver-orange flex items-center">
             <MapPin className="w-5 h-5 mr-2" />
-            Dispatch Map
+            Dispatch Map - Niagara Falls, ON
           </CardTitle>
           <Button
             variant="ghost"
@@ -114,14 +114,34 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
             backgroundSize: '20px 20px'
           }}
         >
-          {/* Map overlay with streets pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-1/4 left-0 w-full h-0.5 bg-gray-600"></div>
-            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-600"></div>
-            <div className="absolute top-3/4 left-0 w-full h-0.5 bg-gray-600"></div>
-            <div className="absolute left-1/4 top-0 w-0.5 h-full bg-gray-600"></div>
-            <div className="absolute left-1/2 top-0 w-0.5 h-full bg-gray-600"></div>
-            <div className="absolute left-3/4 top-0 w-0.5 h-full bg-gray-600"></div>
+          {/* Map overlay with Niagara Falls street patterns */}
+          <div className="absolute inset-0 opacity-30">
+            {/* Major East-West Roads */}
+            <div className="absolute top-[15%] left-0 w-full h-1 bg-yellow-400" title="Rainbow Blvd"></div>
+            <div className="absolute top-[35%] left-0 w-full h-0.5 bg-gray-500" title="Falls Ave"></div>
+            <div className="absolute top-[50%] left-0 w-full h-1 bg-yellow-400" title="Lundy's Lane"></div>
+            <div className="absolute top-[65%] left-0 w-full h-0.5 bg-gray-500" title="Stanley Ave"></div>
+            <div className="absolute top-[80%] left-0 w-full h-0.5 bg-gray-500" title="Morrison St"></div>
+            
+            {/* Major North-South Roads */}
+            <div className="absolute left-[20%] top-0 w-1 h-full bg-yellow-400" title="Niagara Pkwy"></div>
+            <div className="absolute left-[40%] top-0 w-0.5 h-full bg-gray-500" title="Main St"></div>
+            <div className="absolute left-[60%] top-0 w-0.5 h-full bg-gray-500" title="Ferry St"></div>
+            <div className="absolute left-[80%] top-0 w-1 h-full bg-yellow-400" title="QEW"></div>
+            
+            {/* Niagara River representation */}
+            <div className="absolute left-[5%] top-0 w-3 h-full bg-blue-400 opacity-50" title="Niagara River"></div>
+            
+            {/* Falls area indicator */}
+            <div className="absolute left-[15%] top-[25%] w-8 h-8 rounded-full bg-blue-300 opacity-60" title="Niagara Falls"></div>
+          </div>
+          
+          {/* Location labels */}
+          <div className="absolute inset-0 text-xs text-gray-400 pointer-events-none">
+            <div className="absolute left-[10%] top-[20%] font-bold">Falls</div>
+            <div className="absolute left-[75%] top-[15%] font-bold">Tourist Area</div>
+            <div className="absolute left-[45%] top-[45%] font-bold">Downtown</div>
+            <div className="absolute left-[70%] top-[75%] font-bold">Industrial</div>
           </div>
 
           {/* Render incidents */}

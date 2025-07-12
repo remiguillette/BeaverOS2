@@ -352,16 +352,16 @@ export class MemStorage implements IStorage {
     this.users.set(2, dispatcherUser);
     this.currentUserId = 3;
 
-    // Sample units
+    // Sample units positioned in Niagara Falls, Ontario
     const sampleUnits = [
-      { unitNumber: "P-101", type: "police", status: "available", currentLocation: "Downtown Station", latitude: 45.5152, longitude: -122.6784 },
-      { unitNumber: "P-102", type: "police", status: "responding", currentLocation: "Oak Street", latitude: 45.5165, longitude: -122.6793 },
-      { unitNumber: "P-103", type: "police", status: "busy", currentLocation: "Traffic Stop - Main St", latitude: 45.5140, longitude: -122.6750 },
-      { unitNumber: "F-201", type: "fire", status: "available", currentLocation: "Fire Station 1", latitude: 45.5180, longitude: -122.6820 },
-      { unitNumber: "F-202", type: "fire", status: "available", currentLocation: "Fire Station 2", latitude: 45.5100, longitude: -122.6700 },
-      { unitNumber: "A-301", type: "ambulance", status: "enroute", currentLocation: "Hospital", latitude: 45.5200, longitude: -122.6850 },
-      { unitNumber: "A-302", type: "ambulance", status: "available", currentLocation: "Medical Center", latitude: 45.5120, longitude: -122.6680 },
-      { unitNumber: "P-104", type: "police", status: "off_duty", currentLocation: "Station", latitude: 45.5152, longitude: -122.6784 },
+      { unitNumber: "P-101", type: "police", status: "available", currentLocation: "Downtown Station", latitude: 43.089, longitude: -79.084 },
+      { unitNumber: "P-102", type: "police", status: "responding", currentLocation: "Rainbow Bridge", latitude: 43.088, longitude: -79.075 },
+      { unitNumber: "P-103", type: "police", status: "busy", currentLocation: "Traffic Stop - Lundy's Lane", latitude: 43.095, longitude: -79.090 },
+      { unitNumber: "F-201", type: "fire", status: "available", currentLocation: "Fire Station 1", latitude: 43.085, longitude: -79.080 },
+      { unitNumber: "F-202", type: "fire", status: "available", currentLocation: "Fire Station 2", latitude: 43.100, longitude: -79.095 },
+      { unitNumber: "A-301", type: "ambulance", status: "enroute", currentLocation: "Niagara Hospital", latitude: 43.092, longitude: -79.078 },
+      { unitNumber: "A-302", type: "ambulance", status: "available", currentLocation: "Medical Center", latitude: 43.087, longitude: -79.088 },
+      { unitNumber: "P-104", type: "police", status: "off_duty", currentLocation: "Police Station", latitude: 43.089, longitude: -79.084 },
     ];
 
     sampleUnits.forEach(unit => {
@@ -375,16 +375,16 @@ export class MemStorage implements IStorage {
       this.units.set(id, fullUnit);
     });
 
-    // Sample incidents
+    // Sample incidents positioned in Niagara Falls, Ontario
     const sampleIncidents = [
       {
         incidentNumber: "2025-001",
         type: "medical",
         priority: "high",
         status: "active",
-        address: "123 Main Street",
-        latitude: 45.5140,
-        longitude: -122.6750,
+        address: "5685 Falls Avenue",
+        latitude: 43.090,
+        longitude: -79.080,
         complainant: "John Doe",
         description: "Cardiac arrest, CPR in progress",
         peopleInvolved: 1,
@@ -394,9 +394,9 @@ export class MemStorage implements IStorage {
         type: "fire",
         priority: "high",
         status: "dispatched",
-        address: "456 Oak Avenue",
-        latitude: 45.5165,
-        longitude: -122.6793,
+        address: "6420 Stanley Avenue",
+        latitude: 43.098,
+        longitude: -79.085,
         complainant: "Jane Smith",
         description: "Structure fire, smoke visible",
         peopleInvolved: 3,
@@ -406,9 +406,9 @@ export class MemStorage implements IStorage {
         type: "accident",
         priority: "medium",
         status: "new",
-        address: "789 Pine Road",
-        latitude: 45.5200,
-        longitude: -122.6850,
+        address: "7373 Lundy's Lane",
+        latitude: 43.093,
+        longitude: -79.095,
         complainant: "Anonymous",
         description: "Two vehicle collision, minor injuries",
         peopleInvolved: 4,
