@@ -11,6 +11,7 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/use-translation";
 import { IncidentForm } from "@/components/incident-form";
 import { DispatchMap } from "@/components/dispatch-map";
 import { EnhancedHeader } from "@/components/enhanced-header";
@@ -25,6 +26,7 @@ export default function BeaverPatch() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: incidents = [], isLoading: loadingIncidents } = useQuery<Incident[]>({
@@ -196,19 +198,19 @@ export default function BeaverPatch() {
           <TabsList className="grid w-full grid-cols-4 bg-beaver-surface border-beaver-surface-light">
             <TabsTrigger value="call-entry" className="flex items-center space-x-2">
               <Headphones className="w-4 h-4" />
-              <span>Call Entry</span>
+              <span>{t('beaverpatch.callEntry')}</span>
             </TabsTrigger>
             <TabsTrigger value="dispatch" className="flex items-center space-x-2">
               <Radio className="w-4 h-4" />
-              <span>Dispatch</span>
+              <span>{t('beaverpatch.dispatch')}</span>
             </TabsTrigger>
             <TabsTrigger value="map" className="flex items-center space-x-2">
               <Map className="w-4 h-4" />
-              <span>Map View</span>
+              <span>{t('beaverpatch.map')}</span>
             </TabsTrigger>
             <TabsTrigger value="statistics" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
-              <span>Statistics</span>
+              <span>{t('beaverpatch.reports')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -234,12 +236,12 @@ export default function BeaverPatch() {
               <div className="lg:col-span-1">
                 <Card className="bg-beaver-surface border-beaver-surface-light h-full">
                   <CardHeader>
-                    <CardTitle className="text-lg text-beaver-orange">Active Incidents</CardTitle>
+                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.incidents')} {t('common.active')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {activeIncidents.length === 0 ? (
-                        <div className="text-center text-gray-400 py-8">No active incidents</div>
+                        <div className="text-center text-gray-400 py-8">{t('common.loading')}</div>
                       ) : (
                         activeIncidents.slice(0, 5).map((incident) => (
                           <div
@@ -281,23 +283,23 @@ export default function BeaverPatch() {
               <Card className="bg-beaver-surface border-beaver-surface-light">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-beaver-orange">Incident Management</CardTitle>
+                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.incident')} {t('common.actions')}</CardTitle>
                     <div className="flex items-center space-x-2">
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="w-40 bg-beaver-surface-light border-gray-600 text-white">
                           <SelectValue placeholder="Filter" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="all">{t('common.all')} {t('common.status')}</SelectItem>
                           <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="dispatched">Dispatched</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="dispatched">{t('beaverpatch.dispatched')}</SelectItem>
+                          <SelectItem value="active">{t('common.active')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <div className="relative">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <Input
-                          placeholder="Search..."
+                          placeholder={t('common.search') + "..."}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="pl-10 bg-beaver-surface-light border-gray-600 text-white w-48"
@@ -309,9 +311,9 @@ export default function BeaverPatch() {
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {loadingIncidents ? (
-                      <div className="text-center text-gray-400 py-8">Loading incidents...</div>
+                      <div className="text-center text-gray-400 py-8">{t('common.loading')}</div>
                     ) : filteredIncidents.length === 0 ? (
-                      <div className="text-center text-gray-400 py-8">No incidents found</div>
+                      <div className="text-center text-gray-400 py-8">No {t('beaverpatch.incidents').toLowerCase()} found</div>
                     ) : (
                       filteredIncidents.map((incident) => (
                         <div

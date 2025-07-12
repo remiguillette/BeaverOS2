@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/use-translation";
 import { EnhancedHeader } from "@/components/enhanced-header";
 import { insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema } from "@shared/schema";
 import type { Invoice, Payment, PosTransaction } from "@shared/schema";
@@ -37,6 +38,7 @@ export default function BeaverPay() {
   const [paypalAmount, setPaypalAmount] = useState("");
   const [paypalDescription, setPaypalDescription] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Fetch data using React Query
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery({

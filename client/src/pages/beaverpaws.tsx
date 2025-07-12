@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/use-translation";
 import { EnhancedHeader } from "@/components/enhanced-header";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,6 +89,7 @@ export default function BeaverPaws() {
   const [searchQuery, setSearchQuery] = useState("");
   const [responseCases, setResponseCases] = useState<ResponseTrackingFormData[]>([]);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

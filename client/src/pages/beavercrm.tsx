@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EnhancedHeader } from "@/components/enhanced-header";
+import { useTranslation } from "@/hooks/use-translation";
 import { insertCustomerSchema, type Customer, type InsertCustomer } from "@shared/schema";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -46,6 +47,7 @@ export default function BeaverCRM() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const queryClient = useQueryClient();
   const newCustomerButtonRef = useRef<HTMLButtonElement>(null);
+  const { t } = useTranslation();
 
   // Fetch customers
   const { data: customers = [], isLoading } = useQuery({
