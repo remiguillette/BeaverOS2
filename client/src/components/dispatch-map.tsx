@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2, Move, MousePointer, RotateCcw, Building } from "lucide-react";
+import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2, Move, MousePointer, RotateCcw, Building, Flame, Route, Home } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Incident, Unit } from "@shared/schema";
 import L from "leaflet";
@@ -75,12 +75,21 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
   const incidentMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
   const unitMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
   const policeServicesRef = useRef<L.LayerGroup>(L.layerGroup());
+  const fireServicesRef = useRef<L.LayerGroup>(L.layerGroup());
+  const roadsRef = useRef<L.LayerGroup>(L.layerGroup());
+  const addressPointsRef = useRef<L.LayerGroup>(L.layerGroup());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [isMoveModeActive, setIsMoveModeActive] = useState(false);
   const [draggedUnit, setDraggedUnit] = useState<Unit | null>(null);
   const [showPoliceServices, setShowPoliceServices] = useState(true);
+  const [showFireServices, setShowFireServices] = useState(true);
+  const [showRoads, setShowRoads] = useState(false);
+  const [showAddressPoints, setShowAddressPoints] = useState(false);
+  const [fireServicesData, setFireServicesData] = useState<any>(null);
+  const [roadsData, setRoadsData] = useState<any>(null);
+  const [addressPointsData, setAddressPointsData] = useState<any>(null);
 
   // Initialize map
   useEffect(() => {
@@ -104,6 +113,9 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
     incidentMarkersRef.current.addTo(map);
     unitMarkersRef.current.addTo(map);
     policeServicesRef.current.addTo(map);
+    fireServicesRef.current.addTo(map);
+    roadsRef.current.addTo(map);
+    addressPointsRef.current.addTo(map);
 
     mapRef.current = map;
 
@@ -123,6 +135,43 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
       }, 100);
     }
   }, [isFullscreen]);
+
+  // Load geojson data on mount
+  useEffect(() => {
+    const loadGeojsonData = async () => {
+      try {
+        // Load Fire Services data
+        const fireResponse = await fetch('/data/Niagara_Falls_Fire_Services_WGS_1984_-15576019196615138.geojson');
+        if (fireResponse.ok) {
+          const fireData = await fireResponse.json();
+          setFireServicesData(fireData);
+        }
+
+        // Load Roads data
+        const roadsResponse = await fetch('/data/OpenData_Roads_-2370296509799728319.geojson');
+        if (roadsResponse.ok) {
+          const roadsData = await roadsResponse.json();
+          setRoadsData(roadsData);
+        }
+
+        // Load Address Points data (sample only due to large size)
+        const addressResponse = await fetch('/data/OpenData_Address_Points_-2748781945479425711.geojson');
+        if (addressResponse.ok) {
+          const addressData = await addressResponse.json();
+          // Limit to first 1000 points for performance
+          const limitedAddressData = {
+            ...addressData,
+            features: addressData.features.slice(0, 1000)
+          };
+          setAddressPointsData(limitedAddressData);
+        }
+      } catch (error) {
+        console.warn("Failed to load geojson data:", error);
+      }
+    };
+
+    loadGeojsonData();
+  }, []);
 
   // Create custom icons
   const createIncidentIcon = (priority: string) => {
@@ -207,6 +256,50 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
       className: 'custom-police-service-marker',
       iconSize: [28, 28],
       iconAnchor: [14, 14]
+    });
+  };
+
+  const createFireServiceIcon = () => {
+    return L.divIcon({
+      html: `<div style="
+        width: 28px; 
+        height: 28px; 
+        background-color: #dc2626; 
+        border: 3px solid white; 
+        border-radius: 8px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        cursor: pointer;
+      ">
+        <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
+          <path d="M12 2C9.8 4.7 8.3 7.7 8.3 10.5C8.3 13.8 10.5 16 12 16S15.7 13.8 15.7 10.5C15.7 7.7 14.2 4.7 12 2M12 13C10.9 13 10 12.1 10 11S10.9 9 12 9 14 9.9 14 11 13.1 13 12 13Z"/>
+        </svg>
+      </div>`,
+      className: 'custom-fire-service-marker',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+  };
+
+  const createAddressPointIcon = () => {
+    return L.divIcon({
+      html: `<div style="
+        width: 8px; 
+        height: 8px; 
+        background-color: #3b82f6; 
+        border: 1px solid white; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        cursor: pointer;
+      "></div>`,
+      className: 'custom-address-point-marker',
+      iconSize: [8, 8],
+      iconAnchor: [4, 4]
     });
   };
 
@@ -331,6 +424,124 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
     }
   }, [showPoliceServices]);
 
+  // Load and display fire services data
+  useEffect(() => {
+    if (!mapRef.current || !showFireServices || !fireServicesData) return;
+
+    fireServicesRef.current.clearLayers();
+
+    fireServicesData.features.forEach((feature: any) => {
+      const [lng, lat] = feature.geometry.coordinates;
+      const props = feature.properties;
+      
+      const marker = L.marker([lat, lng], {
+        icon: createFireServiceIcon()
+      });
+
+      marker.bindPopup(`
+        <div style="min-width: 250px;">
+          <h3 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 14px;">${props.NAME}</h3>
+          <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Station ID:</strong> ${props.NF_ID}</p>
+          <p style="margin: 0; font-size: 12px;"><strong>Address:</strong> ${props.ADDRESS}</p>
+        </div>
+      `);
+
+      fireServicesRef.current.addLayer(marker);
+    });
+  }, [showFireServices, fireServicesData]);
+
+  // Load and display roads data
+  useEffect(() => {
+    if (!mapRef.current || !showRoads || !roadsData) return;
+
+    roadsRef.current.clearLayers();
+
+    // Only show a sample of roads for performance (first 500)
+    const limitedFeatures = roadsData.features.slice(0, 500);
+    
+    limitedFeatures.forEach((feature: any) => {
+      const coordinates = feature.geometry.coordinates;
+      const props = feature.properties;
+      
+      // Convert coordinates to Leaflet format
+      const latlngs = coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
+      
+      const polyline = L.polyline(latlngs, {
+        color: '#6b7280',
+        weight: 2,
+        opacity: 0.6
+      });
+
+      polyline.bindPopup(`
+        <div style="min-width: 200px;">
+          <h3 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 14px;">${props.Full_Str_Name}</h3>
+          <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Owner:</strong> ${props.Owner}</p>
+          <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Municipality:</strong> ${props.Left_Mun}</p>
+          <p style="margin: 0; font-size: 12px;"><strong>Status:</strong> ${props.Public_Status}</p>
+        </div>
+      `);
+
+      roadsRef.current.addLayer(polyline);
+    });
+  }, [showRoads, roadsData]);
+
+  // Load and display address points data
+  useEffect(() => {
+    if (!mapRef.current || !showAddressPoints || !addressPointsData) return;
+
+    addressPointsRef.current.clearLayers();
+
+    addressPointsData.features.forEach((feature: any) => {
+      const [lng, lat] = feature.geometry.coordinates;
+      const props = feature.properties;
+      
+      const marker = L.marker([lat, lng], {
+        icon: createAddressPointIcon()
+      });
+
+      marker.bindPopup(`
+        <div style="min-width: 200px;">
+          <h3 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 14px;">${props.Full_StreetNo} ${props.StreetName} ${props.StreetType}</h3>
+          <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Municipality:</strong> ${props.Municipality}</p>
+          <p style="margin: 0; font-size: 12px;"><strong>Status:</strong> ${props.LifeCycleStatus}</p>
+        </div>
+      `);
+
+      addressPointsRef.current.addLayer(marker);
+    });
+  }, [showAddressPoints, addressPointsData]);
+
+  // Toggle layer visibility
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    if (showFireServices) {
+      fireServicesRef.current.addTo(mapRef.current);
+    } else {
+      mapRef.current.removeLayer(fireServicesRef.current);
+    }
+  }, [showFireServices]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    if (showRoads) {
+      roadsRef.current.addTo(mapRef.current);
+    } else {
+      mapRef.current.removeLayer(roadsRef.current);
+    }
+  }, [showRoads]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    if (showAddressPoints) {
+      addressPointsRef.current.addTo(mapRef.current);
+    } else {
+      mapRef.current.removeLayer(addressPointsRef.current);
+    }
+  }, [showAddressPoints]);
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
@@ -344,6 +555,18 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
 
   const togglePoliceServices = () => {
     setShowPoliceServices(!showPoliceServices);
+  };
+
+  const toggleFireServices = () => {
+    setShowFireServices(!showFireServices);
+  };
+
+  const toggleRoads = () => {
+    setShowRoads(!showRoads);
+  };
+
+  const toggleAddressPoints = () => {
+    setShowAddressPoints(!showAddressPoints);
   };
 
   const resetView = () => {
@@ -391,6 +614,36 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
             >
               <Building className="w-4 h-4" />
             </Button>
+
+            <Button
+              variant={showFireServices ? "default" : "ghost"}
+              size="sm"
+              onClick={toggleFireServices}
+              className={`${showFireServices ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              title={showFireServices ? "Hide Fire Services" : "Show Fire Services"}
+            >
+              <Flame className="w-4 h-4" />
+            </Button>
+
+            <Button
+              variant={showRoads ? "default" : "ghost"}
+              size="sm"
+              onClick={toggleRoads}
+              className={`${showRoads ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              title={showRoads ? "Hide Roads" : "Show Roads"}
+            >
+              <Route className="w-4 h-4" />
+            </Button>
+
+            <Button
+              variant={showAddressPoints ? "default" : "ghost"}
+              size="sm"
+              onClick={toggleAddressPoints}
+              className={`${showAddressPoints ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'}`}
+              title={showAddressPoints ? "Hide Address Points" : "Show Address Points"}
+            >
+              <Home className="w-4 h-4" />
+            </Button>
             
             <Button
               variant="ghost"
@@ -421,7 +674,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         />
 
         {/* Real-time Legend */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <div className="bg-beaver-surface-light p-3 rounded-lg">
             <h4 className="text-sm font-semibold text-beaver-orange mb-2">{t('beaverpatch.incidentPriority')}</h4>
             <div className="space-y-1 text-xs">
@@ -477,6 +730,54 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-green-600 border-2 border-white rounded"></div>
                   <span className="text-gray-300">NPP - Parks</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showFireServices && (
+            <div className="bg-beaver-surface-light p-3 rounded-lg">
+              <h4 className="text-sm font-semibold text-beaver-orange mb-2">Fire Services</h4>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-red-600 border-2 border-white rounded"></div>
+                  <span className="text-gray-300">Fire Stations</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-red-700 border-2 border-white rounded"></div>
+                  <span className="text-gray-300">Fire Admin</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showRoads && (
+            <div className="bg-beaver-surface-light p-3 rounded-lg">
+              <h4 className="text-sm font-semibold text-beaver-orange mb-2">Road Network</h4>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-1 bg-gray-500 rounded"></div>
+                  <span className="text-gray-300">Municipal Roads</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-1 bg-gray-600 rounded"></div>
+                  <span className="text-gray-300">Provincial Roads</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showAddressPoints && (
+            <div className="bg-beaver-surface-light p-3 rounded-lg">
+              <h4 className="text-sm font-semibold text-beaver-orange mb-2">Address Points</h4>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 border border-white rounded-full"></div>
+                  <span className="text-gray-300">Residential</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-400 border border-white rounded-full"></div>
+                  <span className="text-gray-300">Commercial</span>
                 </div>
               </div>
             </div>
