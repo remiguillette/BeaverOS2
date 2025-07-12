@@ -15,7 +15,7 @@ import BeaverPay from "@/pages/beaverpay";
 import BeaverRisk from "@/pages/beaverisk";
 import BeaverAudit from "@/pages/beaveraudit";
 import BeaverDMV from "@/pages/beaverdmv";
-import BeaverTalk from "@/pages/beavertalk";
+
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
@@ -110,11 +110,7 @@ function Router() {
           <BeaverDMV />
         </ProtectedRoute>
       </Route>
-      <Route path="/BeaverTalk">
-        <ProtectedRoute>
-          <BeaverTalk />
-        </ProtectedRoute>
-      </Route>
+
       <Route path="/profile">
         <ProtectedRoute>
           <Profile />

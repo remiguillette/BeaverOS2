@@ -1,4 +1,4 @@
-import { Shield, MessageCircle, QrCode, User, FileText, CreditCard, Monitor, IdCard, Cat, ClipboardCheck } from "lucide-react";
+import { Shield, QrCode, User, FileText, CreditCard, Monitor, IdCard, Cat, ClipboardCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 
 interface Service {
@@ -11,7 +11,6 @@ interface Service {
 
 const iconMap = {
   shield: Shield,
-  chat: MessageCircle,
   scan: QrCode,
   person: User,
   doc: FileText,

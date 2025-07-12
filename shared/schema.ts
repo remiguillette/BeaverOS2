@@ -693,71 +693,7 @@ export const vehicleRegistrations = pgTable("vehicle_registrations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// BeaverTalk Chat System
-export const chatSessions = pgTable("chat_sessions", {
-  id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull().unique(),
-  userId: integer("user_id").references(() => users.id),
-  userName: text("user_name").notNull(),
-  userDepartment: text("user_department"),
-  status: text("status").notNull().default("active"), // active, closed, escalated
-  priority: text("priority").notNull().default("normal"), // low, normal, high, urgent
-  category: text("category").notNull().default("general"), // general, technical, emergency, feedback
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 
-export const chatMessages = pgTable("chat_messages", {
-  id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull().references(() => chatSessions.sessionId),
-  senderId: integer("sender_id").references(() => users.id),
-  senderName: text("sender_name").notNull(),
-  senderType: text("sender_type").notNull(), // user, support, system
-  messageContent: text("message_content").notNull(),
-  messageType: text("message_type").notNull().default("text"), // text, file, image, system_notification
-  isSecure: boolean("is_secure").default(true),
-  containsCode: boolean("contains_code").default(false),
-  securityScore: integer("security_score").default(100), // 0-100, lower means more suspicious
-  securityFlags: text("security_flags").array(), // potential security issues detected
-  ipAddress: text("ip_address"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const chatSecurityLogs = pgTable("chat_security_logs", {
-  id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull(),
-  messageId: integer("message_id").references(() => chatMessages.id),
-  securityEvent: text("security_event").notNull(), // code_injection, sql_injection, xss_attempt, suspicious_content
-  severity: text("severity").notNull(), // low, medium, high, critical
-  description: text("description").notNull(),
-  originalContent: text("original_content"),
-  sanitizedContent: text("sanitized_content"),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  actionTaken: text("action_taken"), // blocked, sanitized, flagged, none
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// BeaverTalk Insert Schemas
-export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
-  id: true,
-  createdAt: true,
-}).extend({
-  messageContent: z.string().min(1, "Message cannot be empty").max(2000, "Message too long"),
-});
-
-export const insertChatSecurityLogSchema = createInsertSchema(chatSecurityLogs).omit({
-  id: true,
-  createdAt: true,
-});
 
 // BeaverDMV Insert Schemas
 export const insertCharacterSchema = createInsertSchema(characters).omit({
@@ -806,10 +742,4 @@ export type InsertAuditNonCompliance = z.infer<typeof insertAuditNonComplianceSc
 export type AuditEvidence = typeof auditEvidence.$inferSelect;
 export type InsertAuditEvidence = z.infer<typeof insertAuditEvidenceSchema>;
 
-// BeaverTalk types
-export type ChatSession = typeof chatSessions.$inferSelect;
-export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
-export type ChatMessage = typeof chatMessages.$inferSelect;
-export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
-export type ChatSecurityLog = typeof chatSecurityLogs.$inferSelect;
-export type InsertChatSecurityLog = z.infer<typeof insertChatSecurityLogSchema>;
+
