@@ -362,7 +362,7 @@ export default function BeaverPatch() {
                                   disabled={updateIncidentStatusMutation.isPending}
                                   className="bg-red-600 hover:bg-red-700 text-white border-red-600 text-xs"
                                 >
-                                  Close
+                                  {t('beaverpatch.close')}
                                 </Button>
                               )}
                             </div>
@@ -378,7 +378,7 @@ export default function BeaverPatch() {
               {selectedIncident ? (
                 <Card className="bg-beaver-surface border-beaver-surface-light">
                   <CardHeader>
-                    <CardTitle className="text-lg text-beaver-orange">Assign Units</CardTitle>
+                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.assignUnits')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -401,10 +401,10 @@ export default function BeaverPatch() {
                         </div>
                       </div>
                       <div className="space-y-3">
-                        <div className="text-sm text-gray-300 font-medium">Available Units:</div>
+                        <div className="text-sm text-gray-300 font-medium">{t('beaverpatch.availableUnits')}:</div>
                         {availableUnits.length === 0 ? (
                           <div className="text-sm text-gray-400 p-4 bg-gray-800 rounded-lg text-center">
-                            No units currently available
+                            {t('beaverpatch.noUnitsAvailable')}
                           </div>
                         ) : (
                           <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -428,7 +428,7 @@ export default function BeaverPatch() {
                                   disabled={assignUnitMutation.isPending}
                                   className="bg-beaver-orange hover:bg-orange-600 text-black font-medium text-xs"
                                 >
-                                  {assignUnitMutation.isPending ? "Assigning..." : "Assign"}
+                                  {assignUnitMutation.isPending ? t('beaverpatch.assigning') : t('beaverpatch.assign')}
                                 </Button>
                               </div>
                             ))}
@@ -443,8 +443,8 @@ export default function BeaverPatch() {
                   <CardContent className="flex items-center justify-center h-64">
                     <div className="text-center text-gray-400">
                       <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-                      <p className="text-lg font-medium">Select an Incident</p>
-                      <p className="text-sm">Click on an incident to assign units</p>
+                      <p className="text-lg font-medium">{t('beaverpatch.selectIncident')}</p>
+                      <p className="text-sm">{t('beaverpatch.clickToAssignUnits')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -466,12 +466,12 @@ export default function BeaverPatch() {
               <div className="lg:col-span-1">
                 <Card className="bg-beaver-surface border-beaver-surface-light h-full">
                   <CardHeader>
-                    <CardTitle className="text-lg text-beaver-orange">Unit Status</CardTitle>
+                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.unitStatus')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 max-h-[500px] overflow-y-auto">
                       {loadingUnits ? (
-                        <div className="text-center text-gray-400 py-8">Loading units...</div>
+                        <div className="text-center text-gray-400 py-8">{t('beaverpatch.loadingUnits')}</div>
                       ) : (
                         units.map((unit) => (
                           <div key={unit.id} className="p-3 bg-gray-800 rounded-lg border border-gray-700">
@@ -502,7 +502,7 @@ export default function BeaverPatch() {
                                 disabled={updateUnitStatusMutation.isPending}
                                 className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-xs mt-2 w-full"
                               >
-                                Return to Service
+                                {t('beaverpatch.returnToService')}
                               </Button>
                             )}
                           </div>
@@ -522,12 +522,12 @@ export default function BeaverPatch() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-beaver-orange flex items-center">
                     <AlertTriangle className="w-5 h-5 mr-2" />
-                    Active Incidents
+                    {t('beaverpatch.activeIncidents')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-white mb-2">{activeIncidents.length}</div>
-                  <div className="text-sm text-red-400">{highPriorityIncidents.length} high priority</div>
+                  <div className="text-sm text-red-400">{highPriorityIncidents.length} {t('beaverpatch.highPriority')}</div>
                 </CardContent>
               </Card>
 
@@ -535,12 +535,12 @@ export default function BeaverPatch() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-beaver-orange flex items-center">
                     <Users className="w-5 h-5 mr-2" />
-                    Available Units
+                    {t('beaverpatch.availableUnits')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-white mb-2">{availableUnits.length}</div>
-                  <div className="text-sm text-green-400">out of {units.length} total</div>
+                  <div className="text-sm text-green-400">{t('beaverpatch.outOfTotal')} {units.length} {t('beaverpatch.total')}</div>
                 </CardContent>
               </Card>
 
@@ -548,12 +548,12 @@ export default function BeaverPatch() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-beaver-orange flex items-center">
                     <Clock className="w-5 h-5 mr-2" />
-                    Response Time
+                    {t('beaverpatch.responseTime')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-white mb-2">4.2</div>
-                  <div className="text-sm text-gray-400">minutes avg</div>
+                  <div className="text-sm text-gray-400">{t('beaverpatch.minutesAvg')}</div>
                 </CardContent>
               </Card>
             </div>

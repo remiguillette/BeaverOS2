@@ -16,6 +16,7 @@ import { insertIncidentSchema } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/use-translation";
 
 const incidentFormSchema = insertIncidentSchema.extend({
   incidentNumber: z.string().min(1, "Incident number is required"),
@@ -39,6 +40,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
   const [isSearchingVehicle, setIsSearchingVehicle] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const form = useForm<IncidentFormData>({
     resolver: zodResolver(incidentFormSchema),
@@ -240,23 +242,23 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
           <TabsList className="grid w-full grid-cols-5 bg-beaver-surface border-beaver-surface-light">
             <TabsTrigger value="call-info" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <Phone className="w-4 h-4 mr-2" />
-              Call Info
+              {t('beaverpatch.callInfo')}
             </TabsTrigger>
             <TabsTrigger value="location" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <MapPin className="w-4 h-4 mr-2" />
-              Location
+              {t('beaverpatch.location')}
             </TabsTrigger>
             <TabsTrigger value="dmv" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <Search className="w-4 h-4 mr-2" />
-              DMV
+              {t('beaverpatch.dmv')}
             </TabsTrigger>
             <TabsTrigger value="triage" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black" disabled={!isMedicalEmergency}>
               <Heart className="w-4 h-4 mr-2" />
-              Triage
+              {t('beaverpatch.triage')}
             </TabsTrigger>
             <TabsTrigger value="details" className="text-white data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <AlertTriangle className="w-4 h-4 mr-2" />
-              Details
+              {t('beaverpatch.details')}
             </TabsTrigger>
           </TabsList>
 
@@ -266,23 +268,23 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
               <CardHeader>
                 <CardTitle className="text-beaver-orange flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
-                  Initial Call Information
+                  {t('beaverpatch.initialCallInformation')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="incidentNumber" className="text-white">Incident ID</Label>
+                    <Label htmlFor="incidentNumber" className="text-white">{t('beaverpatch.incidentId')}</Label>
                     <Input
                       id="incidentNumber"
                       {...form.register("incidentNumber")}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                       readOnly
                     />
-                    <span className="text-xs text-gray-400">(Pending)</span>
+                    <span className="text-xs text-gray-400">({t('beaverpatch.pending')})</span>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="callBackPhone" className="text-white">Call Back Phone</Label>
+                    <Label htmlFor="callBackPhone" className="text-white">{t('beaverpatch.callBackPhone')}</Label>
                     <Input
                       id="callBackPhone"
                       {...form.register("callBackPhone")}
@@ -294,7 +296,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="callerName" className="text-white">Caller Name</Label>
+                    <Label htmlFor="callerName" className="text-white">{t('beaverpatch.callerName')}</Label>
                     <Input
                       id="callerName"
                       {...form.register("callerName")}
@@ -303,7 +305,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="locationPhone" className="text-white">Location Phone</Label>
+                    <Label htmlFor="locationPhone" className="text-white">{t('beaverpatch.locationPhone')}</Label>
                     <Input
                       id="locationPhone"
                       {...form.register("locationPhone")}
@@ -315,7 +317,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="calledFrom" className="text-white">Called From</Label>
+                    <Label htmlFor="calledFrom" className="text-white">{t('beaverpatch.calledFrom')}</Label>
                     <Input
                       id="calledFrom"
                       {...form.register("calledFrom")}
