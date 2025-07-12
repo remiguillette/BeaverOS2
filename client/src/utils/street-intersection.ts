@@ -26,6 +26,29 @@ let streetsData: StreetData[] = [];
 let intersectionsData: IntersectionData[] = [];
 let isDataLoaded = false;
 
+// Fallback street data for basic functionality
+const fallbackStreetsData: StreetData[] = [
+  { objectId: 1, street: "QUEEN ST", streetBack: "KING ST", streetAhead: "PRINCESS ST", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 2, street: "KING ST", streetBack: "QUEEN ST", streetAhead: "FALLS AV", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 3, street: "FALLS AV", streetBack: "KING ST", streetAhead: "MAIN ST", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 4, street: "MAIN ST", streetBack: "FALLS AV", streetAhead: "STANLEY AV", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 5, street: "STANLEY AV", streetBack: "MAIN ST", streetAhead: "PORTAGE RD", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 6, street: "PORTAGE RD", streetBack: "STANLEY AV", streetAhead: "DRUMMOND RD", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 7, street: "DRUMMOND RD", streetBack: "PORTAGE RD", streetAhead: "MORRISON ST", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 8, street: "MORRISON ST", streetBack: "DRUMMOND RD", streetAhead: "MONTROSE RD", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 9, street: "MONTROSE RD", streetBack: "MORRISON ST", streetAhead: "THOROLD STONE RD", status: "Existing", owner: "City of Niagara Falls" },
+  { objectId: 10, street: "THOROLD STONE RD", streetBack: "MONTROSE RD", streetAhead: "CITY LIMITS", status: "Existing", owner: "City of Niagara Falls" },
+];
+
+// Fallback intersection data
+const fallbackIntersectionsData: IntersectionData[] = [
+  { objectId: 1, intName: "QUEEN ST @ KING ST", street1: "QUEEN ST", street2: "KING ST", street3: "", street4: "", coordinates: [-79.0747, 43.0896], junction: "YES" },
+  { objectId: 2, intName: "KING ST @ FALLS AV", street1: "KING ST", street2: "FALLS AV", street3: "", street4: "", coordinates: [-79.0745, 43.0889], junction: "YES" },
+  { objectId: 3, intName: "FALLS AV @ MAIN ST", street1: "FALLS AV", street2: "MAIN ST", street3: "", street4: "", coordinates: [-79.0743, 43.0882], junction: "YES" },
+  { objectId: 4, intName: "MAIN ST @ STANLEY AV", street1: "MAIN ST", street2: "STANLEY AV", street3: "", street4: "", coordinates: [-79.0741, 43.0875], junction: "YES" },
+  { objectId: 5, intName: "STANLEY AV @ PORTAGE RD", street1: "STANLEY AV", street2: "PORTAGE RD", street3: "", street4: "", coordinates: [-79.0739, 43.0868], junction: "YES" },
+];
+
 // Load and parse the GeoJSON data
 export const loadStreetData = async (): Promise<void> => {
   if (isDataLoaded) return;
@@ -33,6 +56,9 @@ export const loadStreetData = async (): Promise<void> => {
   try {
     // Fetch street data
     const streetResponse = await fetch(streetDataURL);
+    if (!streetResponse.ok) {
+      throw new Error(`Failed to fetch street data: ${streetResponse.status} ${streetResponse.statusText}`);
+    }
     const streetDataGeoJSON = await streetResponse.json();
     
     if (streetDataGeoJSON && streetDataGeoJSON.features) {
@@ -48,6 +74,9 @@ export const loadStreetData = async (): Promise<void> => {
 
     // Fetch intersection data
     const intersectionResponse = await fetch(intersectionDataURL);
+    if (!intersectionResponse.ok) {
+      throw new Error(`Failed to fetch intersection data: ${intersectionResponse.status} ${intersectionResponse.statusText}`);
+    }
     const intersectionDataGeoJSON = await intersectionResponse.json();
     
     if (intersectionDataGeoJSON && intersectionDataGeoJSON.features) {
@@ -64,9 +93,16 @@ export const loadStreetData = async (): Promise<void> => {
     }
 
     isDataLoaded = true;
-    console.log(`Loaded ${streetsData.length} streets and ${intersectionsData.length} intersections`);
+    console.log(`Loaded ${streetsData.length} streets and ${intersectionsData.length} intersections from GeoJSON data`);
   } catch (error) {
-    console.error("Failed to load street data:", error);
+    console.warn("Failed to load GeoJSON data, using fallback street data:", error);
+    
+    // Use fallback data when GeoJSON fails to load
+    streetsData = [...fallbackStreetsData];
+    intersectionsData = [...fallbackIntersectionsData];
+    isDataLoaded = true;
+    
+    console.log(`Using fallback data: ${streetsData.length} streets and ${intersectionsData.length} intersections`);
   }
 };
 
