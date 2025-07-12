@@ -251,20 +251,20 @@ export default function BeaverPatch() {
                           >
                             <div className="flex items-center justify-between mb-2">
                               <Badge className={getIncidentPriorityColor(incident.priority)}>
-                                {incident.priority.toUpperCase()}
+                                {t(`beaverpatch.${incident.priority}`)}
                               </Badge>
                               <span className="text-xs text-gray-400">
                                 {incident.incidentNumber}
                               </span>
                             </div>
                             <div className="text-sm text-white font-medium mb-1">
-                              {incident.type}
+                              {t(`beaverpatch.${incident.type}`)}
                             </div>
                             <div className="text-xs text-gray-400 truncate">
                               {incident.address}
                             </div>
                             <div className={`text-xs ${getStatusColor(incident.status)} mt-1`}>
-                              {incident.status.toUpperCase()}
+                              {t(`beaverpatch.${incident.status}`)}
                             </div>
                           </div>
                         ))
@@ -329,17 +329,17 @@ export default function BeaverPatch() {
                             <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
                                 <Badge className={getIncidentPriorityColor(incident.priority)}>
-                                  {incident.priority.toUpperCase()}
+                                  {t(`beaverpatch.${incident.priority}`)}
                                 </Badge>
                                 <span className="text-white font-medium">{incident.incidentNumber}</span>
                                 <span className={`text-sm ${getStatusColor(incident.status)}`}>
-                                  {incident.status}
+                                  {t(`beaverpatch.${incident.status}`)}
                                 </span>
                               </div>
                               <div className="text-sm text-gray-300 mb-2">
                                 <div className="flex items-center space-x-2">
                                   <Zap className="w-4 h-4 text-yellow-400" />
-                                  <span>{incident.type}</span>
+                                  <span>{t(`beaverpatch.${incident.type}`)}</span>
                                 </div>
                                 <div className="flex items-center space-x-2 mt-1">
                                   <MapPin className="w-4 h-4 text-gray-400" />
@@ -385,14 +385,14 @@ export default function BeaverPatch() {
                       <div className="p-4 bg-beaver-surface-light rounded-lg border border-beaver-orange/30">
                         <div className="flex items-center space-x-3 mb-2">
                           <Badge className={getIncidentPriorityColor(selectedIncident.priority)}>
-                            {selectedIncident.priority.toUpperCase()}
+                            {t(`beaverpatch.${selectedIncident.priority}`)}
                           </Badge>
                           <span className="text-white font-medium">{selectedIncident.incidentNumber}</span>
                         </div>
                         <div className="text-sm text-gray-300">
                           <div className="flex items-center space-x-2 mb-1">
                             <Zap className="w-4 h-4 text-yellow-400" />
-                            <span>{selectedIncident.type}</span>
+                            <span>{t(`beaverpatch.${selectedIncident.type}`)}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <MapPin className="w-4 h-4 text-gray-400" />
@@ -416,7 +416,7 @@ export default function BeaverPatch() {
                                   </div>
                                   <div>
                                     <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
-                                    <div className="text-xs text-gray-400">{unit.type}</div>
+                                    <div className="text-xs text-gray-400">{t(`beaverpatch.${unit.type}`)}</div>
                                   </div>
                                 </div>
                                 <Button
@@ -488,11 +488,11 @@ export default function BeaverPatch() {
                               </div>
                               <div className="flex-1">
                                 <div className="text-sm text-white font-medium">{unit.unitNumber}</div>
-                                <div className="text-xs text-gray-400">{unit.type}</div>
+                                <div className="text-xs text-gray-400">{t(`beaverpatch.${unit.type}`)}</div>
                               </div>
                             </div>
                             <div className={`text-xs font-medium ${getUnitStatusColor(unit.status)}`}>
-                              {unit.status.replace("_", " ").toUpperCase()}
+                              {t(`beaverpatch.${unit.status}`)}
                             </div>
                             {unit.status !== "available" && unit.status !== "off_duty" && (
                               <Button
@@ -569,16 +569,16 @@ export default function BeaverPatch() {
                       <div key={incident.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <Badge className={getIncidentPriorityColor(incident.priority)}>
-                            {incident.priority.toUpperCase()}
+                            {t(`beaverpatch.${incident.priority}`)}
                           </Badge>
                           <div>
                             <div className="text-sm text-white font-medium">{incident.incidentNumber}</div>
-                            <div className="text-xs text-gray-400">{incident.type} • {incident.address}</div>
+                            <div className="text-xs text-gray-400">{t(`beaverpatch.${incident.type}`)} • {incident.address}</div>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className={`text-sm ${getStatusColor(incident.status)}`}>
-                            {incident.status.toUpperCase()}
+                            {t(`beaverpatch.${incident.status}`)}
                           </div>
                           <div className="text-xs text-gray-500">
                             {incident.createdAt ? new Date(incident.createdAt).toLocaleTimeString() : ""}

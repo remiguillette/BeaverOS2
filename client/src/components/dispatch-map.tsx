@@ -234,7 +234,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         <div className="flex items-center justify-between">
           <CardTitle className="text-beaver-orange flex items-center">
             <MapPin className="w-5 h-5 mr-2" />
-            Dispatch Map - Niagara Falls, ON
+{t('beaverpatch.dispatchMapTitle')}
           </CardTitle>
           <div className="flex items-center space-x-2">
             {/* Map Controls */}
