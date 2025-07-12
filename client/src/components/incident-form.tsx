@@ -288,7 +288,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                     <Input
                       id="callBackPhone"
                       {...form.register("callBackPhone")}
-                      placeholder="(555) 123-4567"
+                      placeholder={t('beaverpatch.phoneNumberPlaceholder')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>
@@ -309,7 +309,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                     <Input
                       id="locationPhone"
                       {...form.register("locationPhone")}
-                      placeholder="(555) 123-4567"
+                      placeholder={t('beaverpatch.phoneNumberPlaceholder')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>

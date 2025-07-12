@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2, Move, MousePointer, RotateCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Incident, Unit } from "@shared/schema";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -16,6 +17,7 @@ interface DispatchMapProps {
 }
 
 export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, className }: DispatchMapProps) {
+  const { t } = useTranslation();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const incidentMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
@@ -142,11 +144,11 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         marker.bindPopup(`
           <div style="min-width: 200px;">
             <h3 style="margin: 0 0 8px 0; color: #f59e0b;">${incident.incidentNumber}</h3>
-            <p style="margin: 0 0 4px 0;"><strong>Type:</strong> ${incident.type}</p>
-            <p style="margin: 0 0 4px 0;"><strong>Priority:</strong> ${incident.priority}</p>
-            <p style="margin: 0 0 4px 0;"><strong>Address:</strong> ${incident.address}</p>
-            <p style="margin: 0 0 4px 0;"><strong>Status:</strong> ${incident.status}</p>
-            <p style="margin: 0;"><strong>Description:</strong> ${incident.description}</p>
+            <p style="margin: 0 0 4px 0;"><strong>${t('beaverpatch.type')}:</strong> ${incident.type}</p>
+            <p style="margin: 0 0 4px 0;"><strong>${t('common.priority')}:</strong> ${incident.priority}</p>
+            <p style="margin: 0 0 4px 0;"><strong>${t('common.address')}:</strong> ${incident.address}</p>
+            <p style="margin: 0 0 4px 0;"><strong>${t('common.status')}:</strong> ${incident.status}</p>
+            <p style="margin: 0;"><strong>${t('common.description')}:</strong> ${incident.description}</p>
           </div>
         `);
 
@@ -159,7 +161,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         incidentMarkersRef.current.addLayer(marker);
       }
     });
-  }, [incidents, onIncidentSelect]);
+  }, [incidents, onIncidentSelect, t]);
 
   // Update unit markers
   useEffect(() => {
@@ -177,9 +179,9 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         marker.bindPopup(`
           <div style="min-width: 200px;">
             <h3 style="margin: 0 0 8px 0; color: #f59e0b;">${unit.unitNumber}</h3>
-            <p style="margin: 0 0 4px 0;"><strong>Type:</strong> ${unit.type}</p>
-            <p style="margin: 0 0 4px 0;"><strong>Status:</strong> ${unit.status}</p>
-            <p style="margin: 0;"><strong>Location:</strong> ${unit.currentLocation}</p>
+            <p style="margin: 0 0 4px 0;"><strong>${t('beaverpatch.type')}:</strong> ${unit.type}</p>
+            <p style="margin: 0 0 4px 0;"><strong>${t('common.status')}:</strong> ${unit.status}</p>
+            <p style="margin: 0;"><strong>${t('common.location')}:</strong> ${unit.currentLocation}</p>
           </div>
         `);
 
@@ -207,7 +209,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         unitMarkersRef.current.addLayer(marker);
       }
     });
-  }, [units, isMoveModeActive, onUnitSelect]);
+  }, [units, isMoveModeActive, onUnitSelect, t]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -241,7 +243,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
               size="sm"
               onClick={resetView}
               className="text-gray-400 hover:text-white"
-              title="Reset View"
+              title={t('beaverpatch.mapReset')}
             >
               <RotateCcw className="w-4 h-4" />
             </Button>
@@ -251,7 +253,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
               size="sm"
               onClick={toggleMoveMode}
               className={`${isMoveModeActive ? 'bg-beaver-orange text-white' : 'text-gray-400 hover:text-white'}`}
-              title={isMoveModeActive ? "Exit Move Mode" : "Enter Move Mode - Drag units to new positions"}
+              title={isMoveModeActive ? t('beaverpatch.mapExitMoveMode') : t('beaverpatch.mapMoveMode')}
             >
               {isMoveModeActive ? <MousePointer className="w-4 h-4" /> : <Move className="w-4 h-4" />}
             </Button>
@@ -270,8 +272,8 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         {/* Move Mode Indicator */}
         {isMoveModeActive && (
           <div className="mt-2 p-2 bg-beaver-orange bg-opacity-20 border border-beaver-orange rounded text-sm text-beaver-orange">
-            🎯 Move Mode Active - Drag units to reposition them
-            {draggedUnit && ` | Moving: ${draggedUnit.unitNumber}`}
+            🎯 {t('beaverpatch.moveModeActive')}
+            {draggedUnit && ` | ${t('beaverpatch.moving')}: ${draggedUnit.unitNumber}`}
           </div>
         )}
       </CardHeader>
@@ -287,41 +289,41 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         {/* Real-time Legend */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-beaver-surface-light p-3 rounded-lg">
-            <h4 className="text-sm font-semibold text-beaver-orange mb-2">Incident Priority</h4>
+            <h4 className="text-sm font-semibold text-beaver-orange mb-2">{t('beaverpatch.incidentPriority')}</h4>
             <div className="space-y-1 text-xs">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-red-500 border-2 border-white rounded-full"></div>
-                <span className="text-gray-300">High Priority</span>
+                <span className="text-gray-300">{t('beaverpatch.highPriority')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-yellow-500 border-2 border-white rounded-full"></div>
-                <span className="text-gray-300">Medium Priority</span>
+                <span className="text-gray-300">{t('beaverpatch.mediumPriority')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                <span className="text-gray-300">Low Priority</span>
+                <span className="text-gray-300">{t('beaverpatch.lowPriority')}</span>
               </div>
             </div>
           </div>
           
           <div className="bg-beaver-surface-light p-3 rounded-lg">
-            <h4 className="text-sm font-semibold text-beaver-orange mb-2">Unit Status</h4>
+            <h4 className="text-sm font-semibold text-beaver-orange mb-2">{t('beaverpatch.unitStatus')}</h4>
             <div className="space-y-1 text-xs">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-green-500 border-2 border-white rounded"></div>
-                <span className="text-gray-300">Available</span>
+                <span className="text-gray-300">{t('beaverpatch.available')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-blue-500 border-2 border-white rounded"></div>
-                <span className="text-gray-300">Responding</span>
+                <span className="text-gray-300">{t('beaverpatch.responding')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-yellow-500 border-2 border-white rounded"></div>
-                <span className="text-gray-300">Dispatched</span>
+                <span className="text-gray-300">{t('beaverpatch.dispatched')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-red-500 border-2 border-white rounded"></div>
-                <span className="text-gray-300">Busy</span>
+                <span className="text-gray-300">{t('beaverpatch.busy')}</span>
               </div>
             </div>
           </div>
@@ -339,10 +341,10 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
                   <span className="text-white font-medium">{selectedIncident.incidentNumber}</span>
                 </div>
                 <div className="text-sm text-gray-300">
-                  <div><strong>Type:</strong> {selectedIncident.type}</div>
-                  <div><strong>Address:</strong> {selectedIncident.address}</div>
-                  <div><strong>Status:</strong> {selectedIncident.status}</div>
-                  <div><strong>Description:</strong> {selectedIncident.description}</div>
+                  <div><strong>{t('beaverpatch.type')}:</strong> {selectedIncident.type}</div>
+                  <div><strong>{t('common.address')}:</strong> {selectedIncident.address}</div>
+                  <div><strong>{t('common.status')}:</strong> {selectedIncident.status}</div>
+                  <div><strong>{t('common.description')}:</strong> {selectedIncident.description}</div>
                 </div>
               </div>
             )}
@@ -355,9 +357,9 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
                   <span className="text-white font-medium">{selectedUnit.unitNumber}</span>
                 </div>
                 <div className="text-sm text-gray-300">
-                  <div><strong>Type:</strong> {selectedUnit.type}</div>
-                  <div><strong>Location:</strong> {selectedUnit.currentLocation}</div>
-                  <div><strong>Status:</strong> {selectedUnit.status}</div>
+                  <div><strong>{t('beaverpatch.type')}:</strong> {selectedUnit.type}</div>
+                  <div><strong>{t('common.location')}:</strong> {selectedUnit.currentLocation}</div>
+                  <div><strong>{t('common.status')}:</strong> {selectedUnit.status}</div>
                 </div>
               </div>
             )}

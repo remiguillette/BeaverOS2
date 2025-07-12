@@ -161,10 +161,10 @@ export default function BeaverPatch() {
   return (
     <div className="min-h-screen bg-beaver-dark">
       <EnhancedHeader 
-        serviceName="BeaverPatch CAD" 
+        serviceName={t('beaverpatch.serviceName')} 
         serviceIcon={Shield} 
         showBackButton={true}
-        backButtonText="Back to Dashboard"
+        backButtonText={t('beaverpatch.backToDashboard')}
       />
 
       {/* Main Content */}
@@ -287,7 +287,7 @@ export default function BeaverPatch() {
                     <div className="flex items-center space-x-2">
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="w-40 bg-beaver-surface-light border-gray-600 text-white">
-                          <SelectValue placeholder="Filter" />
+                          <SelectValue placeholder={t('beaverpatch.filter')} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">{t('beaverpatch.allStatus')}</SelectItem>
