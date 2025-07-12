@@ -85,15 +85,15 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
       toast({
-        title: "Incident Created",
-        description: "New incident has been successfully created and is ready for dispatch.",
+        title: t('beaverpatch.incidentCreated'),
+        description: t('beaverpatch.incidentCreatedDescription'),
       });
       onClose();
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to create incident. Please try again.",
+        title: t('common.error'),
+        description: t('beaverpatch.failedToCreateIncident'),
         variant: "destructive",
       });
     },
@@ -112,14 +112,14 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
           form.setValue("latitude", position.coords.latitude);
           form.setValue("longitude", position.coords.longitude);
           toast({
-            title: "Location Set",
-            description: "GPS coordinates have been captured.",
+            title: t('beaverpatch.locationSet'),
+            description: t('beaverpatch.gpsCoordinatesCaptured'),
           });
         },
         (error) => {
           toast({
-            title: "Location Error",
-            description: "Unable to get current location. Please enter address manually.",
+            title: t('beaverpatch.locationError'),
+            description: t('beaverpatch.unableToGetLocation'),
             variant: "destructive",
           });
         }
@@ -131,8 +131,8 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
   const searchLicense = async (licenseNumber: string) => {
     if (!licenseNumber.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a license number",
+        title: t('common.error'),
+        description: t('beaverpatch.pleaseEnterLicenseNumber'),
         variant: "destructive",
       });
       return;
@@ -145,23 +145,23 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
         const result = await response.json();
         setLicenseResult(result);
         toast({
-          title: "License Found",
-          description: `License ${licenseNumber} found in database`,
+          title: t('beaverpatch.licenseFound'),
+          description: `${t('beaverpatch.licenseFoundInDatabase')} ${licenseNumber}`,
         });
       } else {
         const error = await response.json();
         setLicenseResult(null);
         toast({
-          title: "License Not Found",
-          description: error.error || "No license found with that number",
+          title: t('beaverpatch.licenseNotFound'),
+          description: error.error || t('beaverpatch.noLicenseFound'),
           variant: "destructive",
         });
       }
     } catch (error) {
       setLicenseResult(null);
       toast({
-        title: "Search Error",
-        description: "Failed to search license database",
+        title: t('beaverpatch.searchError'),
+        description: t('beaverpatch.failedToSearchLicense'),
         variant: "destructive",
       });
     } finally {
@@ -172,8 +172,8 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
   const searchVehicle = async (plateNumber: string) => {
     if (!plateNumber.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a plate number",
+        title: t('common.error'),
+        description: t('beaverpatch.pleaseEnterPlateNumber'),
         variant: "destructive",
       });
       return;
@@ -186,23 +186,23 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
         const result = await response.json();
         setVehicleResult(result);
         toast({
-          title: "Vehicle Found",
-          description: `Vehicle ${plateNumber} found in database`,
+          title: t('beaverpatch.vehicleFound'),
+          description: `${t('beaverpatch.vehicleFoundInDatabase')} ${plateNumber}`,
         });
       } else {
         const error = await response.json();
         setVehicleResult(null);
         toast({
-          title: "Vehicle Not Found",
-          description: error.error || "No vehicle found with that plate number",
+          title: t('beaverpatch.vehicleNotFound'),
+          description: error.error || t('beaverpatch.noVehicleFound'),
           variant: "destructive",
         });
       }
     } catch (error) {
       setVehicleResult(null);
       toast({
-        title: "Search Error",
-        description: "Failed to search vehicle database",
+        title: t('beaverpatch.searchError'),
+        description: t('beaverpatch.failedToSearchVehicle'),
         variant: "destructive",
       });
     } finally {
@@ -213,15 +213,15 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
   const getStatusBadge = (status: string) => {
     switch (status.toUpperCase()) {
       case "ACTIVE":
-        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />{t('beaverpatch.active')}</Badge>;
       case "SUSPENDED":
-        return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="w-3 h-3 mr-1" />Suspended</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="w-3 h-3 mr-1" />{t('beaverpatch.suspended')}</Badge>;
       case "EXPIRED":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1" />Expired</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1" />{t('beaverpatch.expired')}</Badge>;
       case "REVOKED":
-        return <Badge className="bg-red-600 hover:bg-red-700"><XCircle className="w-3 h-3 mr-1" />Revoked</Badge>;
+        return <Badge className="bg-red-600 hover:bg-red-700"><XCircle className="w-3 h-3 mr-1" />{t('beaverpatch.revoked')}</Badge>;
       case "STOLEN":
-        return <Badge className="bg-red-700 hover:bg-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Stolen</Badge>;
+        return <Badge className="bg-red-700 hover:bg-red-800"><AlertTriangle className="w-3 h-3 mr-1" />{t('beaverpatch.stolen')}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -300,7 +300,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                     <Input
                       id="callerName"
                       {...form.register("callerName")}
-                      placeholder="Enter caller's name"
+                      placeholder={t('beaverpatch.enterCallerName')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>
@@ -321,7 +321,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                     <Input
                       id="calledFrom"
                       {...form.register("calledFrom")}
-                      placeholder="e.g., Cell phone, landline"
+                      placeholder={t('beaverpatch.cellPhoneLandline')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>
@@ -331,52 +331,52 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                       checked={form.watch("landlineDetection")}
                       onCheckedChange={(checked) => form.setValue("landlineDetection", checked as boolean)}
                     />
-                    <Label htmlFor="landlineDetection" className="text-white">Landline Detection</Label>
+                    <Label htmlFor="landlineDetection" className="text-white">{t('beaverpatch.landlineDetection')}</Label>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="type" className="text-white">Nature/Problem</Label>
+                    <Label htmlFor="type" className="text-white">{t('beaverpatch.natureProblem')}</Label>
                     <Select value={form.watch("type")} onValueChange={(value) => form.setValue("type", value)}>
                       <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                        <SelectValue placeholder="Select incident type" />
+                        <SelectValue placeholder={t('beaverpatch.selectIncidentType')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="medical">Medical Emergency</SelectItem>
-                        <SelectItem value="fire">Fire</SelectItem>
-                        <SelectItem value="accident">Traffic Accident</SelectItem>
-                        <SelectItem value="assault">Assault</SelectItem>
-                        <SelectItem value="burglary">Burglary</SelectItem>
-                        <SelectItem value="domestic">Domestic Violence</SelectItem>
-                        <SelectItem value="theft">Theft</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="medical">{t('beaverpatch.medicalEmergency')}</SelectItem>
+                        <SelectItem value="fire">{t('beaverpatch.fire')}</SelectItem>
+                        <SelectItem value="accident">{t('beaverpatch.trafficAccident')}</SelectItem>
+                        <SelectItem value="assault">{t('beaverpatch.assault')}</SelectItem>
+                        <SelectItem value="burglary">{t('beaverpatch.burglary')}</SelectItem>
+                        <SelectItem value="domestic">{t('beaverpatch.domesticViolence')}</SelectItem>
+                        <SelectItem value="theft">{t('beaverpatch.theft')}</SelectItem>
+                        <SelectItem value="other">{t('beaverpatch.other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="problemCode" className="text-white">Problem Code</Label>
+                    <Label htmlFor="problemCode" className="text-white">{t('beaverpatch.problemCode')}</Label>
                     <Select value={form.watch("problemCode")} onValueChange={(value) => form.setValue("problemCode", value)}>
                       <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                        <SelectValue placeholder="Select priority code" />
+                        <SelectValue placeholder={t('beaverpatch.selectPriorityCode')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="red">
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                            Red (Critical)
+                            {t('beaverpatch.redCritical')}
                           </div>
                         </SelectItem>
                         <SelectItem value="yellow">
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                            Yellow (Urgent)
+                            {t('beaverpatch.yellowUrgent')}
                           </div>
                         </SelectItem>
                         <SelectItem value="blue">
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                            Blue (Non-urgent)
+                            {t('beaverpatch.blueNonUrgent')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -385,11 +385,11 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="natureOfProblem" className="text-white">Nature/Problem Details</Label>
+                  <Label htmlFor="natureOfProblem" className="text-white">{t('beaverpatch.natureProblemDetails')}</Label>
                   <Textarea
                     id="natureOfProblem"
                     {...form.register("natureOfProblem")}
-                    placeholder="Describe the nature of the emergency..."
+                    placeholder={t('beaverpatch.describeEmergency')}
                     className="bg-beaver-surface-light border-gray-600 text-white min-h-[80px]"
                   />
                 </div>
@@ -403,17 +403,17 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
               <CardHeader>
                 <CardTitle className="text-beaver-orange flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  Location Information
+                  {t('beaverpatch.locationInformation')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="text-white">Address</Label>
+                  <Label htmlFor="address" className="text-white">{t('beaverpatch.address')}</Label>
                   <div className="flex space-x-2">
                     <Input
                       id="address"
                       {...form.register("address")}
-                      placeholder="Enter full address"
+                      placeholder={t('beaverpatch.enterFullAddress')}
                       className="bg-beaver-surface-light border-gray-600 text-white flex-1"
                     />
                     <Button
@@ -429,31 +429,31 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="city" className="text-white">City</Label>
+                    <Label htmlFor="city" className="text-white">{t('beaverpatch.city')}</Label>
                     <Input
                       id="city"
                       {...form.register("city")}
-                      placeholder="Enter city"
+                      placeholder={t('beaverpatch.city')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="crossStreet" className="text-white">Cross Street</Label>
+                    <Label htmlFor="crossStreet" className="text-white">{t('beaverpatch.crossStreet')}</Label>
                     <Input
                       id="crossStreet"
                       {...form.register("crossStreet")}
-                      placeholder="Nearest cross street"
+                      placeholder={t('beaverpatch.crossStreet')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="mapPage" className="text-white">Map Page</Label>
+                  <Label htmlFor="mapPage" className="text-white">{t('beaverpatch.mapPage')}</Label>
                   <Input
                     id="mapPage"
                     {...form.register("mapPage")}
-                    placeholder="Map grid reference"
+                    placeholder={t('beaverpatch.mapPage')}
                     className="bg-beaver-surface-light border-gray-600 text-white"
                   />
                 </div>
@@ -461,7 +461,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 {form.watch("latitude") && form.watch("longitude") && (
                   <div className="p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
                     <p className="text-green-400 text-sm">
-                      GPS Coordinates: {form.watch("latitude")?.toFixed(6)}, {form.watch("longitude")?.toFixed(6)}
+                      {t('beaverpatch.gpsCoordinates')}: {form.watch("latitude")?.toFixed(6)}, {form.watch("longitude")?.toFixed(6)}
                     </p>
                   </div>
                 )}
@@ -477,13 +477,13 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 <CardHeader>
                   <CardTitle className="text-beaver-orange flex items-center">
                     <CreditCard className="w-5 h-5 mr-2" />
-                    Driver's License Search
+                    {t('beaverpatch.licenseInformation')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex space-x-2">
                     <Input
-                      placeholder="Enter license number (e.g., D12345678)"
+                      placeholder={t('beaverpatch.enterLicenseNumber')}
                       value={licenseQuery}
                       onChange={(e) => setLicenseQuery(e.target.value)}
                       className="bg-beaver-surface-light border-gray-600 text-white"
@@ -510,7 +510,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                           <h4 className="text-white font-semibold">
                             {licenseResult.character ? 
                               `${licenseResult.character.firstName} ${licenseResult.character.lastName}` : 
-                              "Unknown Driver"
+                              t('beaverpatch.unknownDriver')
                             }
                           </h4>
                           <p className="text-gray-400 text-sm">{licenseResult.license.licenseNumber}</p>
@@ -520,16 +520,16 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                       
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-gray-400">Type</p>
+                          <p className="text-gray-400">{t('beaverpatch.type')}</p>
                           <p className="text-white">{licenseResult.license.type}</p>
                         </div>
                         <div>
-                          <p className="text-gray-400">Expires</p>
+                          <p className="text-gray-400">{t('beaverpatch.expires')}</p>
                           <p className="text-white">{new Date(licenseResult.license.expiration).toLocaleDateString()}</p>
                         </div>
                         {licenseResult.license.restrictions && (
                           <div className="col-span-2">
-                            <p className="text-gray-400">Restrictions</p>
+                            <p className="text-gray-400">{t('beaverpatch.restrictions')}</p>
                             <p className="text-white">{licenseResult.license.restrictions}</p>
                           </div>
                         )}
@@ -537,12 +537,12 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
 
                       {licenseResult.character && (
                         <div className="mt-3 pt-3 border-t border-gray-600">
-                          <p className="text-gray-400 text-sm">Address</p>
+                          <p className="text-gray-400 text-sm">{t('beaverpatch.address')}</p>
                           <p className="text-white text-sm">
                             {licenseResult.character.address}, {licenseResult.character.city}, {licenseResult.character.province} {licenseResult.character.postalCode}
                           </p>
                           {licenseResult.character.phone && (
-                            <p className="text-white text-sm">Phone: {licenseResult.character.phone}</p>
+                            <p className="text-white text-sm">{t('beaverpatch.phone')}: {licenseResult.character.phone}</p>
                           )}
                         </div>
                       )}
@@ -556,13 +556,13 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 <CardHeader>
                   <CardTitle className="text-beaver-orange flex items-center">
                     <Car className="w-5 h-5 mr-2" />
-                    Vehicle Registration Search
+                    {t('beaverpatch.vehicleInformation')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex space-x-2">
                     <Input
-                      placeholder="Enter plate number (e.g., ABC123)"
+                      placeholder={t('beaverpatch.enterPlateNumber')}
                       value={vehicleQuery}
                       onChange={(e) => setVehicleQuery(e.target.value)}
                       className="bg-beaver-surface-light border-gray-600 text-white"
@@ -589,11 +589,11 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                           <h4 className="text-white font-semibold">
                             {vehicleResult.vehicle.year} {vehicleResult.vehicle.make} {vehicleResult.vehicle.model}
                           </h4>
-                          <p className="text-gray-400 text-sm">Plate: {vehicleResult.vehicle.plate}</p>
+                          <p className="text-gray-400 text-sm">{t('beaverpatch.plate')}: {vehicleResult.vehicle.plate}</p>
                           <p className="text-gray-400 text-sm">
-                            Owner: {vehicleResult.character ? 
+                            {t('beaverpatch.owner')}: {vehicleResult.character ? 
                               `${vehicleResult.character.firstName} ${vehicleResult.character.lastName}` : 
-                              "Unknown"
+                              t('beaverpatch.unknown')
                             }
                           </p>
                         </div>
@@ -602,20 +602,20 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                       
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-gray-400">Type</p>
+                          <p className="text-gray-400">{t('beaverpatch.type')}</p>
                           <p className="text-white">{vehicleResult.vehicle.vehicleType}</p>
                         </div>
                         <div>
-                          <p className="text-gray-400">Color</p>
+                          <p className="text-gray-400">{t('beaverpatch.color')}</p>
                           <p className="text-white">{vehicleResult.vehicle.color}</p>
                         </div>
                         <div>
-                          <p className="text-gray-400">Registration Exp.</p>
+                          <p className="text-gray-400">{t('beaverpatch.registrationExp')}</p>
                           <p className="text-white">{new Date(vehicleResult.vehicle.expiration).toLocaleDateString()}</p>
                         </div>
                         {vehicleResult.vehicle.insuranceExpiration && (
                           <div>
-                            <p className="text-gray-400">Insurance Exp.</p>
+                            <p className="text-gray-400">{t('beaverpatch.insuranceExp')}</p>
                             <p className="text-white">{new Date(vehicleResult.vehicle.insuranceExpiration).toLocaleDateString()}</p>
                           </div>
                         )}
@@ -623,19 +623,19 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
 
                       {vehicleResult.vehicle.vin && (
                         <div className="mt-3 pt-3 border-t border-gray-600">
-                          <p className="text-gray-400 text-sm">VIN</p>
+                          <p className="text-gray-400 text-sm">{t('beaverpatch.vin')}</p>
                           <p className="text-white text-sm font-mono">{vehicleResult.vehicle.vin}</p>
                         </div>
                       )}
 
                       {vehicleResult.character && (
                         <div className="mt-3 pt-3 border-t border-gray-600">
-                          <p className="text-gray-400 text-sm">Owner Address</p>
+                          <p className="text-gray-400 text-sm">{t('beaverpatch.ownerAddress')}</p>
                           <p className="text-white text-sm">
                             {vehicleResult.character.address}, {vehicleResult.character.city}, {vehicleResult.character.province} {vehicleResult.character.postalCode}
                           </p>
                           {vehicleResult.character.phone && (
-                            <p className="text-white text-sm">Phone: {vehicleResult.character.phone}</p>
+                            <p className="text-white text-sm">{t('beaverpatch.phone')}: {vehicleResult.character.phone}</p>
                           )}
                         </div>
                       )}
@@ -652,26 +652,26 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
               <CardHeader>
                 <CardTitle className="text-beaver-orange flex items-center">
                   <Heart className="w-5 h-5 mr-2" />
-                  Patient Triage Questions
+                  {t('beaverpatch.patientTriageQuestions')}
                 </CardTitle>
-                <Badge className="bg-red-600 text-white">Medical Emergency Only</Badge>
+                <Badge className="bg-red-600 text-white">{t('beaverpatch.medicalEmergencyOnly')}</Badge>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-white">With patient now?</Label>
+                    <Label className="text-white">{t('beaverpatch.withPatientNow')}</Label>
                     <Select value={form.watch("withPatientNow")?.toString()} onValueChange={(value) => form.setValue("withPatientNow", value === "true")}>
                       <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                        <SelectValue placeholder="Select..." />
+                        <SelectValue placeholder={t('beaverpatch.select')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
+                        <SelectItem value="true">{t('beaverpatch.yes')}</SelectItem>
+                        <SelectItem value="false">{t('beaverpatch.no')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="numberHurtSick" className="text-white">Number of hurt/sick</Label>
+                    <Label htmlFor="numberHurtSick" className="text-white">{t('beaverpatch.numberHurtSick')}</Label>
                     <Input
                       id="numberHurtSick"
                       type="number"
@@ -684,64 +684,64 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="patientAge" className="text-white">Patient's age</Label>
+                    <Label htmlFor="patientAge" className="text-white">{t('beaverpatch.patientAge')}</Label>
                     <Input
                       id="patientAge"
                       {...form.register("patientAge")}
-                      placeholder="e.g., 25, infant, elderly"
+                      placeholder={t('beaverpatch.ageExample')}
                       className="bg-beaver-surface-light border-gray-600 text-white"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="patientGender" className="text-white">Patient's gender</Label>
+                    <Label htmlFor="patientGender" className="text-white">{t('beaverpatch.patientGender')}</Label>
                     <Select value={form.watch("patientGender")} onValueChange={(value) => form.setValue("patientGender", value)}>
                       <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder={t('beaverpatch.selectGender')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="unknown">Unknown</SelectItem>
+                        <SelectItem value="male">{t('beaverpatch.male')}</SelectItem>
+                        <SelectItem value="female">{t('beaverpatch.female')}</SelectItem>
+                        <SelectItem value="unknown">{t('beaverpatch.unknown')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="breathingStatus" className="text-white">Breathing Status</Label>
+                  <Label htmlFor="breathingStatus" className="text-white">{t('beaverpatch.breathingStatus')}</Label>
                   <Select value={form.watch("breathingStatus")} onValueChange={(value) => form.setValue("breathingStatus", value)}>
                     <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                      <SelectValue placeholder="Select breathing status" />
+                      <SelectValue placeholder={t('beaverpatch.selectBreathingStatus')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                      <SelectItem value="unknown">Unknown (3rd/4th party)</SelectItem>
-                      <SelectItem value="uncertain">UNCERTAIN (2nd party)</SelectItem>
-                      <SelectItem value="ineffective_agonal">INEFFECTIVE/AGONAL</SelectItem>
+                      <SelectItem value="yes">{t('beaverpatch.yes')}</SelectItem>
+                      <SelectItem value="no">{t('beaverpatch.no')}</SelectItem>
+                      <SelectItem value="unknown">{t('beaverpatch.unknownThirdParty')}</SelectItem>
+                      <SelectItem value="uncertain">{t('beaverpatch.uncertainSecondParty')}</SelectItem>
+                      <SelectItem value="ineffective_agonal">{t('beaverpatch.ineffectiveAgonal')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="chiefComplaintCode" className="text-white">Chief Complaint Code</Label>
+                  <Label htmlFor="chiefComplaintCode" className="text-white">{t('beaverpatch.chiefComplaintCode')}</Label>
                   <Select value={form.watch("chiefComplaintCode")} onValueChange={(value) => form.setValue("chiefComplaintCode", value)}>
                     <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                      <SelectValue placeholder="Select primary complaint" />
+                      <SelectValue placeholder={t('beaverpatch.selectPrimaryComplaint')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="not_breathing">Obviously NOT BREATHING & Unconscious (non-trauma)</SelectItem>
-                      <SelectItem value="choking">Verified Choking - COMPLETE obstruction</SelectItem>
-                      <SelectItem value="hanging">Hanging</SelectItem>
-                      <SelectItem value="strangulation">Strangulation (no assailant involved)</SelectItem>
-                      <SelectItem value="suffocation">Suffocation</SelectItem>
-                      <SelectItem value="underwater_domestic">Underwater (DOMESTIC rescue)</SelectItem>
-                      <SelectItem value="underwater_specialized">Underwater (SPECIALIZED rescue)</SelectItem>
-                      <SelectItem value="sinking_vehicle">Sinking vehicle - Caller inside</SelectItem>
-                      <SelectItem value="flood_vehicle">Vehicle in floodwater - Caller inside</SelectItem>
-                      <SelectItem value="pregnancy">Pregnancy / Childbirth / Miscarriage</SelectItem>
-                      <SelectItem value="pregnancy_problem">Pregnancy problem (no contractions or birth)</SelectItem>
-                      <SelectItem value="other">Others (specify in comments)</SelectItem>
+                      <SelectItem value="not_breathing">{t('beaverpatch.notBreathing')}</SelectItem>
+                      <SelectItem value="choking">{t('beaverpatch.choking')}</SelectItem>
+                      <SelectItem value="hanging">{t('beaverpatch.hanging')}</SelectItem>
+                      <SelectItem value="strangulation">{t('beaverpatch.strangulation')}</SelectItem>
+                      <SelectItem value="suffocation">{t('beaverpatch.suffocation')}</SelectItem>
+                      <SelectItem value="underwater_domestic">{t('beaverpatch.underwaterDomestic')}</SelectItem>
+                      <SelectItem value="underwater_specialized">{t('beaverpatch.underwaterSpecialized')}</SelectItem>
+                      <SelectItem value="sinking_vehicle">{t('beaverpatch.sinkingVehicle')}</SelectItem>
+                      <SelectItem value="flood_vehicle">{t('beaverpatch.floodVehicle')}</SelectItem>
+                      <SelectItem value="pregnancy">{t('beaverpatch.pregnancy')}</SelectItem>
+                      <SelectItem value="pregnancy_problem">{t('beaverpatch.pregnancyProblem')}</SelectItem>
+                      <SelectItem value="other">{t('beaverpatch.others')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -752,56 +752,56 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                     <CardHeader>
                       <CardTitle className="text-pink-400 flex items-center text-sm">
                         <Baby className="w-4 h-4 mr-2" />
-                        Pregnancy-Specific Questions
+                        {t('beaverpatch.pregnancySpecificQuestions')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="pregnancyComplications" className="text-white">Complications</Label>
+                        <Label htmlFor="pregnancyComplications" className="text-white">{t('beaverpatch.complications')}</Label>
                         <Select value={form.watch("pregnancyComplications")} onValueChange={(value) => form.setValue("pregnancyComplications", value)}>
                           <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                            <SelectValue placeholder="Select..." />
+                            <SelectValue placeholder={t('beaverpatch.select')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="miscarriage">MISCARRIAGE (fetus or tissue)</SelectItem>
-                            <SelectItem value="threatened_miscarriage">Threatened MISCARRIAGE (contractions)</SelectItem>
-                            <SelectItem value="stillbirth">STILLBIRTH (non-viable baby born)</SelectItem>
+                            <SelectItem value="no">{t('beaverpatch.no')}</SelectItem>
+                            <SelectItem value="miscarriage">{t('beaverpatch.miscarriage')}</SelectItem>
+                            <SelectItem value="threatened_miscarriage">{t('beaverpatch.threatenedMiscarriage')}</SelectItem>
+                            <SelectItem value="stillbirth">{t('beaverpatch.stillbirth')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="pregnancyWeeks" className="text-white">How many weeks (or months) pregnant?</Label>
+                        <Label htmlFor="pregnancyWeeks" className="text-white">{t('beaverpatch.howManyWeeksPregnant')}</Label>
                         <Select value={form.watch("pregnancyWeeks")} onValueChange={(value) => form.setValue("pregnancyWeeks", value)}>
                           <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                            <SelectValue placeholder="Select..." />
+                            <SelectValue placeholder={t('beaverpatch.select')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="third_trimester">24+ wks (6-9 mos) 3rd TRIMESTER</SelectItem>
-                            <SelectItem value="second_trimester">13-23 wks (4-5 mos) 2nd TRIMESTER</SelectItem>
-                            <SelectItem value="first_trimester">0-12 wks (0-3 mos) 1st TRIMESTER</SelectItem>
-                            <SelectItem value="due_date">Knows due date</SelectItem>
-                            <SelectItem value="unknown">Unknown</SelectItem>
+                            <SelectItem value="third_trimester">{t('beaverpatch.thirdTrimester')}</SelectItem>
+                            <SelectItem value="second_trimester">{t('beaverpatch.secondTrimester')}</SelectItem>
+                            <SelectItem value="first_trimester">{t('beaverpatch.firstTrimester')}</SelectItem>
+                            <SelectItem value="due_date">{t('beaverpatch.knowsDueDate')}</SelectItem>
+                            <SelectItem value="unknown">{t('beaverpatch.unknown')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="babyVisible" className="text-white">Can you see any part of the baby now?</Label>
+                        <Label htmlFor="babyVisible" className="text-white">{t('beaverpatch.canYouSeeAnyPartOfBaby')}</Label>
                         <Select value={form.watch("babyVisible")} onValueChange={(value) => form.setValue("babyVisible", value)}>
                           <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                            <SelectValue placeholder="Select..." />
+                            <SelectValue placeholder={t('beaverpatch.select')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="completely_out">Baby completely out</SelectItem>
-                            <SelectItem value="head_visible">Head visible (crowning)</SelectItem>
-                            <SelectItem value="head_out">Head out</SelectItem>
-                            <SelectItem value="umbilical_cord">Umbilical cord</SelectItem>
-                            <SelectItem value="hands_feet_buttocks">Hands / Feet / Buttocks</SelectItem>
-                            <SelectItem value="something_out">Something out (not sure what)</SelectItem>
-                            <SelectItem value="cant_check">Can't check</SelectItem>
+                            <SelectItem value="no">{t('beaverpatch.no')}</SelectItem>
+                            <SelectItem value="completely_out">{t('beaverpatch.babyCompletelyOut')}</SelectItem>
+                            <SelectItem value="head_visible">{t('beaverpatch.headVisible')}</SelectItem>
+                            <SelectItem value="head_out">{t('beaverpatch.headOut')}</SelectItem>
+                            <SelectItem value="umbilical_cord">{t('beaverpatch.umbilicalCord')}</SelectItem>
+                            <SelectItem value="hands_feet_buttocks">{t('beaverpatch.handsFeetsButt')}</SelectItem>
+                            <SelectItem value="something_out">{t('beaverpatch.somethingOut')}</SelectItem>
+                            <SelectItem value="cant_check">{t('beaverpatch.cantCheck')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -818,26 +818,26 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
               <CardHeader>
                 <CardTitle className="text-beaver-orange flex items-center">
                   <AlertTriangle className="w-5 h-5 mr-2" />
-                  Additional Details
+                  {t('beaverpatch.additionalDetails')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="priority" className="text-white">Priority Level</Label>
+                    <Label htmlFor="priority" className="text-white">{t('beaverpatch.priorityLevel')}</Label>
                     <Select value={form.watch("priority")} onValueChange={(value) => form.setValue("priority", value)}>
                       <SelectTrigger className="bg-beaver-surface-light border-gray-600 text-white">
-                        <SelectValue placeholder="Select priority" />
+                        <SelectValue placeholder={t('beaverpatch.selectPriority')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="high">High Priority (Emergency)</SelectItem>
-                        <SelectItem value="medium">Medium Priority</SelectItem>
-                        <SelectItem value="low">Low Priority</SelectItem>
+                        <SelectItem value="high">{t('beaverpatch.highPriority')}</SelectItem>
+                        <SelectItem value="medium">{t('beaverpatch.mediumPriority')}</SelectItem>
+                        <SelectItem value="low">{t('beaverpatch.lowPriority')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="peopleInvolved" className="text-white">People Involved</Label>
+                    <Label htmlFor="peopleInvolved" className="text-white">{t('beaverpatch.peopleInvolved')}</Label>
                     <Input
                       id="peopleInvolved"
                       type="number"
@@ -849,31 +849,31 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="complainant" className="text-white">Complainant/Caller</Label>
+                  <Label htmlFor="complainant" className="text-white">{t('beaverpatch.complainantCaller')}</Label>
                   <Input
                     id="complainant"
                     {...form.register("complainant")}
-                    placeholder="Name of caller (optional)"
+                    placeholder={t('beaverpatch.nameOfCaller')}
                     className="bg-beaver-surface-light border-gray-600 text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-white">Detailed Description</Label>
+                  <Label htmlFor="description" className="text-white">{t('beaverpatch.detailedDescription')}</Label>
                   <Textarea
                     id="description"
                     {...form.register("description")}
-                    placeholder="Detailed description of the incident..."
+                    placeholder={t('beaverpatch.detailedDescriptionPlaceholder')}
                     className="bg-beaver-surface-light border-gray-600 text-white min-h-[120px]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="comments" className="text-white">Additional Comments</Label>
+                  <Label htmlFor="comments" className="text-white">{t('beaverpatch.additionalComments')}</Label>
                   <Textarea
                     id="comments"
                     {...form.register("comments")}
-                    placeholder="Any additional comments or notes..."
+                    placeholder={t('beaverpatch.additionalCommentsPlaceholder')}
                     className="bg-beaver-surface-light border-gray-600 text-white min-h-[80px]"
                   />
                 </div>
@@ -892,12 +892,12 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
             {isSubmitting ? (
               <>
                 <Clock className="w-4 h-4 mr-2 animate-spin" />
-                Creating Incident...
+                {t('beaverpatch.creatingIncident')}
               </>
             ) : (
               <>
                 <Plus className="w-4 h-4 mr-2" />
-                Create 911 Incident
+                {t('beaverpatch.create911Incident')}
               </>
             )}
           </Button>
@@ -907,7 +907,7 @@ export function IncidentForm({ onClose }: IncidentFormProps) {
             onClick={onClose}
             className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
           >
-            Clear Form
+            {t('beaverpatch.clearForm')}
           </Button>
         </div>
       </form>

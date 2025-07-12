@@ -45,8 +45,8 @@ export default function BeaverPatch() {
       queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
       toast({
-        title: "Unit Assigned",
-        description: "Unit has been successfully assigned to the incident.",
+        title: t('beaverpatch.unitAssigned'),
+        description: t('beaverpatch.unitAssignedDescription'),
       });
     },
   });
@@ -63,14 +63,14 @@ export default function BeaverPatch() {
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
       queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
       toast({
-        title: "Unit Status Updated",
-        description: "Unit status has been successfully updated",
+        title: t('beaverpatch.unitStatusUpdated'),
+        description: t('beaverpatch.unitStatusUpdatedDescription'),
       });
     },
     onError: () => {
       toast({
-        title: "Status Update Failed",
-        description: "Failed to update unit status",
+        title: t('beaverpatch.statusUpdateFailed'),
+        description: t('beaverpatch.statusUpdateFailedDescription'),
         variant: "destructive",
       });
     },
@@ -88,14 +88,14 @@ export default function BeaverPatch() {
       queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
       toast({
-        title: "Incident Status Updated",
-        description: "Incident status has been successfully updated",
+        title: t('beaverpatch.incidentStatusUpdated'),
+        description: t('beaverpatch.incidentStatusUpdatedDescription'),
       });
     },
     onError: () => {
       toast({
-        title: "Status Update Failed",
-        description: "Failed to update incident status",
+        title: t('beaverpatch.statusUpdateFailed'),
+        description: t('beaverpatch.failedToUpdateIncidentStatus'),
         variant: "destructive",
       });
     },
@@ -561,7 +561,7 @@ export default function BeaverPatch() {
             <div className="mt-8">
               <Card className="bg-beaver-surface border-beaver-surface-light">
                 <CardHeader>
-                  <CardTitle className="text-lg text-beaver-orange">Recent Activity</CardTitle>
+                  <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.recentActivity')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
