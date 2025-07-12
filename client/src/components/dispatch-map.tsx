@@ -2,11 +2,63 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2, Move, MousePointer, RotateCcw } from "lucide-react";
+import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2, Move, MousePointer, RotateCcw, Building } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Incident, Unit } from "@shared/schema";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+// Police services data
+const policeServicesData = {
+  "type": "FeatureCollection",
+  "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {"type": "Point", "coordinates": [-79.0895878955032, 43.0967581049929]},
+      "properties": {
+        "OBJECTID": 1,
+        "supp_ID": 35,
+        "pID": 139574,
+        "Name": "Niagara Regional Police Service - 2 District",
+        "Address": "5700 VALLEY WY",
+        "Type": "NRP",
+        "SUBCAT": "Regional",
+        "URL": "http://www.nrps.com"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {"type": "Point", "coordinates": [-79.0861005540053, 43.0974804958421]},
+      "properties": {
+        "OBJECTID": 2,
+        "supp_ID": 36,
+        "pID": 3841,
+        "Name": "Ontario Provincial Police - HSD-NIAGARA",
+        "Address": "5345 STANLEY AVE",
+        "Type": "OPP",
+        "SUBCAT": "Provincial",
+        "URL": "http://www.opp.ca/"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": {"type": "Point", "coordinates": [-79.0772266015336, 43.0872466389696]},
+      "properties": {
+        "OBJECTID": 3,
+        "supp_ID": 5757,
+        "pID": 30748,
+        "Name": "Niagara Parks Police Service Headquarters",
+        "Address": "6075 NIAGARA RIVER PY",
+        "Type": "NPP",
+        "SUBCAT": "Niagara Parks Commission",
+        "URL": "http://www.niagaraparks.com/about/niagara-parks-police.html"
+      }
+    }
+  ]
+};
 
 interface DispatchMapProps {
   incidents: Incident[];
@@ -22,11 +74,13 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
   const mapRef = useRef<L.Map | null>(null);
   const incidentMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
   const unitMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
+  const policeServicesRef = useRef<L.LayerGroup>(L.layerGroup());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [isMoveModeActive, setIsMoveModeActive] = useState(false);
   const [draggedUnit, setDraggedUnit] = useState<Unit | null>(null);
+  const [showPoliceServices, setShowPoliceServices] = useState(true);
 
   // Initialize map
   useEffect(() => {
@@ -49,6 +103,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
     // Add marker layers
     incidentMarkersRef.current.addTo(map);
     unitMarkersRef.current.addTo(map);
+    policeServicesRef.current.addTo(map);
 
     mapRef.current = map;
 
@@ -126,6 +181,32 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
       className: 'custom-unit-marker',
       iconSize: [32, 32],
       iconAnchor: [16, 16]
+    });
+  };
+
+  const createPoliceServiceIcon = (type: string) => {
+    const color = type === 'NRP' ? '#1e40af' : type === 'OPP' ? '#dc2626' : '#059669';
+    
+    return L.divIcon({
+      html: `<div style="
+        width: 28px; 
+        height: 28px; 
+        background-color: ${color}; 
+        border: 3px solid white; 
+        border-radius: 8px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        cursor: pointer;
+      ">
+        <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
+          <path d="M7 3V1H17V3H20C21.1 3 22 3.9 22 5V19C22 20.1 21.1 21 20 21H4C2.9 21 2 20.1 2 19V5C2 3.9 2.9 3 4 3H7ZM7 5H4V19H20V5H17V7H7V5ZM9 5V7H15V5H9Z"/>
+        </svg>
+      </div>`,
+      className: 'custom-police-service-marker',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
     });
   };
 
@@ -211,6 +292,45 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
     });
   }, [units, isMoveModeActive, onUnitSelect, t]);
 
+  // Load and display police services data
+  useEffect(() => {
+    if (!mapRef.current || !showPoliceServices) return;
+
+    policeServicesRef.current.clearLayers();
+
+    // Load the GeoJSON data
+    policeServicesData.features.forEach((feature) => {
+      const [lng, lat] = feature.geometry.coordinates;
+      const props = feature.properties;
+      
+      const marker = L.marker([lat, lng], {
+        icon: createPoliceServiceIcon(props.Type)
+      });
+
+      marker.bindPopup(`
+        <div style="min-width: 250px;">
+          <h3 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 14px;">${props.Name}</h3>
+          <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Type:</strong> ${props.Type} - ${props.SUBCAT}</p>
+          <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Address:</strong> ${props.Address}</p>
+          ${props.URL ? `<p style="margin: 0; font-size: 12px;"><strong>Website:</strong> <a href="${props.URL}" target="_blank" style="color: #3b82f6;">${props.URL}</a></p>` : ''}
+        </div>
+      `);
+
+      policeServicesRef.current.addLayer(marker);
+    });
+  }, [showPoliceServices]);
+
+  // Toggle police services visibility
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    if (showPoliceServices) {
+      policeServicesRef.current.addTo(mapRef.current);
+    } else {
+      mapRef.current.removeLayer(policeServicesRef.current);
+    }
+  }, [showPoliceServices]);
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
@@ -220,6 +340,10 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
     if (isMoveModeActive) {
       setDraggedUnit(null);
     }
+  };
+
+  const togglePoliceServices = () => {
+    setShowPoliceServices(!showPoliceServices);
   };
 
   const resetView = () => {
@@ -257,6 +381,16 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
             >
               {isMoveModeActive ? <MousePointer className="w-4 h-4" /> : <Move className="w-4 h-4" />}
             </Button>
+
+            <Button
+              variant={showPoliceServices ? "default" : "ghost"}
+              size="sm"
+              onClick={togglePoliceServices}
+              className={`${showPoliceServices ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              title={showPoliceServices ? "Hide Police Services" : "Show Police Services"}
+            >
+              <Building className="w-4 h-4" />
+            </Button>
             
             <Button
               variant="ghost"
@@ -287,7 +421,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
         />
 
         {/* Real-time Legend */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-beaver-surface-light p-3 rounded-lg">
             <h4 className="text-sm font-semibold text-beaver-orange mb-2">{t('beaverpatch.incidentPriority')}</h4>
             <div className="space-y-1 text-xs">
@@ -327,6 +461,26 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
               </div>
             </div>
           </div>
+          
+          {showPoliceServices && (
+            <div className="bg-beaver-surface-light p-3 rounded-lg">
+              <h4 className="text-sm font-semibold text-beaver-orange mb-2">Police Services</h4>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-blue-700 border-2 border-white rounded"></div>
+                  <span className="text-gray-300">NRP - Regional</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-red-600 border-2 border-white rounded"></div>
+                  <span className="text-gray-300">OPP - Provincial</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-green-600 border-2 border-white rounded"></div>
+                  <span className="text-gray-300">NPP - Parks</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Selected item details */}
