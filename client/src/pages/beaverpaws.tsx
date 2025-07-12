@@ -134,7 +134,7 @@ export default function BeaverPaws() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Active Cases</p>
+                  <p className="text-sm text-gray-400">{t('beaverpaws.activeCases')}</p>
                   <p className="text-2xl font-bold text-white">{activeCases}</p>
                 </div>
                 <AlertTriangle className="w-8 h-8 text-orange-500" />
@@ -145,7 +145,7 @@ export default function BeaverPaws() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Resolved Cases</p>
+                  <p className="text-sm text-gray-400">{t('beaverpaws.resolvedCases')}</p>
                   <p className="text-2xl font-bold text-white">{resolvedCases}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-green-500" />
@@ -156,7 +156,7 @@ export default function BeaverPaws() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Emergency Calls</p>
+                  <p className="text-sm text-gray-400">{t('beaverpaws.emergencyCases')}</p>
                   <p className="text-2xl font-bold text-white">{emergencyCases}</p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-red-500" />
@@ -167,7 +167,7 @@ export default function BeaverPaws() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Total Cases</p>
+                  <p className="text-sm text-gray-400">{t('beaverpaws.totalCases')}</p>
                   <p className="text-2xl font-bold text-white">{totalCases}</p>
                 </div>
                 <Tag className="w-8 h-8 text-blue-500" />
@@ -181,11 +181,11 @@ export default function BeaverPaws() {
           <TabsList className="grid w-full grid-cols-4 bg-beaver-surface border-beaver-surface-light">
             <TabsTrigger value="response" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <Clipboard className="w-4 h-4 mr-2" />
-              Response Tracking
+              {t('beaverpaws.responseTracking')}
             </TabsTrigger>
             <TabsTrigger value="firstaid" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <Heart className="w-4 h-4 mr-2" />
-              First Aid
+              {t('beaverpaws.firstAid')}
             </TabsTrigger>
             <TabsTrigger value="registry" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <Tag className="w-4 h-4 mr-2" />
@@ -193,7 +193,7 @@ export default function BeaverPaws() {
             </TabsTrigger>
             <TabsTrigger value="laws" className="data-[state=active]:bg-beaver-orange data-[state=active]:text-black">
               <BookOpen className="w-4 h-4 mr-2" />
-              Laws
+              {t('beaverpaws.laws')}
             </TabsTrigger>
           </TabsList>
 

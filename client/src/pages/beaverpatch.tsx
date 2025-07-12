@@ -174,16 +174,16 @@ export default function BeaverPatch() {
           <div className="flex items-center space-x-6">
             <Badge variant="outline" className="text-green-400 border-green-400">
               <Radio className="w-3 h-3 mr-1" />
-              CAD Online
+              {t('beaverpatch.cadOnline')}
             </Badge>
             <div className="flex items-center space-x-4 text-sm text-gray-300">
               <span className="flex items-center">
                 <AlertTriangle className="w-4 h-4 mr-1 text-red-400" />
-                {activeIncidents.length} Active
+                {activeIncidents.length} {t('common.active')}
               </span>
               <span className="flex items-center">
                 <Users className="w-4 h-4 mr-1 text-green-400" />
-                {availableUnits.length} Available
+                {availableUnits.length} {t('beaverpatch.available')}
               </span>
               <span className="flex items-center">
                 <Clock className="w-4 h-4 mr-1 text-yellow-400" />
@@ -223,7 +223,7 @@ export default function BeaverPatch() {
                   <CardHeader>
                     <CardTitle className="text-xl text-beaver-orange flex items-center">
                       <Phone className="w-6 h-6 mr-3" />
-                      911 Call Entry
+                      {t('beaverpatch.callEntry911')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -236,12 +236,12 @@ export default function BeaverPatch() {
               <div className="lg:col-span-1">
                 <Card className="bg-beaver-surface border-beaver-surface-light h-full">
                   <CardHeader>
-                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.incidents')} {t('common.active')}</CardTitle>
+                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.activeIncidents')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {activeIncidents.length === 0 ? (
-                        <div className="text-center text-gray-400 py-8">{t('common.loading')}</div>
+                        <div className="text-center text-gray-400 py-8">{t('beaverpatch.noActiveIncidents')}</div>
                       ) : (
                         activeIncidents.slice(0, 5).map((incident) => (
                           <div
@@ -283,15 +283,15 @@ export default function BeaverPatch() {
               <Card className="bg-beaver-surface border-beaver-surface-light">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.incident')} {t('common.actions')}</CardTitle>
+                    <CardTitle className="text-lg text-beaver-orange">{t('beaverpatch.incidentManagement')}</CardTitle>
                     <div className="flex items-center space-x-2">
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="w-40 bg-beaver-surface-light border-gray-600 text-white">
                           <SelectValue placeholder="Filter" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">{t('common.all')} {t('common.status')}</SelectItem>
-                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="all">{t('beaverpatch.allStatus')}</SelectItem>
+                          <SelectItem value="new">{t('beaverpatch.new')}</SelectItem>
                           <SelectItem value="dispatched">{t('beaverpatch.dispatched')}</SelectItem>
                           <SelectItem value="active">{t('common.active')}</SelectItem>
                         </SelectContent>
@@ -311,9 +311,9 @@ export default function BeaverPatch() {
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {loadingIncidents ? (
-                      <div className="text-center text-gray-400 py-8">{t('common.loading')}</div>
+                      <div className="text-center text-gray-400 py-8">{t('beaverpatch.loadingIncidents')}</div>
                     ) : filteredIncidents.length === 0 ? (
-                      <div className="text-center text-gray-400 py-8">No {t('beaverpatch.incidents').toLowerCase()} found</div>
+                      <div className="text-center text-gray-400 py-8">{t('beaverpatch.noIncidentsFound')}</div>
                     ) : (
                       filteredIncidents.map((incident) => (
                         <div
