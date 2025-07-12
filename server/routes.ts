@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Access control endpoint for protected pages
-  app.get("/api/auth/check-access/:page", (req, res) => {
+  app.get("/api/auth/check-access/:page", basicAuth, (req, res) => {
     const page = req.params.page;
     const user = req.user;
     
