@@ -1277,6 +1277,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // BeaverTalk Chat API endpoints with security features
   
+  // Health check endpoint for BeaverTalk
+  app.get("/api/chat/health", basicAuth, async (req, res) => {
+    try {
+      res.json({
+        status: "ok",
+        service: "BeaverTalk",
+        version: "1.0.0",
+        authenticated: true,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Service unavailable" });
+    }
+  });
+  
   // Content security analysis function
   const analyzeMessageSecurity = (content: string, ipAddress?: string) => {
     const securityIssues: string[] = [];
@@ -1406,6 +1421,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/chat/messages/:sessionId", basicAuth, async (req, res) => {
     try {
       const sessionId = req.params.sessionId;
+      const messages = await storage.getChatMessages(sessionId);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  // Get messages for current session (used by frontend)
+  app.get("/api/chat/messages", basicAuth, async (req, res) => {
+    try {
+      const sessionId = req.query.sessionId as string;
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID required" });
+      }
       const messages = await storage.getChatMessages(sessionId);
       res.json(messages);
     } catch (error) {

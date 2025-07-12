@@ -45,13 +45,36 @@ export default function BeaverTalk() {
 
 
   // Fetch messages for current session with automatic refresh every 3 seconds
-  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+  const { data: messagesData = [], isLoading: messagesLoading, error: messagesError } = useQuery({
     queryKey: ["/api/chat/messages", currentSessionId],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest(`/api/chat/messages?sessionId=${currentSessionId}`);
+        console.log("Messages response:", response);
+        return response;
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        throw error;
+      }
+    },
     enabled: !!currentSessionId,
     refetchInterval: 3000, // Refresh every 3 seconds to catch new messages
     cacheTime: 0, // Don't cache messages data
     staleTime: 0, // Consider data stale immediately
   });
+
+  // Ensure messages is always an array
+  const messages = Array.isArray(messagesData) ? messagesData : [];
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Sessions updated:", sessions);
+  }, [sessions]);
+
+  useEffect(() => {
+    console.log("Messages data:", messagesData);
+    console.log("Messages error:", messagesError);
+  }, [messagesData, messagesError]);
 
   // Fetch security logs with automatic refresh every 10 seconds
   const { data: securityLogs = [] } = useQuery({
