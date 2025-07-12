@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import { ChatOverlay } from "@/components/chat-overlay";
 import { AccessProtectedRoute } from "@/components/access-protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -59,16 +58,13 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
-  const { isAuthenticated } = useAuth();
-  
   return (
-    <>
-      <Switch>
-        <Route path="/">
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        </Route>
+    <Switch>
+      <Route path="/">
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      </Route>
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
