@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema, insertCharacterSchema, insertLicenseSchema, insertVehicleRegistrationSchema, insertCallEntryLogSchema } from "@shared/schema";
+import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema, insertCharacterSchema, insertLicenseSchema, insertVehicleRegistrationSchema, insertCallEntryLogSchema, insertChatSessionSchema, insertChatMessageSchema, insertChatSecurityLogSchema } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1240,6 +1240,230 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(vehicle);
     } catch (error) {
       res.status(400).json({ error: "Invalid vehicle data" });
+    }
+  });
+
+  // BeaverTalk Chat API endpoints with security features
+  
+  // Content security analysis function
+  const analyzeMessageSecurity = (content: string, ipAddress?: string) => {
+    const securityIssues: string[] = [];
+    let securityScore = 100;
+    let containsCode = false;
+    
+    // Check for code injection patterns
+    const codePatterns = [
+      /<script[^>]*>/i,
+      /javascript:/i,
+      /eval\s*\(/i,
+      /document\./i,
+      /window\./i,
+      /\bselect\s+.*\bfrom\s+/i,
+      /\binsert\s+into\s+/i,
+      /\bupdate\s+.*\bset\s+/i,
+      /\bdelete\s+from\s+/i,
+      /\bdrop\s+table\s+/i,
+      /union\s+select/i,
+      /or\s+1=1/i,
+      /and\s+1=1/i,
+      /';\s*--/i,
+      /\}\s*\)/i,
+      /require\s*\(/i,
+      /import\s+/i,
+      /exec\s*\(/i,
+      /system\s*\(/i,
+    ];
+    
+    for (const pattern of codePatterns) {
+      if (pattern.test(content)) {
+        containsCode = true;
+        securityIssues.push("code_injection");
+        securityScore -= 30;
+        break;
+      }
+    }
+    
+    // Check for XSS patterns
+    const xssPatterns = [
+      /<[^>]*on\w+\s*=/i,
+      /<iframe/i,
+      /<object/i,
+      /<embed/i,
+      /<form/i,
+      /data:text\/html/i,
+    ];
+    
+    for (const pattern of xssPatterns) {
+      if (pattern.test(content)) {
+        securityIssues.push("xss_attempt");
+        securityScore -= 25;
+        break;
+      }
+    }
+    
+    // Check for suspicious content
+    const suspiciousPatterns = [
+      /\b(password|admin|root|sudo)\b/i,
+      /\b(hack|exploit|vulnerability)\b/i,
+      /\$\{[^}]*\}/i,
+      /%[0-9a-f]{2}/i,
+    ];
+    
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(content)) {
+        securityIssues.push("suspicious_content");
+        securityScore -= 15;
+        break;
+      }
+    }
+    
+    // Ensure minimum score
+    securityScore = Math.max(0, securityScore);
+    
+    return {
+      isSecure: securityScore >= 70,
+      securityScore,
+      containsCode,
+      securityFlags: securityIssues,
+    };
+  };
+  
+  // Sanitize message content
+  const sanitizeContent = (content: string) => {
+    return content
+      .replace(/<script[^>]*>.*?<\/script>/gi, '[SCRIPT BLOCKED]')
+      .replace(/javascript:/gi, '[JAVASCRIPT BLOCKED]')
+      .replace(/on\w+\s*=/gi, '[EVENT HANDLER BLOCKED]')
+      .replace(/eval\s*\(/gi, '[EVAL BLOCKED]')
+      .replace(/<iframe[^>]*>/gi, '[IFRAME BLOCKED]')
+      .replace(/<object[^>]*>/gi, '[OBJECT BLOCKED]')
+      .replace(/<embed[^>]*>/gi, '[EMBED BLOCKED]');
+  };
+
+  // Get chat sessions
+  app.get("/api/chat/sessions", async (req, res) => {
+    try {
+      const sessions = await storage.getAllChatSessions();
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch chat sessions" });
+    }
+  });
+
+  // Create new chat session
+  app.post("/api/chat/sessions", async (req, res) => {
+    try {
+      const validatedData = insertChatSessionSchema.parse(req.body);
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get('User-Agent');
+      
+      const sessionData = {
+        ...validatedData,
+        ipAddress,
+        userAgent,
+      };
+      
+      const session = await storage.createChatSession(sessionData);
+      res.json(session);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid session data" });
+    }
+  });
+
+  // Get messages for a session
+  app.get("/api/chat/messages/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const messages = await storage.getChatMessages(sessionId);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  // Send message with security analysis
+  app.post("/api/chat/messages", async (req, res) => {
+    try {
+      const validatedData = insertChatMessageSchema.parse(req.body);
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      
+      // Analyze message security
+      const securityAnalysis = analyzeMessageSecurity(validatedData.messageContent, ipAddress);
+      
+      // Log security events if needed
+      if (securityAnalysis.securityFlags.length > 0) {
+        const securityLog = {
+          sessionId: validatedData.sessionId,
+          messageId: null, // Will be updated after message creation
+          securityEvent: securityAnalysis.securityFlags[0],
+          severity: securityAnalysis.securityScore < 30 ? "critical" : 
+                   securityAnalysis.securityScore < 50 ? "high" : 
+                   securityAnalysis.securityScore < 70 ? "medium" : "low",
+          description: `Security analysis detected: ${securityAnalysis.securityFlags.join(", ")}`,
+          originalContent: validatedData.messageContent,
+          sanitizedContent: sanitizeContent(validatedData.messageContent),
+          ipAddress,
+          userAgent: req.get('User-Agent'),
+          actionTaken: securityAnalysis.securityScore < 50 ? "blocked" : 
+                      securityAnalysis.securityScore < 70 ? "sanitized" : "flagged",
+        };
+        
+        await storage.createChatSecurityLog(securityLog);
+      }
+      
+      // Block or sanitize message based on security score
+      let finalContent = validatedData.messageContent;
+      if (securityAnalysis.securityScore < 50) {
+        return res.status(403).json({ 
+          error: "Message blocked due to security concerns",
+          securityScore: securityAnalysis.securityScore,
+          issues: securityAnalysis.securityFlags
+        });
+      } else if (securityAnalysis.securityScore < 70) {
+        finalContent = sanitizeContent(validatedData.messageContent);
+      }
+      
+      const messageData = {
+        ...validatedData,
+        messageContent: finalContent,
+        isSecure: securityAnalysis.isSecure,
+        containsCode: securityAnalysis.containsCode,
+        securityScore: securityAnalysis.securityScore,
+        securityFlags: securityAnalysis.securityFlags,
+        ipAddress,
+      };
+      
+      const message = await storage.createChatMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid message data" });
+    }
+  });
+
+  // Get security logs
+  app.get("/api/chat/security-logs", async (req, res) => {
+    try {
+      const logs = await storage.getAllChatSecurityLogs();
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch security logs" });
+    }
+  });
+
+  // Update session status
+  app.patch("/api/chat/sessions/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const { status } = req.body;
+      
+      if (!['active', 'closed', 'escalated'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      const session = await storage.updateChatSessionStatus(sessionId, status);
+      res.json(session);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to update session" });
     }
   });
 

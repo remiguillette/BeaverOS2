@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type UpdateUserProfile, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence, type Character, type InsertCharacter, type License, type InsertLicense, type VehicleRegistration, type InsertVehicleRegistration, type CallEntryLog, type InsertCallEntryLog } from "@shared/schema";
+import { users, type User, type InsertUser, type UpdateUserProfile, type Incident, type InsertIncident, type Unit, type InsertUnit, type IncidentUnit, type InsertIncidentUnit, type Animal, type InsertAnimal, type EnforcementReport, type InsertEnforcementReport, type Customer, type InsertCustomer, type Document, type InsertDocument, type Invoice, type InsertInvoice, type Payment, type InsertPayment, type PosTransaction, type InsertPosTransaction, type RiskLocation, type InsertRiskLocation, type RiskAssessment, type InsertRiskAssessment, type MitigationPlan, type InsertMitigationPlan, type RiskEvent, type InsertRiskEvent, type AuditSchedule, type InsertAuditSchedule, type AuditTemplate, type InsertAuditTemplate, type AuditReport, type InsertAuditReport, type AuditNonCompliance, type InsertAuditNonCompliance, type AuditEvidence, type InsertAuditEvidence, type Character, type InsertCharacter, type License, type InsertLicense, type VehicleRegistration, type InsertVehicleRegistration, type CallEntryLog, type InsertCallEntryLog, type ChatSession, type InsertChatSession, type ChatMessage, type InsertChatMessage, type ChatSecurityLog, type InsertChatSecurityLog } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -176,6 +176,20 @@ export interface IStorage {
   getVehicleRegistrationByVin(vin: string): Promise<VehicleRegistration | undefined>;
   getVehicleRegistrationsByCharacterId(characterId: number): Promise<VehicleRegistration[]>;
   getVehicleRegistrationsByOwner(owner: string): Promise<VehicleRegistration[]>;
+
+  // BeaverTalk Chat operations
+  createChatSession(session: InsertChatSession): Promise<ChatSession>;
+  getChatSession(sessionId: string): Promise<ChatSession | undefined>;
+  getAllChatSessions(): Promise<ChatSession[]>;
+  updateChatSessionStatus(sessionId: string, status: string): Promise<ChatSession | undefined>;
+  
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getChatMessage(id: number): Promise<ChatMessage | undefined>;
+  getChatMessages(sessionId: string): Promise<ChatMessage[]>;
+  
+  createChatSecurityLog(log: InsertChatSecurityLog): Promise<ChatSecurityLog>;
+  getAllChatSecurityLogs(): Promise<ChatSecurityLog[]>;
+  getChatSecurityLogsBySession(sessionId: string): Promise<ChatSecurityLog[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -203,6 +217,9 @@ export class MemStorage implements IStorage {
   private licenses: Map<number, License>;
   private vehicleRegistrations: Map<number, VehicleRegistration>;
   private callEntryLogs: Map<number, CallEntryLog>;
+  private chatSessions: Map<string, ChatSession>;
+  private chatMessages: Map<number, ChatMessage>;
+  private chatSecurityLogs: Map<number, ChatSecurityLog>;
   private currentUserId: number;
   private currentIncidentId: number;
   private currentUnitId: number;
@@ -227,6 +244,9 @@ export class MemStorage implements IStorage {
   private currentLicenseId: number;
   private currentVehicleRegistrationId: number;
   private currentCallEntryLogId: number;
+  private currentChatSessionId: number;
+  private currentChatMessageId: number;
+  private currentChatSecurityLogId: number;
 
   constructor() {
     this.users = new Map();
@@ -253,6 +273,9 @@ export class MemStorage implements IStorage {
     this.licenses = new Map();
     this.vehicleRegistrations = new Map();
     this.callEntryLogs = new Map();
+    this.chatSessions = new Map();
+    this.chatMessages = new Map();
+    this.chatSecurityLogs = new Map();
     this.currentUserId = 1;
     this.currentIncidentId = 1;
     this.currentUnitId = 1;
@@ -277,6 +300,9 @@ export class MemStorage implements IStorage {
     this.currentLicenseId = 1;
     this.currentVehicleRegistrationId = 1;
     this.currentCallEntryLogId = 1;
+    this.currentChatSessionId = 1;
+    this.currentChatMessageId = 1;
+    this.currentChatSecurityLogId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -2277,6 +2303,78 @@ export class MemStorage implements IStorage {
 
   async getVehicleRegistrationsByOwner(owner: string): Promise<VehicleRegistration[]> {
     return Array.from(this.vehicleRegistrations.values()).filter(registration => registration.owner === owner);
+  }
+
+  // BeaverTalk Chat operations
+  async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
+    const id = this.currentChatSessionId++;
+    const session: ChatSession = {
+      ...insertSession,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.chatSessions.set(insertSession.sessionId, session);
+    return session;
+  }
+
+  async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
+    return this.chatSessions.get(sessionId);
+  }
+
+  async getAllChatSessions(): Promise<ChatSession[]> {
+    return Array.from(this.chatSessions.values());
+  }
+
+  async updateChatSessionStatus(sessionId: string, status: string): Promise<ChatSession | undefined> {
+    const existing = this.chatSessions.get(sessionId);
+    if (!existing) return undefined;
+    const updated: ChatSession = { ...existing, status, updatedAt: new Date() };
+    this.chatSessions.set(sessionId, updated);
+    return updated;
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const id = this.currentChatMessageId++;
+    const message: ChatMessage = {
+      ...insertMessage,
+      id,
+      createdAt: new Date(),
+    };
+    this.chatMessages.set(id, message);
+    return message;
+  }
+
+  async getChatMessage(id: number): Promise<ChatMessage | undefined> {
+    return this.chatMessages.get(id);
+  }
+
+  async getChatMessages(sessionId: string): Promise<ChatMessage[]> {
+    return Array.from(this.chatMessages.values())
+      .filter(message => message.sessionId === sessionId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+
+  async createChatSecurityLog(insertLog: InsertChatSecurityLog): Promise<ChatSecurityLog> {
+    const id = this.currentChatSecurityLogId++;
+    const log: ChatSecurityLog = {
+      ...insertLog,
+      id,
+      createdAt: new Date(),
+    };
+    this.chatSecurityLogs.set(id, log);
+    return log;
+  }
+
+  async getAllChatSecurityLogs(): Promise<ChatSecurityLog[]> {
+    return Array.from(this.chatSecurityLogs.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getChatSecurityLogsBySession(sessionId: string): Promise<ChatSecurityLog[]> {
+    return Array.from(this.chatSecurityLogs.values())
+      .filter(log => log.sessionId === sessionId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
 

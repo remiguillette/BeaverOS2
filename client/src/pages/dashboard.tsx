@@ -68,6 +68,13 @@ const getServices = (t: (key: string) => string) => [
     port: ":5009",
     icon: "audit",
   },
+  {
+    id: "beavertalk",
+    name: t('service.beavertalk'),
+    description: t('service.beavertalk.desc'),
+    port: ":5011",
+    icon: "chat",
+  },
 ];
 
 export default function Dashboard() {
@@ -94,6 +101,8 @@ export default function Dashboard() {
       setLocation("/BeaverAudit");
     } else if (service.id === "beaverdmv") {
       setLocation("/BeaverDMV");
+    } else if (service.id === "beavertalk") {
+      setLocation("/BeaverTalk");
     } else {
       // For other services, you can add their routes here
       console.log(`Service ${service.name} ${t('dashboard.notImplemented')}`);

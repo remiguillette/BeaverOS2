@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { ChatOverlay } from "@/components/chat-overlay";
 import { AccessProtectedRoute } from "@/components/access-protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -15,6 +16,7 @@ import BeaverPay from "@/pages/beaverpay";
 import BeaverRisk from "@/pages/beaverisk";
 import BeaverAudit from "@/pages/beaveraudit";
 import BeaverDMV from "@/pages/beaverdmv";
+import BeaverTalk from "@/pages/beavertalk";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
@@ -57,13 +59,16 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  const { isAuthenticated } = useAuth();
+  
   return (
-    <Switch>
-      <Route path="/">
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      </Route>
+    <>
+      <Switch>
+        <Route path="/">
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        </Route>
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
@@ -107,6 +112,11 @@ function Router() {
       <Route path="/BeaverDMV">
         <ProtectedRoute>
           <BeaverDMV />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/BeaverTalk">
+        <ProtectedRoute>
+          <BeaverTalk />
         </ProtectedRoute>
       </Route>
       <Route path="/profile">

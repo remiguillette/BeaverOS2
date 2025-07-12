@@ -43,6 +43,8 @@ const translations = {
     'service.beaverisk.desc': 'Risk Assessment',
     'service.beaveraudit': 'BeaverAudit',
     'service.beaveraudit.desc': 'Audit & Compliance',
+    'service.beavertalk': 'BeaverTalk',
+    'service.beavertalk.desc': 'Communication Support',
     
     // Common
     'common.loading': 'Loading...',
@@ -100,6 +102,8 @@ const translations = {
     'service.beaverisk.desc': 'Évaluation Risques',
     'service.beaveraudit': 'BeaverAudit',
     'service.beaveraudit.desc': 'Audit et Conformité',
+    'service.beavertalk': 'BeaverTalk',
+    'service.beavertalk.desc': 'Support Communication',
     
     // Common
     'common.loading': 'Chargement...',
