@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslation } from "react-i18next";
 import { EnhancedHeader } from "@/components/enhanced-header";
 import { insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema } from "@shared/schema";
 import type { Invoice, Payment, PosTransaction } from "@shared/schema";

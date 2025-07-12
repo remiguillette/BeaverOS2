@@ -11,7 +11,7 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslation } from "react-i18next";
 import { IncidentForm } from "@/components/incident-form";
 import { DispatchMap } from "@/components/dispatch-map";
 import { EnhancedHeader } from "@/components/enhanced-header";

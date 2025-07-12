@@ -16,7 +16,7 @@ import { insertIncidentSchema } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslation } from "react-i18next";
 
 const incidentFormSchema = insertIncidentSchema.extend({
   incidentNumber: z.string().min(1, "Incident number is required"),

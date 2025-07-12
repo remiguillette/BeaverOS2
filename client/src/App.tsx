@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { AccessProtectedRoute } from "@/components/access-protected-route";
+import { useTranslation } from 'react-i18next';
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import BeaverPatch from "@/pages/beaverpatch";
@@ -21,12 +22,13 @@ import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   
   if (isLoading) {
     // Show loading state while checking authentication
     return (
       <div className="min-h-screen bg-beaver-dark flex items-center justify-center">
-        <div className="text-beaver-orange text-xl">Loading...</div>
+        <div className="text-beaver-orange text-xl">{t('common.loading')}</div>
       </div>
     );
   }
@@ -40,12 +42,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   
   if (isLoading) {
     // Show loading state while checking authentication
     return (
       <div className="min-h-screen bg-beaver-dark flex items-center justify-center">
-        <div className="text-beaver-orange text-xl">Loading...</div>
+        <div className="text-beaver-orange text-xl">{t('common.loading')}</div>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import { Shield, QrCode, User, FileText, CreditCard, Monitor, IdCard, Cat, ClipboardCheck } from "lucide-react";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslation } from "react-i18next";
 
 interface Service {
   id: string;

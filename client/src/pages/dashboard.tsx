@@ -2,69 +2,69 @@ import { ServiceCard } from "@/components/service-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { EnhancedHeader } from "@/components/enhanced-header";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslation } from "react-i18next";
 
 const getServices = (t: (key: string) => string) => [
   {
     id: "beaverpatch",
     name: t('service.beaverpatch'),
-    description: t('service.beaverpatch.desc'),
+    description: t('service.beaverpatch_desc'),
     port: ":5001",
     icon: "shield",
   },
   {
     id: "beaverpaws",
     name: t('service.beaverpaws'),
-    description: t('service.beaverpaws.desc'),
+    description: t('service.beaverpaws_desc'),
     port: ":5001",
     icon: "cat",
   },
   {
     id: "beavercrm",
     name: t('service.beavercrm'),
-    description: t('service.beavercrm.desc'),
+    description: t('service.beavercrm_desc'),
     port: ":5002",
     icon: "person",
   },
   {
     id: "beaverdoc",
     name: t('service.beaverdoc'),
-    description: t('service.beaverdoc.desc'),
+    description: t('service.beaverdoc_desc'),
     port: ":5005",
     icon: "doc",
   },
   {
     id: "beaverpay",
     name: t('service.beaverpay'),
-    description: t('service.beaverpay.desc'),
+    description: t('service.beaverpay_desc'),
     port: ":5006",
     icon: "pay",
   },
   {
     id: "beavermonitor",
     name: t('service.beavermonitor'),
-    description: t('service.beavermonitor.desc'),
+    description: t('service.beavermonitor_desc'),
     port: ":5007",
     icon: "monitor",
   },
   {
     id: "beaverdmv",
     name: t('service.beaverdmv'),
-    description: t('service.beaverdmv.desc'),
+    description: t('service.beaverdmv_desc'),
     port: ":5010",
     icon: "id",
   },
   {
     id: "beaverisk",
     name: t('service.beaverisk'),
-    description: t('service.beaverisk.desc'),
+    description: t('service.beaverisk_desc'),
     port: ":5008",
     icon: "shield",
   },
   {
     id: "beaveraudit",
     name: t('service.beaveraudit'),
-    description: t('service.beaveraudit.desc'),
+    description: t('service.beaveraudit_desc'),
     port: ":5009",
     icon: "audit",
   },

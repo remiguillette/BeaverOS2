@@ -2,7 +2,7 @@ import { LogOut, Languages, User, LucideIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslation } from "react-i18next";
 import beaverImage from "@assets/beaver_1751858605395.png";
 
 interface EnhancedHeaderProps {
@@ -23,7 +23,7 @@ export function EnhancedHeader({
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [isLoaded, setIsLoaded] = useState(false);
-  const { currentLang, setLanguage, t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const languageButtonRef = useRef<HTMLButtonElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const loginButtonRef = useRef<HTMLButtonElement>(null);
@@ -34,7 +34,8 @@ export function EnhancedHeader({
   };
 
   const toggleLanguage = () => {
-    setLanguage(currentLang === 'en' ? 'fr' : 'en');
+    const newLang = i18n.language === 'en' ? 'fr' : 'en';
+    i18n.changeLanguage(newLang);
   };
 
   const handleBackAction = () => {
@@ -128,10 +129,10 @@ export function EnhancedHeader({
               ref={languageButtonRef}
               onClick={toggleLanguage}
               className="border-gradient-button flex items-center justify-center px-3 py-2 md:px-6 md:py-3 font-medium text-xs md:text-sm"
-              aria-label={currentLang === 'en' ? t('header.switchToFrench') : t('header.switchToEnglish')}
+              aria-label={i18n.language === 'en' ? t('header.switchToFrench') : t('header.switchToEnglish')}
             >
               <Languages className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 text-[#f89422]" />
-              {currentLang === 'en' ? 'FR' : 'EN'}
+              {i18n.language === 'en' ? 'FR' : 'EN'}
             </button>
 
             {/* Profile Button */}
