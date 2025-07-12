@@ -330,7 +330,7 @@
     "incidentStatusUpdatedDescription": "Incident status has been successfully updated",
     "failedToUpdateIncidentStatus": "Failed to update incident status",
     "recentActivity": "Recent Activity",
-    "serviceName": "BeaverPatch CAD",
+    "serviceName": "BeaverPatch",
     "backToDashboard": "Back to Dashboard",
     "filter": "Filter",
     "phoneNumberPlaceholder": "(555) 123-4567",
