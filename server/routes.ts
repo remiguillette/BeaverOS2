@@ -1,12 +1,31 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { basicAuth, requireAccessLevel } from "./middleware";
 import { insertIncidentSchema, insertUnitSchema, insertIncidentUnitSchema, insertAnimalSchema, insertEnforcementReportSchema, insertCustomerSchema, insertDocumentSchema, insertInvoiceSchema, insertPaymentSchema, insertPosTransactionSchema, insertRiskLocationSchema, insertRiskAssessmentSchema, insertMitigationPlanSchema, insertRiskEventSchema, insertAuditScheduleSchema, insertAuditTemplateSchema, insertAuditReportSchema, insertAuditNonComplianceSchema, insertAuditEvidenceSchema, updateUserProfileSchema, insertCharacterSchema, insertLicenseSchema, insertVehicleRegistrationSchema, insertCallEntryLogSchema, insertChatSessionSchema, insertChatMessageSchema, insertChatSecurityLogSchema } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // CORS OPTIONS handlers for BeaverTalk API endpoints - must come before authentication
+  app.options("/api/chat/*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.sendStatus(200);
+  });
+
+  // Specific OPTIONS handler for health endpoint
+  app.options("/api/chat/health", (req, res) => {
+    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.sendStatus(200);
+  });
+
   // Authentication endpoint
-  app.get("/api/auth/me", (req, res) => {
+  app.get("/api/auth/me", basicAuth, (req, res) => {
     // User is already authenticated by middleware
     res.json({ user: req.user });
   });
@@ -124,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // BeaverTalk health check endpoint
-  app.get("/api/chat/health", (req, res) => {
+  app.get("/api/chat/health", basicAuth, (req, res) => {
     res.json({ 
       status: "ok", 
       service: "BeaverTalk", 
@@ -133,6 +152,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString()
     });
   });
+
+
 
   // Call entry log endpoints
   app.post("/api/call-entry-logs", async (req, res) => {
@@ -1352,7 +1373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Get chat sessions
-  app.get("/api/chat/sessions", async (req, res) => {
+  app.get("/api/chat/sessions", basicAuth, async (req, res) => {
     try {
       const sessions = await storage.getAllChatSessions();
       res.json(sessions);
@@ -1362,7 +1383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new chat session
-  app.post("/api/chat/sessions", async (req, res) => {
+  app.post("/api/chat/sessions", basicAuth, async (req, res) => {
     try {
       const validatedData = insertChatSessionSchema.parse(req.body);
       const ipAddress = req.ip || req.connection.remoteAddress;
@@ -1382,7 +1403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get messages for a session
-  app.get("/api/chat/messages/:sessionId", async (req, res) => {
+  app.get("/api/chat/messages/:sessionId", basicAuth, async (req, res) => {
     try {
       const sessionId = req.params.sessionId;
       const messages = await storage.getChatMessages(sessionId);
@@ -1393,7 +1414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send message with security analysis
-  app.post("/api/chat/messages", async (req, res) => {
+  app.post("/api/chat/messages", basicAuth, async (req, res) => {
     try {
       const validatedData = insertChatMessageSchema.parse(req.body);
       const ipAddress = req.ip || req.connection.remoteAddress;
@@ -1452,7 +1473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get security logs
-  app.get("/api/chat/security-logs", async (req, res) => {
+  app.get("/api/chat/security-logs", basicAuth, async (req, res) => {
     try {
       const logs = await storage.getAllChatSecurityLogs();
       res.json(logs);
@@ -1462,7 +1483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update session status
-  app.patch("/api/chat/sessions/:sessionId", async (req, res) => {
+  app.patch("/api/chat/sessions/:sessionId", basicAuth, async (req, res) => {
     try {
       const sessionId = req.params.sessionId;
       const { status } = req.body;

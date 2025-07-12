@@ -1,78 +1,32 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import "./types";
 
 const app = express();
+
+// CORS configuration for BeaverTalk API
+app.use(cors({
+  origin: [
+    'https://rgra.ca',
+    'https://www.rgra.ca',
+    'https://rgra-ca.replit.app',
+    'https://rgra-ca.replit.dev',
+    /\.replit\.app$/,
+    /\.replit\.dev$/,
+    /localhost/
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// Basic authentication middleware
-const basicAuth = async (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="BEAVERNET System"');
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-  
-  const credentials = Buffer.from(authHeader.split(' ')[1], 'base64').toString('utf-8');
-  const [username, password] = credentials.split(':');
-  
-  try {
-    // Import storage here to avoid circular dependency
-    const { storage } = await import('./storage');
-    const user = await storage.getUserByUsername(username);
-    
-    if (user && user.password === password && user.isActive) {
-      // Create display name from user profile
-      const displayName = user.firstName && user.lastName 
-        ? `${user.firstName} ${user.lastName}`
-        : user.firstName || user.lastName || username;
-      
-      req.user = { 
-        username: user.username, 
-        name: displayName,
-        id: user.id,
-        email: user.email,
-        department: user.department,
-        position: user.position,
-        accessLevel: user.accessLevel
-      };
-      next();
-    } else {
-      res.setHeader('WWW-Authenticate', 'Basic realm="BEAVERNET System"');
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.setHeader('WWW-Authenticate', 'Basic realm="BEAVERNET System"');
-    return res.status(401).json({ message: 'Authentication failed' });
-  }
-};
-
-// Access level authorization middleware
-const requireAccessLevel = (allowedLevels: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user;
-    
-    if (!user || !user.accessLevel) {
-      return res.status(403).json({ message: 'Access denied: No access level specified' });
-    }
-
-    if (!allowedLevels.includes(user.accessLevel)) {
-      return res.status(403).json({ 
-        message: `Access denied: Requires one of the following access levels: ${allowedLevels.join(', ')}`,
-        userLevel: user.accessLevel
-      });
-    }
-
-    next();
-  };
-};
-
-// Apply basic auth to all API routes
-app.use('/api', basicAuth);
+// No middleware defined here - using separate middleware file
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -102,6 +56,15 @@ app.use((req, res, next) => {
   });
 
   next();
+});
+
+// Handle CORS preflight requests before route registration
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
 });
 
 (async () => {
