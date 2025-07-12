@@ -10,9 +10,20 @@
   "dashboard": {
     "title": "Système BEAVERNET",
     "subtitle": "Plateforme de gestion des services municipaux",
+    "divisions": "Divisions",
     "services": "Services",
     "clickToOpen": "Cliquer pour ouvrir",
     "notImplemented": "pas encore implémenté"
+  },
+  "division": {
+    "publicsafety": "Sécurité Publique",
+    "publicsafety_desc": "Intervention d'urgence et application de la loi",
+    "ohs": "Santé et Sécurité au Travail",
+    "ohs_desc": "Gestion des risques et conformité",
+    "datamanagement": "Gestion des Données",
+    "datamanagement_desc": "Systèmes clients et documents",
+    "tool": "Outils",
+    "tool_desc": "Surveillance système et traitement des paiements"
   },
   "service": {
     "beaverpatch": "BeaverPatch",
@@ -32,7 +43,13 @@
     "beaverisk": "BeaverRisk",
     "beaverisk_desc": "Évaluation Risques",
     "beaveraudit": "BeaverAudit",
-    "beaveraudit_desc": "Audit et Conformité"
+    "beaveraudit_desc": "Audit et Conformité",
+    "beavermap": "BeaverMap",
+    "beavermap_desc": "Système d'information géographique",
+    "beaverSQL": "BeaverSQL",
+    "beaverSQL_desc": "Gestion de base de données",
+    "beaverEmergency": "BeaverEmergency",
+    "beaverEmergency_desc": "Centre de gestion des urgences"
   },
   "common": {
     "loading": "Chargement...",

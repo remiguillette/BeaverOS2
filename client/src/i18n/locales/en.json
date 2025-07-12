@@ -10,9 +10,20 @@
   "dashboard": {
     "title": "BEAVERNET System",
     "subtitle": "Municipal Services Management Platform",
+    "divisions": "Divisions",
     "services": "Services",
     "clickToOpen": "Click to Open",
     "notImplemented": "not yet implemented"
+  },
+  "division": {
+    "publicsafety": "Public Safety",
+    "publicsafety_desc": "Emergency Response & Law Enforcement",
+    "ohs": "Occupational Health & Safety",
+    "ohs_desc": "Risk Management & Compliance",
+    "datamanagement": "Data Management",
+    "datamanagement_desc": "Customer & Document Systems",
+    "tool": "Tool",
+    "tool_desc": "System Monitoring & Payment Processing"
   },
   "service": {
     "beaverpatch": "BeaverPatch",
@@ -32,7 +43,13 @@
     "beaverisk": "BeaverRisk",
     "beaverisk_desc": "Risk Assessment",
     "beaveraudit": "BeaverAudit",
-    "beaveraudit_desc": "Audit & Compliance"
+    "beaveraudit_desc": "Audit & Compliance",
+    "beavermap": "BeaverMap",
+    "beavermap_desc": "Geographic Information System",
+    "beaverSQL": "BeaverSQL",
+    "beaverSQL_desc": "Database Management",
+    "beaverEmergency": "BeaverEmergency",
+    "beaverEmergency_desc": "Emergency Management Center"
   },
   "common": {
     "loading": "Loading...",
