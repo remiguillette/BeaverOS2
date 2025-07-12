@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2 } from "lucide-react";
+import { MapPin, Navigation, Zap, Car, Truck, Ambulance, Shield, Maximize2, Minimize2, Move, MousePointer, RotateCcw } from "lucide-react";
 import type { Incident, Unit } from "@shared/schema";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface DispatchMapProps {
   incidents: Incident[];
@@ -15,71 +17,213 @@ interface DispatchMapProps {
 
 export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, className }: DispatchMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const incidentMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
+  const unitMarkersRef = useRef<L.LayerGroup>(L.layerGroup());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+  const [isMoveModeActive, setIsMoveModeActive] = useState(false);
+  const [draggedUnit, setDraggedUnit] = useState<Unit | null>(null);
 
-  // Mock map implementation centered on Niagara Falls, Ontario
-  const mapBounds = {
-    minLat: 43.070,    // Southern boundary of Niagara Falls, ON
-    maxLat: 43.110,    // Northern boundary of Niagara Falls, ON
-    minLon: -79.110,   // Western boundary 
-    maxLon: -79.050    // Eastern boundary
-  };
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
 
-  const getUnitIcon = (type: string) => {
-    switch (type) {
-      case "police": return <Shield className="w-4 h-4" />;
-      case "fire": return <Truck className="w-4 h-4" />;
-      case "ambulance": return <Ambulance className="w-4 h-4" />;
-      default: return <Car className="w-4 h-4" />;
+    // Create map centered on Niagara Falls, Ontario
+    const map = L.map(mapContainerRef.current, {
+      center: [43.0896, -79.0849], // Niagara Falls coordinates
+      zoom: 13,
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Add marker layers
+    incidentMarkersRef.current.addTo(map);
+    unitMarkersRef.current.addTo(map);
+
+    mapRef.current = map;
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current!.invalidateSize();
+      }, 100);
     }
+  }, [isFullscreen]);
+
+  // Create custom icons
+  const createIncidentIcon = (priority: string) => {
+    const color = priority === 'high' ? '#ef4444' : priority === 'medium' ? '#eab308' : '#22c55e';
+    return L.divIcon({
+      html: `<div style="
+        width: 24px; 
+        height: 24px; 
+        background-color: ${color}; 
+        border: 2px solid white; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      ">
+        <svg width="12" height="12" fill="white" viewBox="0 0 24 24">
+          <path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 7 7v-2.5a4.5 4.5 0 1 0-4.5-4.5H11l-4 4-4-4h3a6 6 0 0 1 6-6z"/>
+        </svg>
+      </div>`,
+      className: 'custom-incident-marker',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
   };
 
-  const getUnitColor = (status: string) => {
-    switch (status) {
-      case "available": return "bg-green-500";
-      case "responding": return "bg-blue-500";
-      case "dispatched": return "bg-yellow-500";
-      case "busy": return "bg-red-500";
-      case "enroute": return "bg-orange-500";
-      case "off_duty": return "bg-gray-500";
-      default: return "bg-gray-500";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high": return "bg-red-500";
-      case "medium": return "bg-yellow-500";
-      case "low": return "bg-green-500";
-      default: return "bg-gray-500";
-    }
-  };
-
-  const getPositionOnMap = (lat: number | null, lon: number | null) => {
-    if (!lat || !lon) return { x: 50, y: 50 }; // Default center
+  const createUnitIcon = (type: string, status: string) => {
+    const statusColor = status === 'available' ? '#22c55e' : 
+                       status === 'responding' ? '#3b82f6' : 
+                       status === 'dispatched' ? '#eab308' : 
+                       status === 'busy' ? '#ef4444' : '#6b7280';
     
-    const x = ((lon - mapBounds.minLon) / (mapBounds.maxLon - mapBounds.minLon)) * 100;
-    const y = ((mapBounds.maxLat - lat) / (mapBounds.maxLat - mapBounds.minLat)) * 100;
-    
-    return { x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) };
+    const iconSvg = type === 'police' ? 
+      '<path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>' :
+      type === 'fire' ? 
+      '<path d="M3 17h18v2H3v-2zM6.5 6L12 2l5.5 4v11h-11V6z"/>' :
+      '<path d="M19 7c0-1.1-.9-2-2-2h-3V3c0-.55-.45-1-1-1H7c-.55 0-1 .45-1 1v2H3c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7z"/>';
+
+    return L.divIcon({
+      html: `<div style="
+        width: 32px; 
+        height: 32px; 
+        background-color: ${statusColor}; 
+        border: 2px solid white; 
+        border-radius: 6px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        cursor: ${isMoveModeActive ? 'move' : 'pointer'};
+      ">
+        <svg width="16" height="16" fill="white" viewBox="0 0 24 24">
+          ${iconSvg}
+        </svg>
+      </div>`,
+      className: 'custom-unit-marker',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
   };
 
-  const handleIncidentClick = (incident: Incident) => {
-    setSelectedIncident(incident);
-    setSelectedUnit(null);
-    onIncidentSelect?.(incident);
-  };
+  // Update incident markers
+  useEffect(() => {
+    if (!mapRef.current) return;
 
-  const handleUnitClick = (unit: Unit) => {
-    setSelectedUnit(unit);
-    setSelectedIncident(null);
-    onUnitSelect?.(unit);
-  };
+    incidentMarkersRef.current.clearLayers();
+
+    incidents.forEach((incident) => {
+      if (incident.latitude && incident.longitude) {
+        const marker = L.marker([incident.latitude, incident.longitude], {
+          icon: createIncidentIcon(incident.priority)
+        });
+
+        marker.bindPopup(`
+          <div style="min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; color: #f59e0b;">${incident.incidentNumber}</h3>
+            <p style="margin: 0 0 4px 0;"><strong>Type:</strong> ${incident.type}</p>
+            <p style="margin: 0 0 4px 0;"><strong>Priority:</strong> ${incident.priority}</p>
+            <p style="margin: 0 0 4px 0;"><strong>Address:</strong> ${incident.address}</p>
+            <p style="margin: 0 0 4px 0;"><strong>Status:</strong> ${incident.status}</p>
+            <p style="margin: 0;"><strong>Description:</strong> ${incident.description}</p>
+          </div>
+        `);
+
+        marker.on('click', () => {
+          setSelectedIncident(incident);
+          setSelectedUnit(null);
+          onIncidentSelect?.(incident);
+        });
+
+        incidentMarkersRef.current.addLayer(marker);
+      }
+    });
+  }, [incidents, onIncidentSelect]);
+
+  // Update unit markers
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    unitMarkersRef.current.clearLayers();
+
+    units.forEach((unit) => {
+      if (unit.latitude && unit.longitude) {
+        const marker = L.marker([unit.latitude, unit.longitude], {
+          icon: createUnitIcon(unit.type, unit.status),
+          draggable: isMoveModeActive
+        });
+
+        marker.bindPopup(`
+          <div style="min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; color: #f59e0b;">${unit.unitNumber}</h3>
+            <p style="margin: 0 0 4px 0;"><strong>Type:</strong> ${unit.type}</p>
+            <p style="margin: 0 0 4px 0;"><strong>Status:</strong> ${unit.status}</p>
+            <p style="margin: 0;"><strong>Location:</strong> ${unit.currentLocation}</p>
+          </div>
+        `);
+
+        marker.on('click', () => {
+          if (!isMoveModeActive) {
+            setSelectedUnit(unit);
+            setSelectedIncident(null);
+            onUnitSelect?.(unit);
+          }
+        });
+
+        if (isMoveModeActive) {
+          marker.on('dragstart', () => {
+            setDraggedUnit(unit);
+          });
+
+          marker.on('dragend', (e) => {
+            const newPos = e.target.getLatLng();
+            // Here you would normally update the unit position in your backend
+            console.log(`Unit ${unit.unitNumber} moved to:`, newPos.lat, newPos.lng);
+            setDraggedUnit(null);
+          });
+        }
+
+        unitMarkersRef.current.addLayer(marker);
+      }
+    });
+  }, [units, isMoveModeActive, onUnitSelect]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+  };
+
+  const toggleMoveMode = () => {
+    setIsMoveModeActive(!isMoveModeActive);
+    if (isMoveModeActive) {
+      setDraggedUnit(null);
+    }
+  };
+
+  const resetView = () => {
+    if (mapRef.current) {
+      mapRef.current.setView([43.0896, -79.0849], 13);
+    }
   };
 
   return (
@@ -90,145 +234,94 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
             <MapPin className="w-5 h-5 mr-2" />
             Dispatch Map - Niagara Falls, ON
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleFullscreen}
-            className="text-gray-400 hover:text-white"
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </Button>
+          <div className="flex items-center space-x-2">
+            {/* Map Controls */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetView}
+              className="text-gray-400 hover:text-white"
+              title="Reset View"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant={isMoveModeActive ? "default" : "ghost"}
+              size="sm"
+              onClick={toggleMoveMode}
+              className={`${isMoveModeActive ? 'bg-beaver-orange text-white' : 'text-gray-400 hover:text-white'}`}
+              title={isMoveModeActive ? "Exit Move Mode" : "Enter Move Mode - Drag units to new positions"}
+            >
+              {isMoveModeActive ? <MousePointer className="w-4 h-4" /> : <Move className="w-4 h-4" />}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleFullscreen}
+              className="text-gray-400 hover:text-white"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
+        
+        {/* Move Mode Indicator */}
+        {isMoveModeActive && (
+          <div className="mt-2 p-2 bg-beaver-orange bg-opacity-20 border border-beaver-orange rounded text-sm text-beaver-orange">
+            🎯 Move Mode Active - Drag units to reposition them
+            {draggedUnit && ` | Moving: ${draggedUnit.unitNumber}`}
+          </div>
+        )}
       </CardHeader>
+      
       <CardContent className="p-3">
         <div 
           ref={mapContainerRef}
-          className={`relative bg-gray-800 border border-gray-700 rounded-lg overflow-hidden ${
+          className={`w-full rounded-lg border border-gray-700 ${
             isFullscreen ? 'h-[calc(100vh-200px)]' : 'h-full min-h-[400px]'
           }`}
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '20px 20px'
-          }}
-        >
-          {/* Map overlay with Niagara Falls street patterns */}
-          <div className="absolute inset-0 opacity-30">
-            {/* Major East-West Roads */}
-            <div className="absolute top-[15%] left-0 w-full h-1 bg-yellow-400" title="Rainbow Blvd"></div>
-            <div className="absolute top-[35%] left-0 w-full h-0.5 bg-gray-500" title="Falls Ave"></div>
-            <div className="absolute top-[50%] left-0 w-full h-1 bg-yellow-400" title="Lundy's Lane"></div>
-            <div className="absolute top-[65%] left-0 w-full h-0.5 bg-gray-500" title="Stanley Ave"></div>
-            <div className="absolute top-[80%] left-0 w-full h-0.5 bg-gray-500" title="Morrison St"></div>
-            
-            {/* Major North-South Roads */}
-            <div className="absolute left-[20%] top-0 w-1 h-full bg-yellow-400" title="Niagara Pkwy"></div>
-            <div className="absolute left-[40%] top-0 w-0.5 h-full bg-gray-500" title="Main St"></div>
-            <div className="absolute left-[60%] top-0 w-0.5 h-full bg-gray-500" title="Ferry St"></div>
-            <div className="absolute left-[80%] top-0 w-1 h-full bg-yellow-400" title="QEW"></div>
-            
-            {/* Niagara River representation */}
-            <div className="absolute left-[5%] top-0 w-3 h-full bg-blue-400 opacity-50" title="Niagara River"></div>
-            
-            {/* Falls area indicator */}
-            <div className="absolute left-[15%] top-[25%] w-8 h-8 rounded-full bg-blue-300 opacity-60" title="Niagara Falls"></div>
+        />
+
+        {/* Real-time Legend */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-beaver-surface-light p-3 rounded-lg">
+            <h4 className="text-sm font-semibold text-beaver-orange mb-2">Incident Priority</h4>
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-500 border-2 border-white rounded-full"></div>
+                <span className="text-gray-300">High Priority</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-yellow-500 border-2 border-white rounded-full"></div>
+                <span className="text-gray-300">Medium Priority</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                <span className="text-gray-300">Low Priority</span>
+              </div>
+            </div>
           </div>
           
-          {/* Location labels */}
-          <div className="absolute inset-0 text-xs text-gray-400 pointer-events-none">
-            <div className="absolute left-[10%] top-[20%] font-bold">Falls</div>
-            <div className="absolute left-[75%] top-[15%] font-bold">Tourist Area</div>
-            <div className="absolute left-[45%] top-[45%] font-bold">Downtown</div>
-            <div className="absolute left-[70%] top-[75%] font-bold">Industrial</div>
-          </div>
-
-          {/* Render incidents */}
-          {incidents.map((incident) => {
-            const position = getPositionOnMap(incident.latitude, incident.longitude);
-            const isSelected = selectedIncident?.id === incident.id;
-            
-            return (
-              <div
-                key={incident.id}
-                className={`absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
-                  isSelected ? 'scale-125 z-20' : 'hover:scale-110 z-10'
-                }`}
-                style={{ left: `${position.x}%`, top: `${position.y}%` }}
-                onClick={() => handleIncidentClick(incident)}
-              >
-                <div className={`w-6 h-6 rounded-full ${getPriorityColor(incident.priority)} border-2 border-white shadow-lg flex items-center justify-center`}>
-                  <Zap className="w-3 h-3 text-white" />
-                </div>
-                {isSelected && (
-                  <div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                    {incident.incidentNumber} - {incident.type}
-                  </div>
-                )}
+          <div className="bg-beaver-surface-light p-3 rounded-lg">
+            <h4 className="text-sm font-semibold text-beaver-orange mb-2">Unit Status</h4>
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-green-500 border-2 border-white rounded"></div>
+                <span className="text-gray-300">Available</span>
               </div>
-            );
-          })}
-
-          {/* Render units */}
-          {units.map((unit) => {
-            const position = getPositionOnMap(unit.latitude, unit.longitude);
-            const isSelected = selectedUnit?.id === unit.id;
-            
-            return (
-              <div
-                key={unit.id}
-                className={`absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
-                  isSelected ? 'scale-125 z-20' : 'hover:scale-110 z-10'
-                }`}
-                style={{ left: `${position.x}%`, top: `${position.y}%` }}
-                onClick={() => handleUnitClick(unit)}
-              >
-                <div className={`w-8 h-8 rounded-lg ${getUnitColor(unit.status)} border-2 border-white shadow-lg flex items-center justify-center`}>
-                  {getUnitIcon(unit.type)}
-                </div>
-                {isSelected && (
-                  <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                    {unit.unitNumber} - {unit.status}
-                  </div>
-                )}
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-blue-500 border-2 border-white rounded"></div>
+                <span className="text-gray-300">Responding</span>
               </div>
-            );
-          })}
-
-          {/* Map legend */}
-          <div className="absolute bottom-2 left-2 bg-black bg-opacity-80 text-white text-xs p-2 rounded">
-            <div className="space-y-1">
-              <div className="font-semibold text-xs mb-1">Legend</div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>High</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span>Med</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>Low</span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-green-500 rounded"></div>
-                    <span>Avail</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded"></div>
-                    <span>Resp</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-red-500 rounded"></div>
-                    <span>Busy</span>
-                  </div>
-                </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-yellow-500 border-2 border-white rounded"></div>
+                <span className="text-gray-300">Dispatched</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-500 border-2 border-white rounded"></div>
+                <span className="text-gray-300">Busy</span>
               </div>
             </div>
           </div>
@@ -240,7 +333,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
             {selectedIncident && (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className={`${getPriorityColor(selectedIncident.priority)} text-white border-none`}>
+                  <Badge variant="outline" className="bg-red-500 text-white border-none">
                     {selectedIncident.priority.toUpperCase()}
                   </Badge>
                   <span className="text-white font-medium">{selectedIncident.incidentNumber}</span>
@@ -256,7 +349,7 @@ export function DispatchMap({ incidents, units, onIncidentSelect, onUnitSelect, 
             {selectedUnit && (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className={`${getUnitColor(selectedUnit.status)} text-white border-none`}>
+                  <Badge variant="outline" className="bg-green-500 text-white border-none">
                     {selectedUnit.status.toUpperCase()}
                   </Badge>
                   <span className="text-white font-medium">{selectedUnit.unitNumber}</span>
