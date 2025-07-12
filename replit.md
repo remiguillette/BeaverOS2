@@ -265,6 +265,15 @@ BEAVERNET is a full-stack web application built with a modern tech stack featuri
   - Created production deployment guide (PRODUCTION_DEPLOYMENT_GUIDE.md)
   - Identified that external server (rgbeavernet.ca) needs BeaverTalk API deployment
   - System ready for production deployment with all endpoints functional
+- July 12, 2025. Fixed BeaverTalk Real-time Message Display Issue:
+  - Diagnosed issue where external client messages weren't appearing in BeaverTalk dashboard
+  - Problem was caching preventing real-time updates from external API calls
+  - Added automatic refresh intervals (sessions: 5s, messages: 3s, security logs: 10s)
+  - Disabled caching on chat sessions and messages queries (cacheTime: 0, staleTime: 0)
+  - Added automatic session selection for new external conversations
+  - Enhanced session display to show department (External Client) and creation timestamps
+  - BeaverTalk now displays messages from external client sites in real-time
+  - Successfully tested with multiple external client scenarios from RGRA.ca
 
 ## User Preferences
 

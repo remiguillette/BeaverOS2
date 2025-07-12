@@ -37,13 +37,20 @@ export default function BeaverTalk() {
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: ["/api/chat/sessions"],
     refetchInterval: 5000, // Refresh every 5 seconds to catch external messages
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    cacheTime: 0, // Don't cache sessions data
+    staleTime: 0, // Consider data stale immediately
   });
+
+
 
   // Fetch messages for current session with automatic refresh every 3 seconds
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: ["/api/chat/messages", currentSessionId],
     enabled: !!currentSessionId,
     refetchInterval: 3000, // Refresh every 3 seconds to catch new messages
+    cacheTime: 0, // Don't cache messages data
+    staleTime: 0, // Consider data stale immediately
   });
 
   // Fetch security logs with automatic refresh every 10 seconds
