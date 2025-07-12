@@ -33,20 +33,23 @@ export default function BeaverTalk() {
   const [selectedPriority, setSelectedPriority] = useState("normal");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch chat sessions
+  // Fetch chat sessions with automatic refresh every 5 seconds
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: ["/api/chat/sessions"],
+    refetchInterval: 5000, // Refresh every 5 seconds to catch external messages
   });
 
-  // Fetch messages for current session
+  // Fetch messages for current session with automatic refresh every 3 seconds
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: ["/api/chat/messages", currentSessionId],
     enabled: !!currentSessionId,
+    refetchInterval: 3000, // Refresh every 3 seconds to catch new messages
   });
 
-  // Fetch security logs
+  // Fetch security logs with automatic refresh every 10 seconds
   const { data: securityLogs = [] } = useQuery({
     queryKey: ["/api/chat/security-logs"],
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   // Create new chat session
@@ -93,6 +96,16 @@ export default function BeaverTalk() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Auto-select the most recent session if none is selected
+  useEffect(() => {
+    if (!currentSessionId && sessions.length > 0) {
+      const mostRecentSession = sessions.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0];
+      setCurrentSessionId(mostRecentSession.sessionId);
+    }
+  }, [sessions, currentSessionId]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !currentSessionId) return;
@@ -216,13 +229,21 @@ export default function BeaverTalk() {
                               {session.status}
                             </Badge>
                           </div>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-1">
                             <span className="text-xs text-gray-400">
                               {session.category}
                             </span>
                             <Badge className={getPriorityBadge(session.priority)}>
                               {session.priority}
                             </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-400">
+                              {session.userDepartment || "External"}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {new Date(session.createdAt).toLocaleTimeString()}
+                            </span>
                           </div>
                         </div>
                       ))
