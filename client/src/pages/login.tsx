@@ -111,37 +111,7 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 space-y-3">
-            <div className="text-center">
-              <p className="text-sm text-gray-500">Default credentials: remiguillette / MC44rg99qc@</p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setUsername("dispatcher1");
-                  setPassword("911dispatch");
-                }}
-                className="flex-1 text-xs"
-              >
-                Test as 911 Dispatcher
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setUsername("remiguillette");
-                  setPassword("MC44rg99qc@");
-                }}
-                className="flex-1 text-xs"
-              >
-                Test as SuperAdmin
-              </Button>
-            </div>
-          </div>
+
         </CardContent>
       </Card>
       </div>
